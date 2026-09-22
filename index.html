@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-<title>Card Vault — Web3 Card Auction</title>
+<title>Cards Auction — Web3 Card Auction</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -167,7 +167,7 @@ body{background:#090b10; background-image:none;}
 @keyframes burnPulse{from{filter:saturate(1)}to{filter:saturate(1.35) brightness(1.06)}}
 @media (max-width:380px){.nav-btn{font-size:8px}.nav-btn svg{width:17px;height:17px}.navbar{left:5px;right:5px;}}
 
-/* ===== Card Vault multi-card UI ===== */
+/* ===== Cards Auction multi-card UI ===== */
 .card-wallet-bar{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #252b35;background:#0f1319;border-radius:15px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease}
 .card-wallet-bar:active{transform:scale(.985);background:#141922}
 .card-wallet-icon{width:34px;height:34px;border-radius:10px;background:#181e27;border:1px solid #2a313d;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
@@ -218,12 +218,12 @@ body{background:#090b10; background-image:none;}
 .pin-dot.filled{background:#fff;border-color:#fff;box-shadow:none}
 .pin-dot.err{background:#ff5b5b;border-color:#ff5b5b;box-shadow:none}
 .pin-header-icon{width:28px;height:28px;margin:0 auto 7px;color:#e9edf2}
-.pin-key{background:#f2f4f7!important;color:#0a0c10!important;border:0!important;box-shadow:none!important;font-weight:500;transition:transform .14s ease,background .14s ease,opacity .14s ease}
-.pin-key:active{transform:scale(.92);background:#dfe4ea!important}
+.pin-key{background:#080a0e!important;color:#fff!important;border:1px solid rgba(255,255,255,.07)!important;box-shadow:none!important;font-weight:500;transition:transform .14s ease,background .14s ease,opacity .14s ease}
+.pin-key:active{transform:scale(.92);background:#12161d!important}
 .pin-key svg{color:#0a0c10}
 .pin-keypad{gap:14px}
 .pin-dots{gap:15px}
-.pin-dot{background:transparent}
+.pin-dot{width:7px;height:7px;background:transparent;border:1px solid rgba(255,255,255,.5);box-shadow:none}.pin-dot.filled{width:7px;height:7px;background:#fff;border-color:#fff;box-shadow:none}
 .card-description{background:#11151c;border:1px solid #252b35;border-radius:16px;padding:14px 15px;margin-top:-6px;animation:descriptionIn .35s ease both}
 .card-description-head{display:flex;align-items:center;gap:7px;color:#b8c1ce;font-size:11px;text-transform:uppercase;letter-spacing:1.1px}
 .card-description-head svg{width:15px;height:15px}
@@ -235,7 +235,7 @@ body{background:#090b10; background-image:none;}
 @media (hover:hover) and (pointer:fine){
   .card-action-btn:hover,.wallet-action:hover,.setting-action:hover,.primary-btn:hover{transform:translateY(-2px)}
   .card-wallet-bar:hover{transform:translateY(-1px);border-color:#343c48;background:#141922}
-  .pin-key:hover{background:#fff!important;transform:translateY(-2px)}
+  .pin-key:hover{background:#12161d!important;transform:translateY(-2px)}
   .manager-card-mini:hover,.auction-card-row:hover{transform:translateY(-2px)}
 }
 @media (hover:none),(pointer:coarse){
@@ -245,6 +245,20 @@ body{background:#090b10; background-image:none;}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
 
+
+.card-create-backdrop{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.58);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.card-create-sheet{width:min(520px,100%);max-height:92dvh;overflow:auto;background:#0b0d12;border:1px solid rgba(255,255,255,.12);border-radius:26px;padding:18px;box-shadow:0 28px 80px rgba(0,0,0,.6);animation:createSheetIn .34s cubic-bezier(.2,.85,.2,1)}
+.card-create-preview{width:min(330px,88vw);margin:2px auto 18px;aspect-ratio:1.586;border-radius:20px;background-size:cover;background-position:center;box-shadow:0 22px 55px rgba(0,0,0,.45);display:flex;align-items:flex-end;padding:18px;position:relative;overflow:hidden}
+.card-create-preview::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.62))}
+.card-create-number{position:relative;z-index:1;font-size:32px;letter-spacing:6px;font-weight:600}
+.card-field{width:100%;height:48px;border-radius:14px;background:#11151c;border:1px solid #272e39;color:#fff;padding:0 14px;outline:none}
+.card-field:focus{border-color:#596575}
+.card-visibility{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card-visibility button{min-height:48px;border-radius:13px;border:1px solid #272e39;background:#11151c;color:#8f99a7;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px}
+.card-visibility button.active{background:#e9edf2;color:#090b10;border-color:#e9edf2}
+.card-create-hint{font-size:11px;line-height:1.5;color:#737e8d}
+@keyframes createSheetIn{from{opacity:0;transform:translateY(30px) scale(.985)}to{opacity:1;transform:none}}
+@media (min-width:700px){.card-create-backdrop{align-items:center}.card-create-sheet{max-height:88dvh}}
 </style>
 </head>
 <body class="pb-28">
@@ -278,12 +292,45 @@ body{background:#090b10; background-image:none;}
 </div>
 
 <!-- ================= APP ROOT ================= -->
+<div id="cardCreateModal" class="card-create-backdrop hidden">
+  <div class="card-create-sheet">
+    <div class="flex items-center justify-between mb-3">
+      <div><div class="text-base font-semibold">Новая карточка</div><div class="text-xs text-white/40 mt-1">TON-кошелёк не требуется</div></div>
+      <button class="sheet-close-icon" onclick="closeCreateCardModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div id="createCardPreview" class="card-create-preview"><div id="createCardNumber" class="card-create-number">0000</div></div>
+    <div class="space-y-3">
+      <div>
+        <div class="text-xs text-white/45 mb-1.5">4 цифры карточки</div>
+        <input id="createCardNumberInput" class="card-field text-center text-xl tracking-[.45em]" maxlength="4" inputmode="numeric" placeholder="0000">
+      </div>
+      <div>
+        <div class="text-xs text-white/45 mb-1.5">Название</div>
+        <input id="createCardTitleInput" class="card-field" maxlength="60" placeholder="Например, Moon #4827">
+      </div>
+      <div>
+        <div class="text-xs text-white/45 mb-1.5">Описание</div>
+        <input id="createCardDescriptionInput" class="card-field" maxlength="300" placeholder="Что особенного в этой карточке">
+      </div>
+      <div>
+        <div class="text-xs text-white/45 mb-1.5">Доступность</div>
+        <div class="card-visibility">
+          <button id="createPublicBtn" class="active" onclick="setCreateVisibility('public')"><i data-lucide="globe-2"></i> Публичная</button>
+          <button id="createPrivateBtn" onclick="setCreateVisibility('private')"><i data-lucide="lock"></i> Приватная</button>
+        </div>
+      </div>
+      <div class="card-create-hint">Публичную карточку можно найти по номеру в поиске. Приватная остаётся видимой только владельцу и не появляется в публичном поиске.</div>
+      <button class="primary-btn" onclick="submitCreateCard()"><i data-lucide="sparkles"></i><span>Создать карточку</span></button>
+    </div>
+  </div>
+</div>
+
 <div id="appRoot" class="hidden">
 
 <!-- ================= HEADER ================= -->
 <header class="px-4 pt-4 pb-2 flex items-center justify-between">
   <div>
-    <div class="text-xs text-white/40 flex items-center gap-1.5">Card Vault
+    <div class="text-xs text-white/40 flex items-center gap-1.5">Cards Auction
       
     </div>
     <div class="text-lg font-semibold" id="greetName">My Bank</div>
@@ -313,7 +360,7 @@ body{background:#090b10; background-image:none;}
             <i data-lucide="contactless" class="card-contactless"></i>
           </div>
           <div class="card-center">
-            <div class="card-brand">CARD VAULT</div>
+            <div id="cardTitleMain" class="card-brand">CARDS AUCTION</div>
             <div id="cardNumber" class="emboss card-number">4827</div>
           </div>
           <div class="card-bottomline">
@@ -328,7 +375,7 @@ body{background:#090b10; background-image:none;}
         <div class="mag-stripe"></div>
         <div class="p-4 flex flex-col gap-4">
           <div class="hologram w-16 h-10 rounded-md opacity-90"></div>
-          <div class="card-back-label">CARD VAULT</div>
+          <div class="card-back-label">CARDS AUCTION</div>
           <div class="card-pass-box">
             <span>КОД КАРТЫ</span>
             <strong id="cardPassBack" class="pw-key">••••••</strong>
@@ -341,7 +388,7 @@ body{background:#090b10; background-image:none;}
 
   <div class="card-description">
     <div class="card-description-head"><i data-lucide="sparkles"></i><span>Особенная карточка</span></div>
-    <div class="card-description-title">Коллекционная карточка с номером</div>
+    <div class="card-description-title">Карточка для коллекции и торговли</div>
     <p>Четыре цифры на лицевой стороне — публичный идентификатор этой карточки. По нему её можно находить в коллекции и использовать при обмене или выставлении на торговлю. Для создания карточки TON-кошелёк не нужен; он потребуется только при публикации на аукционе.</p>
   </div>
 
@@ -390,8 +437,11 @@ body{background:#090b10; background-image:none;}
 </main>
 
 <!-- ================= SCREEN: MARKET ================= -->
-<main id="screen-market" class="px-4 space-y-3 hidden">
-  <div class="flex items-center justify-between mb-1"><h2 class="text-lg font-semibold">Аукцион</h2><i data-lucide="gavel" class="w-5 h-5 text-white/50"></i></div>
+<main id="screen-market" class="px-4 space-y-4 hidden">
+  <div class="flex items-center justify-between mb-1"><div><h2 class="text-lg font-semibold">Cards Auction</h2><div class="text-xs text-white/40 mt-1">Поиск коллекционных карточек</div></div><i data-lucide="gavel" class="w-5 h-5 text-white/50"></i></div>
+  <div class="glass rounded-2xl p-3 flex items-center gap-2"><i data-lucide="search" class="w-4 h-4 text-white/40"></i><input id="cardSearchInput" oninput="searchPublicCards()" maxlength="4" inputmode="numeric" class="bg-transparent outline-none flex-1 text-sm" placeholder="Номер карточки"></div>
+  <div id="marketList" class="space-y-3"></div>
+</main>
   <div id="marketList" class="space-y-3"></div>
 </main>
 
@@ -470,7 +520,7 @@ body{background:#090b10; background-image:none;}
               </div>
             </div>
             <div>
-              <div class="emboss text-lg md:text-xl mb-2" id="focusCardNumber">5412 &nbsp; 7788 &nbsp; 9021 &nbsp; 3345</div>
+              <div class="emboss text-lg md:text-xl mb-2" id="focusCardNumber">4827</div>
               <div class="flex justify-between text-xs emboss opacity-90">
                 <span id="focusHolderName">CARD HOLDER</span><span id="focusExpiry">12/29</span>
               </div>
@@ -617,7 +667,7 @@ body{background:#090b10; background-image:none;}
       </label>
       <button class="w-full glass active:press py-3 rounded-xl text-sm text-red-300" onclick="resetPin()">Сбросить PIN-код</button>
       <div class="glass rounded-xl p-3 text-xs text-white/40">
-        Card Vault v1.2 · Telegram ID: <span id="settingsTgId">—</span>
+        Cards Auction v1.2 · Telegram ID: <span id="settingsTgId">—</span>
       </div>
     </div>
   </div>
@@ -1205,6 +1255,35 @@ function spawnParticles(n, colors){
   requestAnimationFrame(loop);
 })();
 
+let searchTimer=null;
+async function searchPublicCards(){
+  clearTimeout(searchTimer);
+  const q=document.getElementById('cardSearchInput')?.value.replace(/\\D/g,'').slice(0,4)||'';
+  const list=document.getElementById('marketList'); if(!list)return;
+  if(!q){list.innerHTML='<div class="empty-market"><i data-lucide="search"></i><span>Введите 1–4 цифры</span></div>';try{lucide.createIcons();}catch(e){};return;}
+  searchTimer=setTimeout(async()=>{
+    try{
+      const d=await apiPost('search_cards',{query:q});
+      list.innerHTML='';
+      (d.cards||[]).forEach(card=>{
+        const row=document.createElement('button');row.className='auction-card-row';
+        row.innerHTML='<div class="auction-card-thumb" style="background-image:url(&quot;'+cvCardStyle(card)+'&quot;)"></div><div class="auction-card-meta"><strong>'+cvMasked(card.serial_code)+'</strong><span>'+String(card.title||'Без названия').replace(/[<>]/g,'')+'</span></div><i data-lucide="chevron-right" class="chev"></i>';
+        row.onclick=()=>openPublicCard(card.id);
+        list.appendChild(row);
+      });
+      if(!d.cards?.length) list.innerHTML='<div class="empty-market"><i data-lucide="search-x"></i><span>Карточка не найдена</span></div>';
+      try{lucide.createIcons();}catch(e){}
+    }catch(e){list.innerHTML='<div class="empty-market"><i data-lucide="wifi-off"></i><span>Не удалось выполнить поиск</span></div>';try{lucide.createIcons();}catch(e){}}
+  },180);
+}
+async function openPublicCard(id){
+  try{
+    const d=await apiPost('get_card_public',{item_id:id});
+    if(!d.ok) throw new Error();
+    const c=d.card;
+    alert((c.title||'Без названия')+'\\n\\nНомер: '+c.serial_code+'\\n\\n'+(c.description||'Без описания')+'\\n\\nПередач: '+(c.transfer_count||0));
+  }catch(e){haptic('heavy');}
+}
 function updateProfile(){
   const u=state.tgUser||{};
   const name=[u.first_name,u.last_name].filter(Boolean).join(' ') || 'Пользователь';
@@ -1372,6 +1451,7 @@ function cvSyncState(card){
   state.cardPassword=card.card_password;
   state.currentSkin=card.skin_id;
   state.wallet=card.wallet || null;
+  state.cardTitle=card.title||'Без названия'; state.cardDescription=card.description||''; state.cardVisibility=card.visibility||'public';
   applyCvCardVisual(card);
 }
 function applyCvCardVisual(card){
@@ -1386,6 +1466,8 @@ function applyCvCardVisual(card){
     focusCard3d.style.backgroundPosition='center';
   }
   document.getElementById('cardNumber').textContent=formatCardNumber(card.serial_code);
+  const titleEl=document.getElementById('cardTitleMain'); if(titleEl) titleEl.textContent=card.title||'CARDS AUCTION';
+  const focusTitle=document.getElementById('focusHolderName'); if(focusTitle) focusTitle.textContent=card.title||'CARDS AUCTION';
   const back=document.getElementById('cardPassBack'); if(back) back.textContent=card.card_password;
   const f=document.getElementById('focusCardNumber'); if(f) f.textContent=formatCardNumber(card.serial_code);
   const fb=document.getElementById('focusCardIdBack'); if(fb) fb.textContent=cvMasked(card.serial_code);
@@ -1432,38 +1514,50 @@ function ensureCardState(){
   cvSyncState(c);
   renderManagerCards();
 }
-async function createNewCard(){
-  const cards=cvReadCards();
-  let serial=cvGen4();
-  for(let tries=0;tries<8;tries++){
-    if(cards.some(x=>String(x.serial_code)===serial)){ serial=cvGen4(); continue; }
-    break;
-  }
-  const password=cvGen6();
-  const skin='photo_'+(1+Math.floor(Math.random()*CV_SKINS.length));
-  let backend=null;
-  try{
-    const d=await apiPost('create_card',{serial_code:serial,card_password:password,skin_id:skin});
-    if(!d.ok) throw new Error(d.error||'Не удалось создать карточку');
-    backend=d.card||null;
-  }catch(e){
-    const msg=e?.message||'Не удалось создать карточку';
-    alert(msg);
-    haptic('heavy');
-    return;
-  }
-  const card={
-    id:'db_'+backend.id,
-    backendId:backend.id,
-    serial_code:backend.serial_code||serial,
-    card_password:backend.card_password||password,
-    skin_id:backend.skin_id||skin,
-    wallet:backend.wallet_address||null
-  };
-  cards.push(card); cvWriteCards(cards);
-  cvSyncState(card); ensureCardState(); renderManagerCards();
-  openFocusModal(); haptic('medium');
+function setCreateVisibility(v){
+  state.createVisibility=v;
+  document.getElementById('createPublicBtn').classList.toggle('active',v==='public');
+  document.getElementById('createPrivateBtn').classList.toggle('active',v==='private');
+  haptic('light');
 }
+function openCreateCardModal(){
+  const modal=document.getElementById('cardCreateModal');
+  const input=document.getElementById('createCardNumberInput');
+  let serial=cvGen4();
+  const used=new Set(cvReadCards().map(x=>String(x.serial_code)));
+  for(let i=0;i<20&&used.has(serial);i++) serial=cvGen4();
+  input.value=serial;
+  document.getElementById('createCardNumber').textContent=serial;
+  document.getElementById('createCardTitleInput').value='';
+  document.getElementById('createCardDescriptionInput').value='';
+  state.createVisibility='public';
+  setCreateVisibility('public');
+  modal.classList.remove('hidden');
+  try{lucide.createIcons();}catch(e){}
+  setTimeout(()=>input.focus(),180);
+  haptic('medium');
+}
+function closeCreateCardModal(){document.getElementById('cardCreateModal').classList.add('hidden');}
+async function submitCreateCard(){
+  const modal=document.getElementById('cardCreateModal');
+  const input=document.getElementById('createCardNumberInput');
+  const serial=input.value.replace(/\\D/g,'').slice(0,4);
+  const title=(document.getElementById('createCardTitleInput').value||'Без названия').trim().slice(0,60);
+  const description=document.getElementById('createCardDescriptionInput').value.trim().slice(0,300);
+  if(!/^\\d{4}$/.test(serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
+  const cards=cvReadCards();
+  if(cards.some(x=>String(x.serial_code)===serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
+  try{
+    const d=await apiPost('create_card',{serial_code:serial,card_password:cvGen6(),skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),title,description,visibility:state.createVisibility||'public'});
+    if(!d.ok) throw new Error(d.error||'Не удалось создать карточку');
+    const b=d.card;
+    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||title,description:b.description||description,visibility:b.visibility||state.createVisibility||'public'};
+    cards.push(card);cvWriteCards(cards);cvSyncState(card);ensureCardState();renderManagerCards();
+    closeCreateCardModal();openFocusModal();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
+  }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy');}
+}
+function createNewCard(){openCreateCardModal();}
+
 function selectCvCard(id){
   const cards=cvReadCards(), c=cards.find(x=>x.id===id); if(!c)return;
   cvSyncState(c); renderManagerCards(); updateProfile();
