@@ -42,7 +42,7 @@ body{
 /* ---------- 3D CARD ---------- */
 .card-stage{ perspective: 1200px; max-width: 380px; margin: 0 auto; }
 .card-3d{
-  width:100%; aspect-ratio: 85.6/53.98; border-radius:20px; position:relative;
+  width:min(100%,350px); aspect-ratio:85.6/53.98; border-radius:20px; position:relative;
   transform-style:preserve-3d; transition: transform .15s ease-out;
   box-shadow: 0 30px 60px -20px rgba(0,0,0,.7);
   cursor:pointer;
@@ -261,21 +261,37 @@ body{background:#090b10; background-image:none;}
 @media (min-width:700px){.card-create-backdrop{align-items:center}.card-create-sheet{max-height:88dvh}}
 </style>
 <style>
-.card-carousel-shell{position:relative;width:100%;display:flex;align-items:center;justify-content:center}
-.card-carousel-arrow{position:absolute;z-index:8;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s,border-color .22s;box-shadow:0 12px 30px rgba(0,0,0,.22)}
+.card-carousel-shell{position:relative;width:100%;max-width:390px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.card-carousel-arrow{position:absolute;z-index:8;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s,border-color .22s;box-shadow:0 12px 30px rgba(0,0,0,.22)}
 .card-carousel-arrow svg{width:19px;height:19px}
-.card-carousel-prev{left:0}.card-carousel-next{right:0}
+.card-carousel-prev{left:4px}.card-carousel-next{right:4px}
 .card-carousel-arrow:active{transform:scale(.88)}
 .card-carousel-dots{height:12px;display:flex;justify-content:center;align-items:center;gap:6px;margin-top:-8px}
 .card-carousel-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .25s}
 .card-carousel-dot.active{width:18px;border-radius:999px;background:#fff}
-.card-create-dot{width:30px;height:30px;border-radius:50%;background:#fff;color:#05070a;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;transition:transform .2s}
+.card-create-dot{width:28px;height:28px;border-radius:50%;background:#fff;color:#05070a;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;transition:transform .2s}
 .card-create-dot svg{width:15px;height:15px}
 @media (hover:hover) and (pointer:fine){
  .card-carousel-arrow:hover{transform:scale(1.08);background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3)}
  .card-create-dot:hover{transform:scale(1.08)}
 }
 @media (hover:none),(pointer:coarse){.card-carousel-arrow:hover{transform:none}}
+</style><style>
+.focus-modal .focus-back-top{position:absolute;left:14px;top:14px;z-index:30;width:42px;height:42px;background:#fff;color:#05070a;border:0;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(0,0,0,.28)}
+.focus-modal .focus-back-top svg{width:20px;height:20px}
+.focus-modal .focus-settings{padding-top:58px}
+.focus-modal .focus-card-wrap .card-3d{width:min(88vw,350px)}
+.card-data-panel{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.card-data-item{background:#11151c;border:1px solid #242b35;border-radius:14px;padding:11px 12px}
+.card-data-item .label{font-size:10px;color:#778291;margin-bottom:5px}
+.card-data-item .value{font-size:19px;letter-spacing:3px;color:#fff;font-variant-numeric:tabular-nums}
+.card-data-item.secret .value{letter-spacing:4px}
+.card-data-edit{width:28px;height:28px;border-radius:9px;background:#1b2028;color:#fff;display:flex;align-items:center;justify-content:center}
+.card-data-edit svg{width:14px;height:14px}
+.card-editor-stack{display:grid;gap:10px}
+.card-editor-label{font-size:10px;color:#778291;margin-bottom:5px}
+.card-editor-input{width:100%;height:46px;background:#11151c;border:1px solid #282f39;border-radius:13px;color:#fff;text-align:center;font-size:19px;letter-spacing:4px;outline:none}
+.card-editor-input:focus{border-color:#596575}
 </style></head>
 <body class="pb-28">
 
@@ -523,7 +539,7 @@ body{background:#090b10; background-image:none;}
 </nav>
 
 <!-- ================= FOCUS MODAL (click on card) ================= -->
-<div id="focusModal" class="focus-modal">
+<div id="focusModal" class="focus-modal"><button class="focus-back-top" onclick="closeFocusModal()" aria-label="Назад"><i data-lucide="chevron-left"></i></button>
   <div class="focus-backdrop" onclick="closeFocusModal()"></div>
   <div class="focus-card-wrap">
     <div class="card-stage">
@@ -551,9 +567,7 @@ body{background:#090b10; background-image:none;}
           <div class="mag-stripe"></div>
           <div class="p-4 flex flex-col gap-3">
             <div class="hologram w-16 h-10 rounded-md opacity-90"></div>
-            <button class="glass active:press rounded-md px-3 py-2 flex justify-between text-xs text-left" onclick="event.stopPropagation(); openCardIdEditor();">
-              <span class="opacity-60">Номер карты (нажмите)</span><span id="focusCardIdBack" class="emboss">••••••••</span>
-            </button>
+            <div class="glass rounded-md px-3 py-2 flex justify-between text-xs"><span class="opacity-60">Публичный код</span><span id="focusCardIdBack" class="emboss">4827</span></div>
             <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
               <span class="opacity-60">Access Key</span><span id="focusCardPassBack" class="pw-key">••••••••</span>
             </div>
@@ -565,17 +579,19 @@ body{background:#090b10; background-image:none;}
 
   <!-- DESIGN SETTINGS PANEL -->
   <div class="focus-settings frosted">
-    <div class="flex items-center justify-between mb-3">
-      <div class="text-sm font-semibold">Настройки дизайна</div>
-      <button class="frosted active:press px-3 py-1.5 rounded-full text-xs flex items-center gap-1" onclick="closeFocusModal()"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Назад</button>
+    <div class="text-sm font-semibold mb-3">Карточка</div>
+
+    <div class="card-data-panel">
+      <div class="card-data-item"><div class="label">ПУБЛИЧНЫЙ КОД</div><div class="flex items-center justify-between"><strong id="focusPublicCode" class="value">4827</strong><button class="card-data-edit" onclick="openCardDataEditor('serial')"><i data-lucide="pencil"></i></button></div></div>
+      <div class="card-data-item secret"><div class="label">СЕКРЕТНЫЙ КОД</div><div class="flex items-center justify-between"><strong id="focusSecretCode" class="value">••••••</strong><button class="card-data-edit" onclick="openCardDataEditor('password')"><i data-lucide="pencil"></i></button></div></div>
     </div>
 
     <div class="flex gap-2 mb-3">
       <button class="frosted active:press flex-1 py-2 rounded-xl text-xs flex items-center justify-center gap-1" onclick="flipCard(true)">
         <i data-lucide="rotate-3d" class="w-3.5 h-3.5"></i> Перевернуть
       </button>
-      <button class="frosted active:press flex-1 py-2 rounded-xl text-xs flex items-center justify-center gap-1" onclick="openCardIdEditor()">
-        <i data-lucide="key-round" class="w-3.5 h-3.5"></i> Serial Code
+      <button class="frosted active:press flex-1 py-2 rounded-xl text-xs flex items-center justify-center gap-1" onclick="openCardDataEditor('serial')">
+        <i data-lucide="key-round" class="w-3.5 h-3.5"></i> Коды
       </button>
     </div>
 
@@ -589,18 +605,16 @@ body{background:#090b10; background-image:none;}
   </div>
 </div>
 
-<!-- ================= CARD ID EDITOR ================= -->
-<div id="cardIdEditor" class="editor-backdrop hidden">
+<!-- ================= CARD DATA EDITOR ================= -->
+<div id="cardDataEditor" class="editor-backdrop hidden">
   <div class="glass rounded-2xl p-5 w-full max-w-xs">
-    <div class="text-sm font-semibold mb-1">Изменить номер карты</div>
-    <div class="text-xs text-white/40 mb-3">Ровно 4 цифры. Номер можно сохранить только если он свободен.</div>
-    <input id="cardIdInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
-      class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-center text-lg emboss tracking-widest mb-3"
-      placeholder="0000" />
-    <div id="cardIdError" class="text-xs text-red-300 mb-2 hidden"></div>
-    <div class="flex gap-2">
-      <button class="glass active:press flex-1 py-2.5 rounded-xl text-sm" onclick="closeCardIdEditor()">Отмена</button>
-      <button class="frosted active:press flex-1 py-2.5 rounded-xl text-sm font-medium" onclick="confirmCardId()">Применить</button>
+    <div class="text-sm font-semibold mb-1" id="cardDataEditorTitle">Изменить код</div>
+    <div class="text-xs text-white/40 mb-3" id="cardDataEditorHint"></div>
+    <input id="cardDataInput" class="card-editor-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="0000">
+    <div id="cardDataError" class="text-xs text-red-300 mt-2 hidden"></div>
+    <div class="flex gap-2 mt-3">
+      <button class="glass active:press flex-1 py-2.5 rounded-xl text-sm" onclick="closeCardDataEditor()">Отмена</button>
+      <button class="frosted active:press flex-1 py-2.5 rounded-xl text-sm font-medium" onclick="confirmCardData()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -995,6 +1009,9 @@ function closeFocusModal(){
   haptic('light');
 }
 function syncFocusFromMain(){
+  const cc=cvCurrent();
+  document.getElementById('focusPublicCode').textContent = cc?.serial_code || state.cardId || '0000';
+  document.getElementById('focusSecretCode').textContent = cc?.card_password || state.cardPassword || '000000';
   document.getElementById('focusCardIdBack').textContent = maskCardId(state.cardId);
   document.getElementById('focusCardPassBack').textContent = state.cardPassword || '••••••••';
   focusCard3d.style.background = card3d.style.background || getComputedStyle(card3d).background;
@@ -1024,60 +1041,68 @@ function maskCardId(id){ return formatCardNumber(id) || '••••'; }
 
 async function loadMyCard(){
   try{
-    const d = await apiPost('get_my_card');
+    const d=await apiPost('get_my_card');
     if(d.ok && d.card){
-      state.itemId = d.card.id || null;
-      state.cardId = String(d.card.serial_code || genCardId());
-      if(d.card.skin_id) state.currentSkin = d.card.skin_id;
-      if(d.card.card_password) state.cardPassword = String(d.card.card_password).replace(/\D/g,'').slice(0,6);
+      const card={id:'db_'+d.card.id,backendId:d.card.id,serial_code:String(d.card.serial_code||genCardId()),card_password:String(d.card.card_password||genPassword()),skin_id:d.card.skin_id||'photo_1',wallet:d.card.wallet_address||null,title:d.card.title||'Без названия',description:d.card.description||'',visibility:d.card.visibility||'public'};
+      cvWriteCards([card]);
+      cvSyncState(card);
+      return;
+    }
+    // First login: create the initial card automatically.
+    const serial=genCardId();
+    const pass=genPassword();
+    const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:'photo_1',title:'Моя первая карточка',description:'Первая коллекционная карточка Cards Auction',visibility:'public'});
+    if(created.ok && created.card){
+      const b=created.card;
+      const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password||pass,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public'};
+      cvWriteCards([card]); cvSyncState(card);
     }
   }catch(e){}
-  if(!/^\d{4}$/.test(state.cardId || '')) state.cardId = genCardId();
-  if(!/^\d{6}$/.test(state.cardPassword || '')){
-    const saved = localStorage.getItem('cv_card_password');
-    state.cardPassword = /^\d{6}$/.test(saved || '') ? saved : genPassword();
-    localStorage.setItem('cv_card_password', state.cardPassword);
-  }
-  document.getElementById('cardNumber').textContent = formatCardNumber(state.cardId);
-  document.getElementById('cardIdBack').textContent = formatCardNumber(state.cardId);
-  document.getElementById('cardPassBack').textContent = state.cardPassword;
+  ensureCardState();
 }
-function openCardIdEditor(){
-  document.getElementById('cardIdInput').value = state.cardId || '';
-  document.getElementById('cardIdError').classList.add('hidden');
-  document.getElementById('cardIdEditor').classList.remove('hidden');
+function openCardDataEditor(type){
+  state.editingCardField=type;
+  const input=document.getElementById('cardDataInput');
+  const title=document.getElementById('cardDataEditorTitle');
+  const hint=document.getElementById('cardDataEditorHint');
+  const c=cvCurrent();
+  if(!c)return;
+  input.maxLength=type==='serial'?4:6;
+  input.value=type==='serial'?(c.serial_code||''):(c.card_password||'');
+  input.placeholder=type==='serial'?'0000':'000000';
+  title.textContent=type==='serial'?'Изменить публичный код':'Изменить секретный код';
+  hint.textContent=type==='serial'?'Ровно 4 цифры. Код должен быть свободным.':'Ровно 6 цифр. Этот код показывается только владельцу.';
+  document.getElementById('cardDataError').classList.add('hidden');
+  document.getElementById('cardDataEditor').classList.remove('hidden');
+  setTimeout(()=>input.focus(),80);
   haptic('light');
 }
-function closeCardIdEditor(){ document.getElementById('cardIdEditor').classList.add('hidden'); }
-async function confirmCardId(){
-  const val = document.getElementById('cardIdInput').value.trim();
-  if(!/^\d{4}$/.test(val)){
-    const er=document.getElementById('cardIdError');
-    er.textContent='Введите ровно 4 цифры';
-    er.classList.remove('hidden');
-    haptic('heavy');
-    return;
+function closeCardDataEditor(){document.getElementById('cardDataEditor').classList.add('hidden');}
+async function confirmCardData(){
+  const type=state.editingCardField;
+  const input=document.getElementById('cardDataInput');
+  const val=input.value.replace(/\D/g,'');
+  const ok=type==='serial'?/^\d{4}$/.test(val):/^\d{6}$/.test(val);
+  if(!ok){
+    const er=document.getElementById('cardDataError');er.textContent=type==='serial'?'Введите ровно 4 цифры':'Введите ровно 6 цифр';er.classList.remove('hidden');
+    input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:240});haptic('heavy');return;
   }
-  const d = await apiPost('check_card_number', { card_number: val, item_id: state.itemId || null });
-  if(!d.ok || !d.available){
-    const er=document.getElementById('cardIdError');
-    er.textContent=d.error || 'Этот номер уже используется';
-    er.classList.remove('hidden');
-    haptic('heavy');
-    return;
-  }
-  state.cardId = val;
-  document.getElementById('cardNumber').textContent = formatCardNumber(val);
-  document.getElementById('cardIdBack').textContent = formatCardNumber(val);
-  document.getElementById('focusCardIdBack').textContent = formatCardNumber(val);
-  haptic('medium');
-  closeCardIdEditor();
-}
-function regeneratePassword(){
-  state.cardPassword = genPassword();
-  document.getElementById('cardPassBack').textContent = state.cardPassword;
-  document.getElementById('focusCardPassBack').textContent = state.cardPassword;
-  haptic('light');
+  const c=cvCurrent(); if(!c)return;
+  try{
+    if(type==='serial'){
+      const d=await apiPost('check_card_number',{card_number:val,item_id:c.backendId||null});
+      if(!d.ok||!d.available){const er=document.getElementById('cardDataError');er.textContent=d.error||'Этот номер уже занят';er.classList.remove('hidden');haptic('heavy');return;}
+    }
+    const patch={item_id:c.backendId||null};
+    if(type==='serial')patch.serial_code=val;else patch.card_password=val;
+    const d=await apiPost('update_card_settings',patch);
+    if(!d.ok)throw new Error(d.error||'Не удалось сохранить');
+    if(type==='serial')c.serial_code=val;else c.card_password=val;
+    cvWriteCards(cvReadCards());cvSyncState(c);renderCardCarousel();
+    document.getElementById('focusPublicCode').textContent=c.serial_code;
+    document.getElementById('focusSecretCode').textContent=c.card_password;
+    closeCardDataEditor();haptic('medium');
+  }catch(e){const er=document.getElementById('cardDataError');er.textContent=e.message||'Ошибка сохранения';er.classList.remove('hidden');haptic('heavy');}
 }
 
 // =====================================================================
@@ -1174,6 +1199,10 @@ async function saveCardSettings(){
       item_id: state.itemId || null,   // null while using the local demo item
       serial_code: state.cardId,
       skin_id: state.currentSkin,
+      card_password: state.cardPassword,
+      title: state.cardTitle || 'Без названия',
+      description: state.cardDescription || '',
+      visibility: state.cardVisibility || 'public'
     });
     if(d.ok){
       statusEl.textContent = 'Сохранено';
