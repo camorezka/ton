@@ -212,6 +212,14 @@ export default async function handler(req, res) {
     // POST /api/bot  -> could be Telegram webhook OR internal action
     // Distinguish via req.body shape / query param `action`
     // -------------------------------------------------------------
+    if (action === "icon" && req.method === "GET") {
+      const png = Buffer.from(APP_ICON_PNG_BASE64, "base64");
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "public, max-age=86400, immutable");
+      return res.end(png);
+    }
+
     const { action } = req.query;
 
     // ---- 0) MANUAL / CRON CLEANUP ----------------------------------
@@ -352,8 +360,12 @@ export default async function handler(req, res) {
       const listingPrice = Number(auction.price_ton);
       const commission = Number(auction.commission_ton ?? AUCTION_COMMISSION_TON);
       const totalAmount = listingPrice + commission;
-      // lock the item
-      await sb(`collectibles?id=eq.${auction.item_id}`, { method:"PATCH", body:JSON.stringify({is_locked:true}) });
+      // Atomically claim the card: only an unlocked card can be changed.
+      // This prevents two buyers from both creating pending orders for the same item.
+      const locked = await sb(`collectibles?id=eq.${auction.item_id}&is_locked=eq.false`, { method:"PATCH", body:JSON.stringify({is_locked:true}) });
+      if (!locked?.length) {
+        return res.status(409).json({ ok:false, error:"item already locked in another pending order" });
+      }
       const memo = `deal_${auction.id.slice(0, 8)}_${Math.random().toString(36).slice(2, 9)}`;
 
       const orderRows = await sb("orders", {
