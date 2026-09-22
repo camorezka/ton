@@ -221,6 +221,107 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, ...result });
     }
 
+    // ---- PROFILE / CARD / WALLET / SUPPORT -----------------------
+    if (req.method === "POST" && ["get_profile","get_card","update_card_settings","recover_card","save_wallet","disconnect_wallet","support","sync_profile"].includes(action)) {
+      const verifiedUser = getVerifiedUser(req);
+      if (!verifiedUser) return res.status(401).json({ ok:false, error:"invalid or missing initData" });
+      const user = await getOrCreateUser(verifiedUser);
+      if (!user) return res.status(404).json({ ok:false, error:"user not found" });
+
+      if (action === "sync_profile") {
+        const body = req.body || {};
+        await sb("users?telegram_id=eq." + verifiedUser.id, {
+          method:"PATCH",
+          body:JSON.stringify({
+            username:verifiedUser.username || null,
+            first_name:verifiedUser.first_name || null,
+            last_name:verifiedUser.last_name || null,
+            avatar_url:verifiedUser.photo_url || null,
+            region:body.region ? String(body.region).slice(0,64) : null,
+            timezone:body.timezone ? String(body.timezone).slice(0,128) : null
+          })
+        });
+        return res.status(200).json({ok:true});
+      }
+
+      if (action === "get_profile") {
+        const wallets = await sb("wallets?user_id=eq." + encodeURIComponent(user.id) + "&select=id,address,created_at,last_seen_at&order=created_at.desc");
+        const cards = await sb("collectibles?owner_id=eq." + encodeURIComponent(user.id) + "&select=id,serial_code,skin_id,recovery_code,created_at&order=created_at.asc");
+        return res.status(200).json({ok:true,user:{id:user.id,telegram_id:verifiedUser.id,username:verifiedUser.username || user.username || null,first_name:verifiedUser.first_name || user.first_name || null,last_name:verifiedUser.last_name || user.last_name || null,avatar_url:verifiedUser.photo_url || user.avatar_url || null,region:user.region || null,timezone:user.timezone || null},card_count:cards?.length || 0,wallet:wallets?.[0]?.address || null,wallets:wallets || [],streak:user.daily_streak || 0});
+      }
+
+      if (action === "get_card") {
+        const cards = await sb("collectibles?owner_id=eq." + encodeURIComponent(user.id) + "&select=id,serial_code,skin_id,recovery_code,created_at&order=created_at.asc&limit=1");
+        if (!cards?.[0]) return res.status(200).json({ok:true,card:null,card_count:0});
+        const card = await ensureCardFields(cards[0]);
+        const all = await sb("collectibles?owner_id=eq." + encodeURIComponent(user.id) + "&select=id");
+        return res.status(200).json({ok:true,card,card_count:all?.length || 1});
+      }
+
+      if (action === "recover_card") {
+        const body = req.body || {};
+        const serial_code = String(body.serial_code || "");
+        const recovery_code = String(body.recovery_code || "");
+        if (!/^\d{8}$/.test(serial_code) || !/^\d{6}$/.test(recovery_code)) return res.status(400).json({ok:false,error:"Введите 8 цифр номера и 6 цифр кода восстановления"});
+        const cards = await sb("collectibles?serial_code=eq." + encodeURIComponent(serial_code) + "&recovery_code=eq." + encodeURIComponent(recovery_code) + "&select=id,serial_code,skin_id,recovery_code,owner_id");
+        const card = cards?.[0];
+        if (!card) return res.status(404).json({ok:false,error:"Карточка не найдена"});
+        await sb("collectibles?id=eq." + encodeURIComponent(card.id), {method:"PATCH",body:JSON.stringify({owner_id:user.id})});
+        return res.status(200).json({ok:true,card:{...card,owner_id:user.id}});
+      }
+
+      if (action === "save_wallet") {
+        const address = String((req.body || {}).address || "").trim();
+        if (!address || address.length < 20 || address.length > 128) return res.status(400).json({ok:false,error:"invalid wallet address"});
+        const existing = await sb("wallets?user_id=eq." + encodeURIComponent(user.id) + "&address=eq." + encodeURIComponent(address) + "&select=id");
+        if (existing?.[0]) await sb("wallets?id=eq." + encodeURIComponent(existing[0].id), {method:"PATCH",body:JSON.stringify({last_seen_at:new Date().toISOString()})});
+        else await sb("wallets",{method:"POST",body:JSON.stringify({user_id:user.id,address,last_seen_at:new Date().toISOString()})});
+        return res.status(200).json({ok:true});
+      }
+
+      if (action === "disconnect_wallet") {
+        const address = String((req.body || {}).address || "").trim();
+        if (!address) return res.status(400).json({ok:false,error:"wallet address required"});
+        await sb("wallets?user_id=eq." + encodeURIComponent(user.id) + "&address=eq." + encodeURIComponent(address), {method:"DELETE",prefer:"return=minimal"});
+        return res.status(200).json({ok:true});
+      }
+
+      if (action === "support") {
+        const message = String((req.body || {}).message || "").trim();
+        if (!message) return res.status(400).json({ok:false,error:"message required"});
+        if (message.length > 2000) return res.status(400).json({ok:false,error:"message too long"});
+        const text = ["Card Vault support","Telegram ID: " + verifiedUser.id,"Username: " + (verifiedUser.username ? "@" + verifiedUser.username : "—"),"Name: " + ([verifiedUser.first_name,verifiedUser.last_name].filter(Boolean).join(" ") || "—"),"",message].join("\n");
+        const result = await tg("sendMessage",{chat_id:1693493298,text});
+        if (!result.ok) return res.status(502).json({ok:false,error:"Telegram support message failed"});
+        return res.status(200).json({ok:true});
+      }
+
+      if (action === "update_card_settings") {
+        const body = req.body || {};
+        const item_id = body.item_id;
+        const serial_code = body.serial_code;
+        const skin_id = body.skin_id;
+        if (!item_id) return res.status(400).json({ok:false,error:"item_id required"});
+        if (serial_code !== undefined && !/^\d{8}$/.test(String(serial_code))) return res.status(400).json({ok:false,error:"Номер должен содержать ровно 8 цифр"});
+        const items = await sb("collectibles?id=eq." + encodeURIComponent(item_id) + "&owner_id=eq." + encodeURIComponent(user.id) + "&select=*");
+        const item = items?.[0];
+        if (!item) return res.status(403).json({ok:false,error:"you do not own this item"});
+        if (serial_code && String(serial_code) !== String(item.serial_code || "")) {
+          const conflicts = await sb("collectibles?serial_code=eq." + encodeURIComponent(String(serial_code)) + "&id=neq." + encodeURIComponent(item.id) + "&select=id");
+          if (conflicts?.length) return res.status(409).json({ok:false,error:"Этот номер занят, выберите другое"});
+        }
+        const patch = {};
+        if (serial_code) patch.serial_code = String(serial_code);
+        if (skin_id) patch.skin_id = String(skin_id);
+        try {
+          if (Object.keys(patch).length) await sb("collectibles?id=eq." + encodeURIComponent(item.id),{method:"PATCH",body:JSON.stringify(patch)});
+        } catch (e) {
+          if (String(e.message).toLowerCase().includes("duplicate") || String(e.message).toLowerCase().includes("unique")) return res.status(409).json({ok:false,error:"Этот номер занят, выберите другое"});
+          throw e;
+        }
+        return res.status(200).json({ok:true,persisted:true});
+      }
+    }
     // ---- 1) TRANSACTION VERIFICATION ENDPOINT --------------------
     // POST /api/bot?action=verify   { memo }
     // Header: Authorization: Bearer <telegram_initData>
