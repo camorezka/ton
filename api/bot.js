@@ -516,7 +516,7 @@ export default async function handler(req, res) {
         sb(`orders?seller_id=eq.${user.id}&select=id,deal_memo,auction_id,item_id,buyer_id,seller_id,amount_ton,commission_ton,status,tx_hash,created_at,confirmed_at&order=created_at.desc&limit=50`)
       ]);
       const seen = new Set();
-      const orders = [...(buyerOrders||[]), ...(sellerOrders||[])].filter(o => !seen.has(o.id) && seen.add(o.id)).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,50);
+      const orders = [...(buyerOrders||[]).map(o=>({...o,role:"buyer"})), ...(sellerOrders||[]).map(o=>({...o,role:"seller"}))].filter(o => !seen.has(o.id) && seen.add(o.id)).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,50);
       return res.status(200).json({ok:true,orders});
     }
 
