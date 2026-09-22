@@ -1965,7 +1965,7 @@ function renderHistory(){
   box.innerHTML=rows.map((o,i)=>{
     const title=escapeHtml(o.operationTitle||((o.role==='buyer'?'Покупка':'Продажа')+' коллекционной карточки'));
     const time=new Date(o.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    return '<button class="history-row" onclick="openHistoryDetails('+i+')" data-history-id="'+o.id+'"><span class="history-title">'+title+'</span><span class="history-time">'+time+'</span></button>';
+    return '<button class="history-row" onclick="openHistoryDetails(\''+String(o.id).replace(/'/g,'')+'\')" data-history-id="'+o.id+'"><span class="history-title">'+title+'</span><span class="history-time">'+time+'</span></button>';
   }).join('');
 }
 async function loadHistory(){
@@ -1974,8 +1974,8 @@ async function loadHistory(){
   try{ const d=await apiPost('my_history'); historyRows=d.orders||[]; renderHistory(); }
   catch(e){box.innerHTML='<div class="text-xs text-white/40 text-center py-5">Историю пока не удалось загрузить</div>';}
 }
-function openHistoryDetails(index){
-  const o=historyRows[index]; if(!o)return;
+function openHistoryDetails(id){
+  const o=historyRows.find(x=>String(x.id)===String(id)); if(!o)return;
   const role=o.role==='buyer'?'Покупка':'Продажа';
   const status=o.status==='confirmed'?'Завершено':o.status==='expired'?'Истёк':'В ожидании';
   const html='<div class="history-detail-title">'+escapeHtml(o.operationTitle||role+' коллекционной карточки')+'</div>'+
