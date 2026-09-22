@@ -263,12 +263,11 @@ body{background:#090b10; background-image:none;}
 @media (min-width:700px){.card-create-backdrop{align-items:center}.card-create-sheet{max-height:88dvh}}
 .create-card-slide{width:min(100%,350px);aspect-ratio:85.6/53.98;border:1px dashed rgba(255,255,255,.72);border-radius:20px;background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease}.create-card-slide:hover{background:rgba(255,255,255,.07);border-color:#fff;transform:translateY(-2px)}.create-card-slide-icon{width:54px;height:54px;border-radius:50%;background:#fff;color:#08090b;display:flex;align-items:center;justify-content:center}.create-card-slide-icon svg{width:25px;height:25px}.skin-tile{flex:0 0 78px;width:78px;height:52px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background-size:cover;background-position:center;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.skin-tile.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.12);transform:translateY(-2px)}</style>
 <style>
-.card-carousel-shell{animation-duration:.26s;}
+.card-carousel-shell{position:relative;width:100%;max-width:390px;margin:0 auto;display:flex;align-items:center;justify-content:center;animation-duration:.26s;}
 .card-carousel-shell.card-swipe-next{animation:cardSwipeNext .26s cubic-bezier(.2,.8,.2,1);}
 .card-carousel-shell.card-swipe-prev{animation:cardSwipePrev .26s cubic-bezier(.2,.8,.2,1);}
 @keyframes cardSwipeNext{0%{opacity:.72;transform:translateX(22px)}100%{opacity:1;transform:translateX(0)}}
 @keyframes cardSwipePrev{0%{opacity:.72;transform:translateX(-22px)}100%{opacity:1;transform:translateX(0)}}
-position:relative;width:100%;max-width:390px;margin:0 auto;display:flex;align-items:center;justify-content:center}
 .card-carousel-arrow{position:absolute;z-index:8;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s,border-color .22s;box-shadow:0 12px 30px rgba(0,0,0,.22)}
 .card-carousel-arrow svg{width:19px;height:19px}
 .card-carousel-prev{left:4px}.card-carousel-next{right:4px}
@@ -557,22 +556,13 @@ body{display:flex;justify-content:center;align-items:stretch}
   </div>
 </main>
 
-<!-- ================= SCREEN: SUPPORT ================= -->
-<main id="screen-support" class="px-4 space-y-4 hidden">
-  <div class="flex items-center gap-2"><i data-lucide="life-buoy" class="w-5 h-5"></i><h2 class="text-lg font-semibold">Поддержка</h2></div>
-  <div class="support-note">Опишите проблему или вопрос. Форма уже готова на фронтенде; отправка на Telegram подключается отдельным серверным endpoint.</div>
-  <textarea id="supportText" maxlength="2000" rows="7" class="support-input" placeholder="Напишите сообщение..."></textarea>
-  <button id="supportSendBtn" class="primary-btn" onclick="sendSupportMessage()"><i data-lucide="send"></i><span>Отправить</span></button>
-  <div id="supportStatus" class="text-xs text-white/40 text-center"></div>
-</main>
-
 <!-- ================= BOTTOM NAV ================= -->
 <nav id="bottomNav" class="navbar glass px-1.5 py-2 flex justify-around"><div id="navIndicator" class="nav-indicator"></div>
   <button class="nav-btn active" data-tab="bank" onclick="switchTab('bank')"><i data-lucide="credit-card"></i><span>Банк</span></button>
   <button class="nav-btn" data-tab="market" onclick="switchTab('market')"><i data-lucide="gavel"></i><span>Маркет</span></button>
   <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')"><i data-lucide="user"></i><span>Профиль</span></button>
   <button class="nav-btn" data-tab="settings" onclick="switchTab('settings')"><i data-lucide="settings"></i><span>Настройки</span></button>
-  <button class="nav-btn" data-tab="support" onclick="switchTab('support')"><i data-lucide="life-buoy"></i><span>Поддержка</span></button>
+  
 </nav>
 
 <!-- ================= FOCUS MODAL (click on card) ================= -->
@@ -1044,7 +1034,7 @@ async function refreshCardsFromServer(){
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
 }
 function switchTab(tab){
-  ['bank','market','profile','settings','support'].forEach(t=>{
+  ['bank','market','profile','settings'].forEach(t=>{
     const el=document.getElementById('screen-'+t);
     if(el){ el.classList.toggle('hidden', t!==tab); if(t===tab){ el.classList.remove('screen-enter'); void el.offsetWidth; el.classList.add('screen-enter'); }}
   });
@@ -1109,7 +1099,7 @@ async function loadMyCard(){
       cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); return;
     }
     const serial=cvGen4(), pass=cvGen6();
-    const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:'photo_1',title:'Моя первая карточка',description:'Первая коллекционная карточка Cards Auction',visibility:'public'});
+    const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Cards Auction',visibility:'public'});
     if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password||pass,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public'};cvWriteCards([card]);cvSyncState(card);}
   }catch(e){console.warn('loadMyCard failed',e)}
   ensureCardState();
@@ -1292,10 +1282,10 @@ document.addEventListener('click',()=>enableShake(),{once:true});
 function onDeviceMotion(e){
   const a = e.accelerationIncludingGravity || e.acceleration;
   if(!a) return;
-  const delta = Math.abs(a.x-lastAccel.x) + Math.abs(a.y-lastAccel.y) + Math.abs(a.z-lastAccel.z);
+  const ax=Number(a.x||0), ay=Number(a.y||0), az=Number(a.z||0);\n  const delta = Math.abs(ax-lastAccel.x) + Math.abs(ay-lastAccel.y) + Math.abs(az-lastAccel.z);
   lastAccel = {x:a.x, y:a.y, z:a.z};
   const now = Date.now();
-  if(delta > 12 && now - lastShakeTime > 80){ lastShakeTime = now; registerShakeTick(); }
+  if(delta > 3.5 && now - lastShakeTime > 70){ lastShakeTime = now; registerShakeTick(); }
 }
 function registerShakeTick(){
   if(!shakeStart) shakeStart = Date.now();
@@ -1813,7 +1803,7 @@ async function submitCreateCard(){
     const b=d.card;
     const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||title,description:b.description||description,visibility:b.visibility||state.createVisibility||'public'};
     cards.push(card);cvWriteCards(cards);cvSyncState(card);ensureCardState();renderManagerCards();
-    closeCreateCardModal();openFocusModal();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
+    closeCreateCardModal();switchTab('bank');cvCarouselIndex=cards.length-1;cvSyncState(card);renderCardCarousel();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
   }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy');} finally { if(submitBtn){submitBtn.disabled=false;submitBtn.querySelector('span').textContent='Создать карточку';} }
 }
 function createNewCard(){openCreateCardModal();}
