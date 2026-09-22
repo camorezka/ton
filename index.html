@@ -1160,7 +1160,7 @@ CATEGORIES.forEach(cat=>{
     });
   }
 });
-{ const e=document.getElementById('skinCount'); if(e) e.textContent = SKINS.length; }
+setText('skinCount',typeof CV_SKINS!=='undefined'?CV_SKINS.length:SKINS.length);
 
 function applySkin(skin){
   if(!skin)return;
@@ -1180,7 +1180,7 @@ async function saveCardSettings(){
   const btn = document.getElementById('saveDesignBtn');
   const statusEl = document.getElementById('saveDesignStatus');
   btn.disabled = true;
-  statusEl.textContent = 'Сохранение...';
+  if(statusEl) statusEl.textContent = 'Сохранение...';
   try{
     const d = await apiPost('update_card_settings', {
       item_id: state.itemId || null,   // null while using the local demo item
@@ -1203,14 +1203,14 @@ async function saveCardSettings(){
         cvWriteCards(cvReadCards());
         cvSyncState(cc);
       }
-      statusEl.textContent = 'Сохранено';
+      if(statusEl) statusEl.textContent = 'Сохранено';
       haptic('medium');
       try{ confetti({particleCount:40, spread:60}); }catch(e){}
     } else {
-      statusEl.textContent = 'Ошибка: ' + (d.error || 'не удалось сохранить');
+      if(statusEl) statusEl.textContent = 'Ошибка: ' + (d.error || 'не удалось сохранить');
     }
   }catch(e){
-    statusEl.textContent = 'Нет соединения с сервером';
+    if(statusEl) statusEl.textContent = 'Нет соединения с сервером';
   }
   btn.disabled = false;
 }
@@ -1254,7 +1254,7 @@ function registerShakeTick(){
 function updateChargeUI(pct){
   state.chargeProgress = pct;
   chargeBar.style.width = pct+'%';
-  chargePct.textContent = pct+'%';
+  if(chargePct) chargePct.textContent = pct+'%';
   card3d.classList.toggle('shaking', pct>0 && pct<100);
   card3d.classList.toggle('burning', pct>0 && pct<100);
   if(pct>0 && pct<34){ haptic('light'); }
