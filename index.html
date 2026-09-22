@@ -293,7 +293,7 @@ body{background:#090b10; background-image:none;}
       <i data-lucide="settings" class="w-4 h-4"></i>
     </button>
     <button id="tonConnectBtn" class="glass active:press px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1">
-      <i data-lucide="wallet" class="w-4 h-4"></i><span id="walletLabel">Connect</span>
+      <i data-lucide="wallet" class="w-4 h-4"></i><span id="walletLabel">Кошелёк</span>
     </button>
   </div>
 </header>
@@ -341,8 +341,8 @@ body{background:#090b10; background-image:none;}
 
   <div class="card-description">
     <div class="card-description-head"><i data-lucide="sparkles"></i><span>Особенная карточка</span></div>
-    <div class="card-description-title">Уникальный номер для обмена</div>
-    <p>Четыре цифры на лицевой стороне — это публичный идентификатор карточки. По нему её можно находить, показывать в коллекции и выставлять на торговлю. TON-кошелёк для создания карточки не нужен.</p>
+    <div class="card-description-title">Коллекционная карточка с номером</div>
+    <p>Четыре цифры на лицевой стороне — публичный идентификатор этой карточки. По нему её можно находить в коллекции и использовать при обмене или выставлении на торговлю. Для создания карточки TON-кошелёк не нужен; он потребуется только при публикации на аукционе.</p>
   </div>
 
   <div class="flex gap-3">
@@ -1434,15 +1434,33 @@ function ensureCardState(){
   cvSyncState(c);
   renderManagerCards();
 }
-function createNewCard(){
+async function createNewCard(){
   const cards=cvReadCards();
+  let serial=cvGen4();
+  for(let tries=0;tries<8;tries++){
+    if(cards.some(x=>String(x.serial_code)===serial)){ serial=cvGen4(); continue; }
+    break;
+  }
+  const password=cvGen6();
+  const skin='photo_'+(1+Math.floor(Math.random()*CV_SKINS.length));
+  let backend=null;
+  try{
+    const d=await apiPost('create_card',{serial_code:serial,card_password:password,skin_id:skin});
+    if(!d.ok) throw new Error(d.error||'Не удалось создать карточку');
+    backend=d.card||null;
+  }catch(e){
+    const msg=e?.message||'Не удалось создать карточку';
+    alert(msg);
+    haptic('heavy');
+    return;
+  }
   const card={
-    id:'local_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-    backendId:null,
-    serial_code:cvGen4(),
-    card_password:cvGen6(),
-    skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),
-    wallet:null
+    id:'db_'+backend.id,
+    backendId:backend.id,
+    serial_code:backend.serial_code||serial,
+    card_password:backend.card_password||password,
+    skin_id:backend.skin_id||skin,
+    wallet:backend.wallet_address||null
   };
   cards.push(card); cvWriteCards(cards);
   cvSyncState(card); ensureCardState(); renderManagerCards();
@@ -1520,7 +1538,7 @@ function openAuctionForCard(){
   const cards=cvReadCards();
   if(!cards.length)return;
   const c=cvCurrent();
-  if(!state.wallet){
+  if(!c.wallet){
     state.pendingWalletCardId=c.id;
     state.pendingAuction=true;
     document.getElementById('auctionWalletNotice').classList.remove('hidden');
@@ -1528,7 +1546,7 @@ function openAuctionForCard(){
     state.tonConnectUI?.openModal();
     return;
   }
-  if(c && !c.wallet){ c.wallet=state.wallet; cvWriteCards(cards); }
+  if(c && !c.wallet){ c.wallet=state.wallet; cvWriteCards(cards); if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:state.wallet}).catch(()=>{}); }
   openAuctionPicker();
 }
 function openAuctionPicker(){
@@ -1646,7 +1664,14 @@ try{
     const cards=cvReadCards();
     if(state.pendingWalletCardId && state.wallet){
       const c=cards.find(x=>x.id===state.pendingWalletCardId);
-      if(c){c.wallet=state.wallet;cvWriteCards(cards);cvSyncState(c);}
+      if(c){
+        c.wallet=state.wallet;
+        cvWriteCards(cards);
+        if(c.backendId){
+          apiPost('update_card_settings',{item_id:c.backendId,wallet_address:state.wallet}).catch(()=>{});
+        }
+        cvSyncState(c);
+      }
       state.pendingWalletCardId=null;
       if(state.pendingAuction){state.pendingAuction=false;openAuctionPicker();}
     }
