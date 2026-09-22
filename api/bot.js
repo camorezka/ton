@@ -374,6 +374,30 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, daily_streak: newStreak });
     }
 
+    // ---- 3a) CREATE VIRTUAL COLLECTIBLE CARD ------------------------
+    if (action === "create_card" && req.method === "POST") {
+      const verifiedUser = getVerifiedUser(req);
+      if (!verifiedUser) return res.status(401).json({ ok: false, error: "invalid or missing initData" });
+
+      const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
+      const user = users?.[0];
+      if (!user) return res.status(404).json({ ok: false, error: "user not found" });
+
+      const requested = String(req.body?.serial_code || "").replace(/\\D/g, "").slice(0, 4);
+      const skinId = String(req.body?.skin_id || "photo_1").slice(0, 80);
+      if (!/^\\d{4}$/.test(requested)) return res.status(400).json({ ok: false, error: "Введите ровно 4 цифры" });
+
+      const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(requested)}&select=id&limit=1`);
+      if (existing?.[0]) return res.status(409).json({ ok: false, error: "Этот номер уже используется" });
+
+      const password = String(req.body?.card_password || "").replace(/\\D/g, "").slice(0, 6) || String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
+      const rows = await sb("collectibles", {
+        method: "POST",
+        body: JSON.stringify({ owner_id: user.id, serial_code: requested, card_password: password, skin_id: skinId, wallet_address: null })
+      });
+      return res.status(200).json({ ok: true, card: rows?.[0] || null });
+    }
+
     // ---- 3b) LOAD CURRENT CARD -------------------------------------
     if (action === "get_my_card" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
@@ -383,19 +407,19 @@ export default async function handler(req, res) {
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
 
-      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,created_at&order=created_at.asc&limit=1`);
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_password,wallet_address,created_at&order=created_at.asc`);
       return res.status(200).json({ ok: true, card: cards?.[0] || null });
     }
 
-    // ---- 3c) CHECK 16-DIGIT CARD NUMBER -----------------------------
+    // ---- 3c) CHECK 4-DIGIT CARD NUMBER -----------------------------
     if (action === "check_card_number" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
       if (!verifiedUser) return res.status(401).json({ ok: false, error: "invalid or missing initData" });
 
       const { card_number, item_id } = req.body || {};
       const value = String(card_number || "");
-      if (!/^\\d{16}$/.test(value)) {
-        return res.status(400).json({ ok: false, available: false, error: "Номер должен содержать ровно 16 цифр" });
+      if (!/^\\d{4}$/.test(value)) {
+        return res.status(400).json({ ok: false, available: false, error: "Номер должен содержать ровно 4 цифры" });
       }
 
       const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(value)}&select=id&limit=1`);
@@ -417,9 +441,9 @@ export default async function handler(req, res) {
         return res.status(401).json({ ok: false, error: "invalid or missing initData" });
       }
 
-      const { item_id, serial_code, skin_id } = req.body || {};
-      if (serial_code && !/^\d{16}$/.test(String(serial_code))) {
-        return res.status(400).json({ ok: false, error: "serial_code must be exactly 16 digits" });
+      const { item_id, serial_code, skin_id, wallet_address } = req.body || {};
+      if (serial_code && !/^\d{4}$/.test(String(serial_code))) {
+        return res.status(400).json({ ok: false, error: "serial_code must be exactly 4 digits" });
       }
       if (serial_code) {
         const duplicate = await sb(`collectibles?serial_code=eq.${encodeURIComponent(String(serial_code))}&select=id&limit=1`);
@@ -435,6 +459,7 @@ export default async function handler(req, res) {
       const patch = {};
       if (serial_code) patch.serial_code = String(serial_code);
       if (skin_id) patch.skin_id = String(skin_id);
+      if (wallet_address !== undefined) patch.wallet_address = wallet_address ? String(wallet_address) : null;
 
       if (item_id) {
         // Updating a specific owned collectible
