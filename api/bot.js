@@ -419,11 +419,19 @@ export default async function handler(req, res) {
       const update = req.body;
       const msg = update.message;
 
+      // TEMP DEBUG LOGGING — remove once the "bot doesn't reply" issue
+      // is confirmed fixed. Logs unconditionally (not just on error) so
+      // we can see in Vercel Logs exactly what update arrived and what
+      // Telegram said back, without needing to expand any UI panel.
+      console.log("Incoming update:", JSON.stringify(update));
+
       // NOTE: was `msg.text === "/start"` — that fails to match deep-link
       // starts like "/start ref_xxxx" or "/start@YourBotName" in groups.
       // startsWith() is the more forgiving, standard way to detect the
       // /start command.
       if (msg && msg.text && msg.text.startsWith("/start")) {
+        console.log("Matched /start from", msg.from.id, msg.from.username);
+
         // upsert user
         await sb("users", {
           method: "POST",
@@ -438,7 +446,7 @@ export default async function handler(req, res) {
           console.error("users upsert failed:", e.message); // was: silently swallowed
         });
 
-        await tg("sendMessage", {
+        const sendResult = await tg("sendMessage", {
           chat_id: msg.chat.id,
           text:
             "💳 *Card Vault* — collect, charge & trade rare bank cards on TON.\n\n" +
@@ -448,6 +456,9 @@ export default async function handler(req, res) {
             inline_keyboard: [[{ text: "🚀 Open Card Vault", web_app: { url: APP_URL } }]],
           },
         });
+        console.log("sendMessage result:", JSON.stringify(sendResult));
+      } else {
+        console.log("No /start match. msg.text was:", msg?.text);
       }
 
       return res.status(200).json({ ok: true });
