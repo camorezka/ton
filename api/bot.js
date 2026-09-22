@@ -212,15 +212,16 @@ export default async function handler(req, res) {
     // POST /api/bot  -> could be Telegram webhook OR internal action
     // Distinguish via req.body shape / query param `action`
     // -------------------------------------------------------------
+    const { action } = req.query;
+
     if (action === "icon" && req.method === "GET") {
-      const png = Buffer.from(APP_ICON_PNG_BASE64, "base64");
+      // 1x1 transparent PNG fallback; manifest only needs a valid PNG URL.
+      const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
       res.statusCode = 200;
       res.setHeader("Content-Type", "image/png");
       res.setHeader("Cache-Control", "public, max-age=86400, immutable");
       return res.end(png);
     }
-
-    const { action } = req.query;
 
     // ---- 0) MANUAL / CRON CLEANUP ----------------------------------
     // POST /api/bot?action=cleanup_expired
@@ -501,6 +502,22 @@ export default async function handler(req, res) {
         body: JSON.stringify({ owner_id: user.id, serial_code: requested, access_key: accessKey, card_password: password, skin_id: skinId, wallet_address: null, title, description, visibility })
       });
       return res.status(200).json({ ok: true, card: rows?.[0] || null });
+    }
+
+    // ---- HISTORY ---------------------------------------------------
+    if (action === "my_history" && req.method === "POST") {
+      const verifiedUser = getVerifiedUser(req);
+      if (!verifiedUser) return res.status(401).json({ ok:false, error:"invalid or missing initData" });
+      const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
+      const user = users?.[0];
+      if (!user) return res.status(404).json({ ok:false, error:"user not found" });
+      const [buyerOrders, sellerOrders] = await Promise.all([
+        sb(`orders?buyer_id=eq.${user.id}&select=id,deal_memo,auction_id,item_id,buyer_id,seller_id,amount_ton,commission_ton,status,tx_hash,created_at,confirmed_at&order=created_at.desc&limit=50`),
+        sb(`orders?seller_id=eq.${user.id}&select=id,deal_memo,auction_id,item_id,buyer_id,seller_id,amount_ton,commission_ton,status,tx_hash,created_at,confirmed_at&order=created_at.desc&limit=50`)
+      ]);
+      const seen = new Set();
+      const orders = [...(buyerOrders||[]), ...(sellerOrders||[])].filter(o => !seen.has(o.id) && seen.add(o.id)).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,50);
+      return res.status(200).json({ok:true,orders});
     }
 
     // ---- 3b) LOAD CURRENT CARD -------------------------------------
