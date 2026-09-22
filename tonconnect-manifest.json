@@ -1,5 +1,6 @@
 {
   "url": "https://ton-dun.vercel.app",
   "name": "Cards Auction",
-  "iconUrl": "https://ton-dun.vercel.app/api/bot?action=icon"
+  "iconUrl": "https://ton-dun.vercel.app/api/bot?action=icon",
+  "privacyPolicyUrl": "https://ton-dun.vercel.app/privacy-policy.html"
 }
