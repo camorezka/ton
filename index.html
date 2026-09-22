@@ -89,7 +89,7 @@ body{
 .rarity-badge{ font-size:10px; letter-spacing:1px; padding:2px 8px; border-radius:999px; }
 
 /* ---------- FOCUS MODAL (Glassmorphism) ---------- */
-.focus-modal{
+.focus-modal{width:100vw;height:100dvh;
   position:fixed; inset:0; z-index:80; display:flex; flex-direction:column;
   opacity:0; pointer-events:none; transition:opacity .28s ease;
 }
@@ -277,7 +277,7 @@ body{background:#090b10; background-image:none;}
 }
 @media (hover:none),(pointer:coarse){.card-carousel-arrow:hover{transform:none}}
 </style><style>
-.focus-modal .focus-back-top{position:absolute;left:14px;top:14px;z-index:30;width:42px;height:42px;background:#fff;color:#05070a;border:0;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(0,0,0,.28)}
+.focus-modal .focus-back-top{position:absolute;left:14px;top:14px;z-index:30;width:42px;height:42px;background:transparent;color:#fff;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(0,0,0,.28)}
 .focus-modal .focus-back-top svg{width:20px;height:20px}
 .focus-modal .focus-settings{padding-top:58px}
 .focus-modal .focus-card-wrap .card-3d{width:min(88vw,350px)}
@@ -292,6 +292,24 @@ body{background:#090b10; background-image:none;}
 .card-editor-label{font-size:10px;color:#778291;margin-bottom:5px}
 .card-editor-input{width:100%;height:46px;background:#11151c;border:1px solid #282f39;border-radius:13px;color:#fff;text-align:center;font-size:19px;letter-spacing:4px;outline:none}
 .card-editor-input:focus{border-color:#596575}
+</style><style>
+html,body,#appRoot{width:100%;min-height:100%;margin:0}
+#appRoot{min-height:100dvh;max-width:none!important;width:100%!important;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+.card-carousel-shell{width:min(100%,560px);max-width:560px;margin:0 auto;padding:0 38px;box-sizing:border-box}
+.card-carousel-arrow{width:30px;height:30px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+.card-carousel-prev{left:4px}.card-carousel-next{right:4px}
+.card-carousel-dots{display:none!important}
+.card-stage{width:100%!important}
+.card-3d{width:min(100%,460px)!important;margin:0 auto}
+.card-wallet-bar{cursor:pointer}
+.card-action-btn{min-height:52px}
+@media(max-width:600px){
+ #appRoot{padding-left:0;padding-right:0}
+ main{padding-left:14px!important;padding-right:14px!important}
+ .card-carousel-shell{padding:0 30px}
+ .card-3d{width:min(100%,390px)!important}
+ .card-carousel-arrow{width:28px;height:28px}
+}
 </style></head>
 <body class="pb-28">
 
@@ -383,8 +401,7 @@ body{background:#090b10; background-image:none;}
   <div class="card-carousel-shell">
   <button class="card-carousel-arrow card-carousel-prev" aria-label="Предыдущая карточка" onclick="cycleCard(-1)"><i data-lucide="chevron-left"></i></button>
   <div class="card-stage select-none" id="cardStageMain">
-    <div class="card-status"><span class="card-status-dot"></span><span>Виртуальная карта</span></div>
-    <div id="card3d" class="card-3d" onclick="openFocusModal()">
+      <div id="card3d" class="card-3d" onclick="openFocusModal()">
       <!-- FRONT -->
       <div class="card-face card-front" id="cardFront">
         <div class="specular" id="specularFront"></div>
@@ -398,7 +415,6 @@ body{background:#090b10; background-image:none;}
             <div id="cardNumber" class="emboss card-number">4827</div>
           </div>
           <div class="card-bottomline">
-            <span>VIRTUAL</span>
             <span><i data-lucide="shield-check"></i> SECURE</span>
           </div>
         </div>
@@ -440,7 +456,7 @@ body{background:#090b10; background-image:none;}
   </div>
 
 
-  <div id="cardWalletBar" class="card-wallet-bar" onclick="openCardManager()">
+  <div id="cardWalletBar" class="card-wallet-bar" onclick="attachWalletToCurrentCard()">
     <div class="card-wallet-icon"><i data-lucide="wallet-cards"></i></div>
     <div class="card-wallet-copy">
       <span id="cardWalletTitle">Кошелёк не привязан</span>
@@ -455,7 +471,7 @@ body{background:#090b10; background-image:none;}
   </div>
 
   <div id="cardActions" class="card-actions-row">
-    <button class="card-action-btn" onclick="openCardManager()"><i data-lucide="layers-2"></i><span>Мои карты</span></button>
+    <button class="card-action-btn" onclick="attachWalletToCurrentCard()"><i data-lucide="wallet"></i><span>Добавить кошелёк</span></button>
     <button class="card-action-btn primary-card-action" onclick="openAuctionForCard()"><i data-lucide="gavel"></i><span>На аукцион</span></button>
   </div>
 
@@ -611,7 +627,7 @@ body{background:#090b10; background-image:none;}
   <div class="glass rounded-2xl p-5 w-full max-w-xs">
     <div class="text-sm font-semibold mb-1" id="cardDataEditorTitle">Изменить код</div>
     <div class="text-xs text-white/40 mb-3" id="cardDataEditorHint"></div>
-    <input id="cardDataInput" class="card-editor-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="0000">
+    <input id="cardDataInput" class="card-editor-input" maxlength="6" inputmode="numeric" autocomplete="off" pattern="[0-9]*" placeholder="0000" oninput="this.value=this.value.replace(/\D/g,'').slice(0,this.maxLength)">
     <div id="cardDataError" class="text-xs text-red-300 mt-2 hidden"></div>
     <div class="flex gap-2 mt-3">
       <button class="glass active:press flex-1 py-2.5 rounded-xl text-sm" onclick="closeCardDataEditor()">Отмена</button>
@@ -1206,6 +1222,17 @@ async function saveCardSettings(){
       visibility: state.cardVisibility || 'public'
     });
     if(d.ok){
+      const cc=cvCurrent();
+      if(cc){
+        cc.serial_code=state.cardId;
+        cc.card_password=state.cardPassword;
+        cc.skin_id=state.currentSkin;
+        cc.title=state.cardTitle||cc.title||'Без названия';
+        cc.description=state.cardDescription||cc.description||'';
+        cc.visibility=state.cardVisibility||cc.visibility||'public';
+        cvWriteCards(cvReadCards());
+        cvSyncState(cc);
+      }
       statusEl.textContent = 'Сохранено';
       haptic('medium');
       try{ confetti({particleCount:40, spread:60}); }catch(e){}
@@ -1225,6 +1252,19 @@ let lastShakeTime = 0, lastAccel = {x:0,y:0,z:0}, chargeInterval=null, shakeStar
 const chargeBar = document.getElementById('chargeBar');
 const chargePct = document.getElementById('chargePct');
 
+async function enableShake(){
+  try{
+    if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
+      const p=await DeviceMotionEvent.requestPermission();
+      if(p!=='granted') return;
+    }
+    window.removeEventListener('devicemotion',onDeviceMotion);
+    window.addEventListener('devicemotion',onDeviceMotion,{passive:true});
+    haptic('light');
+  }catch(e){ console.warn('motion permission',e); }
+}
+document.addEventListener('touchstart',()=>enableShake(),{once:true,passive:true});
+document.addEventListener('click',()=>enableShake(),{once:true});
 function onDeviceMotion(e){
   const a = e.accelerationIncludingGravity || e.acceleration;
   if(!a) return;
@@ -1364,6 +1404,7 @@ function sendSupportMessage(){
 }
 
 updateProfile();
+requestAppFullscreen();
 loadMyCard().then(()=>{ try{ lucide.createIcons(); }catch(e){} });
 // =====================================================================
 // TON CONNECT
@@ -1383,10 +1424,12 @@ document.getElementById('tonConnectBtn').addEventListener('click', ()=>{
   if(state.wallet){ switchTab('profile'); return; }
   state.tonConnectUI?.openModal();
 });
-function connectWalletFromProfile(){
+function openWalletModal(){
   haptic('medium');
-  state.tonConnectUI?.openModal();
+  if(!state.tonConnectUI){ alert('TON Connect ещё загружается. Попробуйте ещё раз через секунду.'); return; }
+  try{ state.tonConnectUI.openModal(); }catch(e){ console.error(e); alert('Не удалось открыть подключение кошелька'); }
 }
+function connectWalletFromProfile(){ openWalletModal(); }
 function disconnectWallet(){
   haptic('warning');
   state.tonConnectUI?.disconnect();
@@ -1686,7 +1729,7 @@ function attachWalletToCurrentCard(){
   if(!c){createNewCard();return;}
   if(state.wallet && c.wallet===state.wallet){return;}
   state.pendingWalletCardId=c.id;
-  state.tonConnectUI?.openModal();
+  openWalletModal();
 }
 function beginDeleteCard(){
   const cards=cvReadCards();
@@ -1730,7 +1773,7 @@ function openAuctionForCard(){
     state.pendingAuction=true;
     document.getElementById('auctionWalletNotice').classList.remove('hidden');
     document.getElementById('auctionWalletNotice').textContent='Для публикации на аукционе сначала привяжите TON-кошелёк к выбранной карте.';
-    state.tonConnectUI?.openModal();
+    openWalletModal();
     return;
   }
   if(c && !c.wallet){ c.wallet=state.wallet; cvWriteCards(cards); if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:state.wallet}).catch(()=>{}); }
