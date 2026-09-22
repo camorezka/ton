@@ -259,7 +259,7 @@ body{background:#090b10; background-image:none;}
 .card-create-hint{font-size:11px;line-height:1.5;color:#737e8d}
 @keyframes createSheetIn{from{opacity:0;transform:translateY(30px) scale(.985)}to{opacity:1;transform:none}}
 @media (min-width:700px){.card-create-backdrop{align-items:center}.card-create-sheet{max-height:88dvh}}
-</style>
+.create-card-slide{width:min(100%,350px);aspect-ratio:85.6/53.98;border:1px dashed rgba(255,255,255,.72);border-radius:20px;background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease}.create-card-slide:hover{background:rgba(255,255,255,.07);border-color:#fff;transform:translateY(-2px)}.create-card-slide-icon{width:54px;height:54px;border-radius:50%;background:#fff;color:#08090b;display:flex;align-items:center;justify-content:center}.create-card-slide-icon svg{width:25px;height:25px}.skin-tile{flex:0 0 78px;width:78px;height:52px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background-size:cover;background-position:center;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.skin-tile.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.12);transform:translateY(-2px)}</style>
 <style>
 .card-carousel-shell{position:relative;width:100%;max-width:390px;margin:0 auto;display:flex;align-items:center;justify-content:center}
 .card-carousel-arrow{position:absolute;z-index:8;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s,border-color .22s;box-shadow:0 12px 30px rgba(0,0,0,.22)}
@@ -447,9 +447,7 @@ html,body,#appRoot{width:100%;min-height:100%;margin:0}
   </div>
 
   <div class="flex gap-3">
-    <button onclick="event.stopPropagation(); flipCard();" class="glass active:press flex-1 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
-      <i data-lucide="rotate-3d" class="w-4 h-4"></i> Перевернуть
-    </button>
+    
   </div>
 
 
@@ -725,6 +723,7 @@ async function requestAppFullscreen(){
 function toggleFullscreen(){ requestAppFullscreen(); }
 
 const API = "/api/bot";
+function setText(id,value){const e=document.getElementById(id);if(e)e.textContent=value==null?"":String(value);}
 const state = {
   cardFlipped:false, charging:false, chargeProgress:0,
   tonConnectUI:null, wallet:null,
@@ -738,13 +737,13 @@ const state = {
   itemId: null,
 };
 
-document.getElementById('greetName').textContent = state.tgUser.first_name || 'My Bank';
-document.getElementById('profTgId').textContent = state.tgUser.id || '—';
-document.getElementById('settingsTgId').textContent = state.tgUser.id || '—';
+setText('greetName', state.tgUser.first_name || 'My Bank');
+setText('profTgId', state.tgUser.id || '—');
+setText('settingsTgId', state.tgUser.id || '—');
 {
   const savedStreak = Number(localStorage.getItem('cv_daily_streak') || 0);
-  document.getElementById('streakLabel').textContent = savedStreak;
-  document.getElementById('profStreak').textContent = savedStreak;
+  setText('streakLabel', savedStreak);
+  setText('profStreak', savedStreak);
 }
 
 // =====================================================================
@@ -833,12 +832,12 @@ async function initPinScreen(){
   document.getElementById('pinScreen').classList.remove('hidden');
   if(storedHash){
     pinState.mode = 'enter';
-    document.getElementById('pinTitle').textContent = 'Введите PIN-код';
-    document.getElementById('pinSubtitle').textContent = '';
+    setText('pinTitle', 'Введите PIN-код');
+    setText('pinSubtitle', '');
   } else {
     pinState.mode = 'create';
-    document.getElementById('pinTitle').textContent = 'Придумайте PIN-код';
-    document.getElementById('pinSubtitle').textContent = 'Понадобится при каждом входе';
+    setText('pinTitle', 'Придумайте PIN-код');
+    setText('pinSubtitle', 'Понадобится при каждом входе');
   }
 }
 
@@ -872,14 +871,14 @@ async function handlePinComplete(){
     if(!pinState.firstEntry){
       pinState.firstEntry = entered;
       pinState.buffer = '';
-      document.getElementById('pinTitle').textContent = 'Повторите PIN-код';
+      setText('pinTitle', 'Повторите PIN-код');
       renderPinDots();
       return;
     }
     if(pinState.firstEntry !== entered){
       await pinFail('PIN-коды не совпадают, попробуйте снова');
       pinState.firstEntry = null;
-      document.getElementById('pinTitle').textContent = 'Придумайте PIN-код';
+      setText('pinTitle', 'Придумайте PIN-код');
       return;
     }
     const hash = await sha256Hex(entered);
@@ -905,7 +904,7 @@ async function pinFail(message){
   const screen = document.getElementById('pinScreen');
   renderPinDots(true);
   screen.classList.add('pin-shake');
-  document.getElementById('pinSubtitle').textContent = message;
+  setText('pinSubtitle', message);
   setTimeout(()=>{
     screen.classList.remove('pin-shake');
     pinState.buffer = '';
@@ -1163,27 +1162,15 @@ CATEGORIES.forEach(cat=>{
 });
 { const e=document.getElementById('skinCount'); if(e) e.textContent = SKINS.length; }
 
-const skinScroller = document.getElementById('skinScroller');
-SKINS.forEach(skin=>{
-  const tile = document.createElement('button');
-  tile.className = 'skin-tile active:press';
-  tile.style.background = skin.full;
-  tile.dataset.skinId = skin.id;
-  tile.onclick = ()=> applySkin(skin);
-  skinScroller.appendChild(tile);
-});
-
 function applySkin(skin){
-  state.currentSkin = skin.id;
-  card3d.style.background = skin.full;
-  focusCard3d.style.background = skin.full;
-  document.querySelectorAll('.skin-tile').forEach(t=> t.classList.toggle('selected', t.dataset.skinId === skin.id));
+  if(!skin)return;
+  state.currentSkin=skin.id;
+  const bg=skin.url ? 'url("'+skin.url+'")' : (skin.full||'');
+  const main=document.getElementById('card3d'), focus=document.getElementById('focusCard3d');
+  if(main){main.style.backgroundImage=bg;main.style.backgroundSize='cover';main.style.backgroundPosition='center';}
+  if(focus){focus.style.backgroundImage=bg;focus.style.backgroundSize='cover';focus.style.backgroundPosition='center';}
+  document.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===skin.id));
   haptic('light');
-}
-{
-  const saved = DEMO_MODE ? demoLoad() : {};
-  const savedSkin = saved.skin_id ? SKINS.find(s=> s.id === saved.skin_id) : null;
-  applySkin(savedSkin || SKINS[6]); // default: a cyberpunk preset
 }
 
 // =====================================================================
@@ -1285,7 +1272,7 @@ function completeCharge(){
   try{ confetti({particleCount:80, spread:90, colors:['#00F2FE','#FFD700','#4FACFE']}); }catch(e){}
 
   apiPost('charge_complete', { item_id: state.itemId })
-    .then(d=>{ if(d.ok) document.getElementById('streakLabel').textContent = d.daily_streak; })
+    .then(d=>{ if(d.ok) setText('streakLabel', d.daily_streak); })
     .catch(()=>{});
 
   setTimeout(()=> updateChargeUI(0), 1500);
@@ -1378,12 +1365,18 @@ function updateProfile(){
   const icon=document.getElementById('profAvatarIcon');
   if(u.photo_url){ img.src=u.photo_url; img.classList.remove('hidden'); icon.classList.add('hidden'); }
 }
-function sendSupportMessage(){
-  const input=document.getElementById('supportText');
-  const status=document.getElementById('supportStatus');
-  const value=input.value.trim();
-  if(!value){ status.textContent='Введите сообщение'; return; }
-  status.textContent='Форма готова. Для фактической отправки нужен серверный endpoint.';
+async function sendSupportMessage(){
+  const input=document.getElementById('supportText'),btn=document.getElementById('supportSendBtn');
+  const value=input?.value.trim()||'';
+  if(!value){setText('supportStatus','Введите сообщение');return;}
+  if(btn)btn.disabled=true;
+  setText('supportStatus','Отправка...');
+  try{
+    const d=await apiPost('support_message',{message:value});
+    if(!d.ok)throw new Error(d.error||'Не удалось отправить сообщение');
+    input.value='';setText('supportStatus','Сообщение отправлено');haptic('medium');
+  }catch(e){setText('supportStatus',e.message||'Не удалось отправить сообщение');}
+  if(btn)btn.disabled=false;
 }
 
 updateProfile();
@@ -1399,7 +1392,7 @@ try{
   });
   state.tonConnectUI.onStatusChange(wallet=>{
     state.wallet = wallet?.account?.address || null;
-    document.getElementById('walletLabel').textContent = state.wallet ? (state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)) : 'Привязать кошелёк';
+    setText('walletLabel', state.wallet ? (state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)) : 'Привязать кошелёк');
     if(state.wallet){
       const cards=cvReadCards();
       const c=state.pendingWalletCardId ? cards.find(x=>x.id===state.pendingWalletCardId) : cvCurrent();
@@ -1415,9 +1408,9 @@ try{
   });
 }catch(e){ console.warn('TonConnect init failed', e); }
 
-document.getElementById('tonConnectBtn').addEventListener('click', ()=>{
-  if(state.wallet){ switchTab('profile'); return; }
-  state.tonConnectUI?.openModal();
+document.getElementById('tonConnectBtn')?.addEventListener('click',()=>{
+  state.pendingWalletCardId=cvCurrent()?.id||null;
+  openWalletModal();
 });
 function openWalletModal(){
   haptic('medium');
@@ -1460,8 +1453,8 @@ async function buyCard(auctionId, price){
     const d = await apiPost('create_order', { auction_id: auctionId });
     if(!d.ok){ alert('Ошибка: '+(d.error||'unknown')); return; }
     state.currentOrderMemo = d.memo;
-    document.getElementById('buyAmount').textContent = d.amount_ton + ' TON';
-    document.getElementById('buyMemo').textContent = d.memo;
+    setText('buyAmount', d.amount_ton + ' TON');
+    setText('buyMemo', d.memo);
     openSheet('buy');
 
     const payload = await buildCommentPayload(d.memo);
@@ -1470,7 +1463,7 @@ async function buyCard(auctionId, price){
       messages: [{ address: d.pay_to, amount: String(Math.round(d.amount_ton * 1e9)), ...(payload ? { payload } : {}) }]
     };
     if(!payload){
-      document.getElementById('buyStatus').textContent = 'Не удалось прикрепить memo автоматически. Укажите его вручную в Tonkeeper.';
+      setText('buyStatus', 'Не удалось прикрепить memo автоматически. Укажите его вручную в Tonkeeper.');
     }
     state.tonConnectUI?.sendTransaction(tx).catch(()=>{});
   }catch(e){ console.error(e); alert('Не удалось создать заказ'); }
@@ -1478,19 +1471,19 @@ async function buyCard(auctionId, price){
 
 async function checkOrderStatus(){
   if(!state.currentOrderMemo) return;
-  document.getElementById('buyStatus').textContent = 'Проверка блокчейна...';
+  setText('buyStatus', 'Проверка блокчейна...');
   try{
     const d = await apiPost('verify', { memo: state.currentOrderMemo });
     if(d.confirmed){
-      document.getElementById('buyStatus').textContent = 'Сделка подтверждена.';
+      setText('buyStatus', 'Сделка подтверждена.');
       try{ confetti({particleCount:120, spread:100}); }catch(e){}
       haptic('heavy');
       setTimeout(()=> closeSheet('buy'), 1500);
     } else {
-      document.getElementById('buyStatus').textContent = 'Транзакция ещё не найдена. Попробуйте снова через минуту.';
+      setText('buyStatus', 'Транзакция ещё не найдена. Попробуйте снова через минуту.');
     }
   }catch(e){
-    document.getElementById('buyStatus').textContent = 'Ошибка проверки';
+    setText('buyStatus', 'Ошибка проверки');
   }
 }
 </script>
@@ -1531,8 +1524,9 @@ function cvGen6(){
 }
 function cvMasked(n){ return String(n||'').replace(/\D/g,'').padStart(4,'0').slice(-4); }
 function cvCardStyle(card){
-  const ix=Math.max(0,(Number(String(card.skin||'').replace('photo_',''))||1)-1)%CV_SKINS.length;
-  return CV_SKINS[ix].url;
+  const id=String(card?.skin_id||card?.skin||'photo_1');
+  const skin=CV_SKINS.find(x=>x.id===id)||CV_SKINS[0];
+  return skin?.url||cvPhoto(0);
 }
 function cvCurrent(){
   const cards=cvReadCards();
@@ -1636,7 +1630,7 @@ function renderCreateCardSlide(){
   const stage=document.getElementById('cardStageMain');
   if(!stage)return;
   stage.classList.remove('hidden');
-  stage.innerHTML='<button class="create-card-slide" onclick="createNewCard()" aria-label="Создать новую карточку"><span class="create-card-slide-icon"><i data-lucide="plus"></i></span><span>Создать карточку</span></button>';
+  stage.innerHTML='<button class="create-card-slide" onclick="createNewCard()" aria-label="Создать новую карточку"><span class="create-card-slide-icon"><i data-lucide="plus"></i></span></button>';
   try{lucide.createIcons();}catch(e){}
 }
 function restoreCardSlide(){
