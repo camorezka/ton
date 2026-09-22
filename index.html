@@ -1282,7 +1282,8 @@ document.addEventListener('click',()=>enableShake(),{once:true});
 function onDeviceMotion(e){
   const a = e.accelerationIncludingGravity || e.acceleration;
   if(!a) return;
-  const ax=Number(a.x||0), ay=Number(a.y||0), az=Number(a.z||0);\n  const delta = Math.abs(ax-lastAccel.x) + Math.abs(ay-lastAccel.y) + Math.abs(az-lastAccel.z);
+  const ax=Number(a.x||0), ay=Number(a.y||0), az=Number(a.z||0);
+  const delta = Math.abs(ax-lastAccel.x) + Math.abs(ay-lastAccel.y) + Math.abs(az-lastAccel.z);
   lastAccel = {x:a.x, y:a.y, z:a.z};
   const now = Date.now();
   if(delta > 3.5 && now - lastShakeTime > 70){ lastShakeTime = now; registerShakeTick(); }
