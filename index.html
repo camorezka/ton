@@ -1540,23 +1540,22 @@ function publishCvAuction(id){
 function openCardIdEditor(){
   const c=cvCurrent(); if(!c)return;
   const input=document.getElementById('cardIdInput');
-  input.value=String(c.serial_code||'').slice(0,5);
-  input.maxLength=5;
-  input.placeholder='Первые 5 цифр';
-  document.querySelector('#cardIdEditor .text-sm').textContent='Изменить первые 5 цифр';
-  document.querySelector('#cardIdEditor .text-xs').textContent='Можно менять только первые 5 цифр. Остальные 11 остаются неизменными.';
+  input.value=String(c.serial_code||'').slice(0,16);
+  input.maxLength=16;
+  input.placeholder='16 цифр';
+  document.querySelector('#cardIdEditor .text-sm').textContent='Изменить номер карты';
+  document.querySelector('#cardIdEditor .text-xs').textContent='Можно изменить любые цифры. Номер должен содержать ровно 16 цифр.';
   document.getElementById('cardIdError').classList.add('hidden');
   document.getElementById('cardIdEditor').classList.remove('hidden');
   haptic('light');
 }
 async function confirmCardId(){
   const c=cvCurrent(); if(!c)return;
-  const prefix=document.getElementById('cardIdInput').value.replace(/\D/g,'').slice(0,5);
+  const full=document.getElementById('cardIdInput').value.replace(/\D/g,'').slice(0,16);
   const old=String(c.serial_code||cvGen16()).padEnd(16,'0').slice(0,16);
-  if(!/^\d{5}$/.test(prefix)){
-    const er=document.getElementById('cardIdError');er.textContent='Введите ровно 5 цифр';er.classList.remove('hidden');haptic('heavy');return;
+  if(!/^\d{16}$/.test(full)){
+    const er=document.getElementById('cardIdError');er.textContent='Введите ровно 16 цифр';er.classList.remove('hidden');haptic('heavy');return;
   }
-  const full=prefix+old.slice(5);
   try{
     if(c.backendId){
       const d=await apiPost('check_card_number',{card_number:full,item_id:c.backendId});
