@@ -620,20 +620,33 @@ export default async function handler(req, res) {
       if (serial_code) patch.serial_code = String(serial_code);
       if (skin_id) patch.skin_id = String(skin_id);
 
+      let item;
       if (item_id) {
-        // Updating a specific owned collectible
-        const itemCheck = await sb(`collectibles?id=eq.${item_id}&select=owner_id`);
-        if (!itemCheck?.[0] || itemCheck[0].owner_id !== user.id) {
-          return res.status(403).json({ ok: false, error: "you do not own this item" });
-        }
-        await sb(`collectibles?id=eq.${item_id}`, { method: "PATCH", body: JSON.stringify(patch) });
+        const itemCheck = await sb(`collectibles?id=eq.${encodeURIComponent(item_id)}&owner_id=eq.${encodeURIComponent(user.id)}&select=id,owner_id,serial_code,recovery_code,skin_id`);
+        item = itemCheck?.[0];
       } else {
-        // No item_id supplied (e.g. demo/local card) — just acknowledge,
-        // nothing to persist server-side.
-        return res.status(200).json({ ok: true, persisted: false });
+        const items = await sb(`collectibles?owner_id=eq.${encodeURIComponent(user.id)}&select=id,owner_id,serial_code,recovery_code,skin_id&order=created_at.asc&limit=1`);
+        item = items?.[0];
       }
 
-      return res.status(200).json({ ok: true, persisted: true });
+      if (!item) return res.status(404).json({ ok:false, error:"card not found" });
+
+      if (serial_code && String(serial_code) !== String(item.serial_code || "")) {
+        const conflicts = await sb(`collectibles?serial_code=eq.${encodeURIComponent(String(serial_code))}&id=neq.${encodeURIComponent(item.id)}&select=id`);
+        if (conflicts?.length) return res.status(409).json({ ok:false,error:"Этот номер занят, выберите другое" });
+      }
+
+      if (Object.keys(patch).length) {
+        try {
+          await sb(`collectibles?id=eq.${encodeURIComponent(item.id)}`, { method:"PATCH", body:JSON.stringify(patch) });
+        } catch(e) {
+          const msg=String(e.message).toLowerCase();
+          if(msg.includes("duplicate") || msg.includes("unique")) return res.status(409).json({ok:false,error:"Этот номер занят, выберите другое"});
+          throw e;
+        }
+      }
+
+      return res.status(200).json({ok:true,persisted:true});
     }
 
     // ---- 4) TELEGRAM WEBHOOK ---------------------------------------
