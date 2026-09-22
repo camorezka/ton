@@ -18,7 +18,7 @@
    actually hide/show correctly. */
 .hidden{ display:none !important; }
 /* Slightly lower the whole app so the fixed bottom area does not leave a harsh black gap. */
-#appRoot{padding-top:8px;padding-bottom:10px;}
+#appRoot{padding-top:16px;padding-bottom:2px;}
 
 :root{
   --cyan:#00F2FE; --violet:#4FACFE; --gold:#FFD700;
@@ -215,7 +215,7 @@ body{background:#090b10; background-image:none;}
 .auction-card-meta strong{display:block;font:600 12px 'Courier New',monospace;letter-spacing:1px}
 .auction-card-meta span{display:block;font-size:10px;color:#707a89;margin-top:4px}
 .auction-card-row .chev{width:16px;color:#697382}
-.navbar{overflow:visible;position:fixed}
+.navbar{overflow:visible;position:fixed;bottom:3px !important;}
 .nav-indicator{position:absolute;bottom:5px;height:3px;width:38px;border-radius:99px;background:#e7ecf3;left:0;transform:translateX(0);transition:transform .32s cubic-bezier(.22,.8,.2,1);pointer-events:none}
 .pin-dot.filled{background:#fff;border-color:#fff;box-shadow:none}
 .pin-dot.err{background:#ff5b5b;border-color:#ff5b5b;box-shadow:none}
@@ -263,7 +263,12 @@ body{background:#090b10; background-image:none;}
 @media (min-width:700px){.card-create-backdrop{align-items:center}.card-create-sheet{max-height:88dvh}}
 .create-card-slide{width:min(100%,350px);aspect-ratio:85.6/53.98;border:1px dashed rgba(255,255,255,.72);border-radius:20px;background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease}.create-card-slide:hover{background:rgba(255,255,255,.07);border-color:#fff;transform:translateY(-2px)}.create-card-slide-icon{width:54px;height:54px;border-radius:50%;background:#fff;color:#08090b;display:flex;align-items:center;justify-content:center}.create-card-slide-icon svg{width:25px;height:25px}.skin-tile{flex:0 0 78px;width:78px;height:52px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background-size:cover;background-position:center;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.skin-tile.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.12);transform:translateY(-2px)}</style>
 <style>
-.card-carousel-shell{position:relative;width:100%;max-width:390px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.card-carousel-shell{animation-duration:.26s;}
+.card-carousel-shell.card-swipe-next{animation:cardSwipeNext .26s cubic-bezier(.2,.8,.2,1);}
+.card-carousel-shell.card-swipe-prev{animation:cardSwipePrev .26s cubic-bezier(.2,.8,.2,1);}
+@keyframes cardSwipeNext{0%{opacity:.72;transform:translateX(22px)}100%{opacity:1;transform:translateX(0)}}
+@keyframes cardSwipePrev{0%{opacity:.72;transform:translateX(-22px)}100%{opacity:1;transform:translateX(0)}}
+position:relative;width:100%;max-width:390px;margin:0 auto;display:flex;align-items:center;justify-content:center}
 .card-carousel-arrow{position:absolute;z-index:8;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s,border-color .22s;box-shadow:0 12px 30px rgba(0,0,0,.22)}
 .card-carousel-arrow svg{width:19px;height:19px}
 .card-carousel-prev{left:4px}.card-carousel-next{right:4px}
@@ -332,7 +337,7 @@ body{display:flex;justify-content:center;align-items:stretch}
 .market-auction-row{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #252b35;background:#11151c;border-radius:16px}.market-auction-thumb{width:96px;height:61px;border-radius:11px;background-size:cover;background-position:center;flex:none}.market-auction-meta{min-width:0;flex:1}.market-auction-meta strong{display:block;font-size:13px}.market-auction-meta span{display:block;color:#7e8794;font-size:11px;margin-top:4px}.ton-price{font-variant-numeric:tabular-nums;font-weight:650}.ton-icon{width:16px;height:16px;display:inline-flex;vertical-align:-3px}
 @media(min-width:431px){body:before,body:after{content:'';flex:1;background:#000}}
 </style></head>
-<body class="pb-28">
+<body class="pb-20">
 
 <div id="flash" class="flash-overlay"></div>
 
