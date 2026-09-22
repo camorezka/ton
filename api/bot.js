@@ -394,9 +394,10 @@ export default async function handler(req, res) {
       if (existing?.[0]) return res.status(409).json({ ok: false, error: "Этот номер уже используется" });
 
       const password = String(req.body?.card_password || "").replace(/\D/g, "").slice(0, 6) || String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
+      const accessKey = crypto.randomUUID();
       const rows = await sb("collectibles", {
         method: "POST",
-        body: JSON.stringify({ owner_id: user.id, serial_code: requested, card_password: password, skin_id: skinId, wallet_address: null, title, description, visibility })
+        body: JSON.stringify({ owner_id: user.id, serial_code: requested, access_key: accessKey, card_password: password, skin_id: skinId, wallet_address: null, title, description, visibility })
       });
       return res.status(200).json({ ok: true, card: rows?.[0] || null });
     }
