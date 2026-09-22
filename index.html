@@ -759,6 +759,14 @@ async function requestAppFullscreen(){
 function toggleFullscreen(){ requestAppFullscreen(); }
 
 const API = "/api/bot";
+// Telegram Mini App bootstrap: notify Telegram immediately so the Start/Open action is responsive.
+try{
+  tg?.ready?.();
+  tg?.expand?.();
+  tg?.setHeaderColor?.('#0A0B0E');
+  tg?.setBackgroundColor?.('#0A0B0E');
+}catch(e){ console.warn('Telegram bootstrap failed',e); }
+
 function setText(id,value){const e=document.getElementById(id);if(e)e.textContent=value==null?"":String(value);}
 const state = {
   cardFlipped:false, charging:false, chargeProgress:0,
@@ -1384,7 +1392,7 @@ async function loadHistory(){
   const box=document.getElementById('historyList'); if(!box)return;
   try{ const d=await apiPost('my_history'); const rows=d.orders||[];
     if(!rows.length){box.innerHTML='<div class="text-xs text-white/40 text-center py-4">Операций пока нет</div>';return;}
-    box.innerHTML=rows.map(o=>{const isBuy=String(o.buyer_id)!==String(state.userDbId||'');const amount=Number(o.amount_ton||0).toFixed(2);const status=o.status==='confirmed'?'Завершено':o.status==='expired'?'Истёк':'В ожидании';return '<div class="history-row"><div><div class="text-xs">'+(isBuy?'Покупка':'Продажа')+'</div><div class="text-[10px] text-white/35">'+new Date(o.created_at).toLocaleString()+'</div></div><div class="text-right"><div class="text-xs">'+amount+' TON</div><div class="text-[10px] text-white/40">'+status+'</div></div></div>';}).join('');
+    box.innerHTML=rows.map(o=>{const isBuy=o.role==='buyer';const amount=Number(o.amount_ton||0).toFixed(2);const status=o.status==='confirmed'?'Завершено':o.status==='expired'?'Истёк':'В ожидании';return '<div class="history-row"><div><div class="text-xs">'+(isBuy?'Покупка':'Продажа')+'</div><div class="text-[10px] text-white/35">'+new Date(o.created_at).toLocaleString()+'</div></div><div class="text-right"><div class="text-xs">'+amount+' TON</div><div class="text-[10px] text-white/40">'+status+'</div></div></div>';}).join('');
   }catch(e){box.innerHTML='<div class="text-xs text-white/40 text-center py-4">Историю пока не удалось загрузить</div>';}
 }
 function updateProfile(){
