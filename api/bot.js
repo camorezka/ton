@@ -179,6 +179,127 @@ function getVerifiedUser(req) {
   return verifyInitData(initData);
 }
 
+// ---------------------------------------------------------------------
+// User/card bootstrap helpers
+// ---------------------------------------------------------------------
+function randomDigits(length) {
+  let out = "";
+  for (let i = 0; i < length; i++) out += Math.floor(Math.random() * 10);
+  return out;
+}
+
+async function uniqueCardId(excludeId = null) {
+  for (let i = 0; i < 30; i++) {
+    const value = randomDigits(16);
+    let path = "collectibles?serial_code=eq." + encodeURIComponent(value) + "&select=id";
+    if (excludeId) path += "&id=neq." + encodeURIComponent(excludeId);
+    const rows = await sb(path);
+    if (!rows?.length) return value;
+  }
+  throw new Error("Could not generate a unique card number");
+}
+
+async function uniqueRecoveryCode(excludeId = null) {
+  for (let i = 0; i < 30; i++) {
+    const value = randomDigits(6);
+    let path = "collectibles?recovery_code=eq." + encodeURIComponent(value) + "&select=id";
+    if (excludeId) path += "&id=neq." + encodeURIComponent(excludeId);
+    const rows = await sb(path);
+    if (!rows?.length) return value;
+  }
+  throw new Error("Could not generate a unique recovery code");
+}
+
+async function ensureCardFields(item) {
+  const patch = {};
+  if (!/^\d{16}$/.test(String(item.serial_code || ""))) {
+    patch.serial_code = await uniqueCardId(item.id);
+  }
+  if (!/^\d{6}$/.test(String(item.recovery_code || ""))) {
+    patch.recovery_code = await uniqueRecoveryCode(item.id);
+  }
+  if (!item.skin_id) patch.skin_id = "cyberpunk_6";
+
+  if (Object.keys(patch).length) {
+    await sb("collectibles?id=eq." + encodeURIComponent(item.id), {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+    return { ...item, ...patch };
+  }
+  return item;
+}
+
+async function getOrCreateUser(verifiedUser) {
+  if (!verifiedUser?.id) return null;
+
+  let rows = await sb(
+    "users?telegram_id=eq." + encodeURIComponent(verifiedUser.id) + "&select=*"
+  );
+  let user = rows?.[0] || null;
+
+  if (!user) {
+    const created = await sb("users", {
+      method: "POST",
+      body: JSON.stringify({
+        telegram_id: verifiedUser.id,
+        username: verifiedUser.username || null,
+        first_name: verifiedUser.first_name || null,
+        last_name: verifiedUser.last_name || null,
+        avatar_url: verifiedUser.photo_url || null,
+      }),
+    });
+    user = created?.[0] || null;
+  } else {
+    const updated = await sb(
+      "users?telegram_id=eq." + encodeURIComponent(verifiedUser.id),
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          username: verifiedUser.username || null,
+          first_name: verifiedUser.first_name || null,
+          last_name: verifiedUser.last_name || null,
+          avatar_url: verifiedUser.photo_url || null,
+        }),
+      }
+    );
+    user = updated?.[0] || user;
+  }
+
+  if (!user) return null;
+
+  const cards = await sb(
+    "collectibles?owner_id=eq." + encodeURIComponent(user.id) +
+    "&select=id,serial_code,recovery_code,skin_id,created_at&order=created_at.asc&limit=1"
+  );
+
+  if (!cards?.[0]) {
+    const serial_code = await uniqueCardId();
+    const recovery_code = await uniqueRecoveryCode();
+    const created = await sb("collectibles", {
+      method: "POST",
+      body: JSON.stringify({
+        owner_id: user.id,
+        serial_code,
+        recovery_code,
+        access_key: recovery_code,
+        skin_id: "cyberpunk_6",
+        nickname: "My Card",
+        edition_label: "Original",
+        rarity: "common",
+        is_locked: false,
+        is_charged: false,
+        charge_progress: 0,
+      }),
+    });
+    if (!created?.[0]) return null;
+  } else {
+    await ensureCardFields(cards[0]);
+  }
+
+  return user;
+}
+
 // =====================================================================
 // (2) BUSINESS LOGIC: auto-expire stale pending orders & unlock cards
 // =====================================================================
@@ -262,7 +383,7 @@ export default async function handler(req, res) {
         const body = req.body || {};
         const serial_code = String(body.serial_code || "");
         const recovery_code = String(body.recovery_code || "");
-        if (!/^\d{8}$/.test(serial_code) || !/^\d{6}$/.test(recovery_code)) return res.status(400).json({ok:false,error:"Введите 8 цифр номера и 6 цифр кода восстановления"});
+        if (!/^\d{16}$/.test(serial_code) || !/^\d{6}$/.test(recovery_code)) return res.status(400).json({ok:false,error:"Введите 16 цифр номера и 6 цифр кода восстановления"});
         const cards = await sb("collectibles?serial_code=eq." + encodeURIComponent(serial_code) + "&recovery_code=eq." + encodeURIComponent(recovery_code) + "&select=id,serial_code,skin_id,recovery_code,owner_id");
         const card = cards?.[0];
         if (!card) return res.status(404).json({ok:false,error:"Карточка не найдена"});
@@ -302,7 +423,7 @@ export default async function handler(req, res) {
         const serial_code = body.serial_code;
         const skin_id = body.skin_id;
         if (!item_id) return res.status(400).json({ok:false,error:"item_id required"});
-        if (serial_code !== undefined && !/^\d{8}$/.test(String(serial_code))) return res.status(400).json({ok:false,error:"Номер должен содержать ровно 8 цифр"});
+        if (serial_code !== undefined && !/^\d{16}$/.test(String(serial_code))) return res.status(400).json({ok:false,error:"Номер должен содержать ровно 16 цифр"});
         const items = await sb("collectibles?id=eq." + encodeURIComponent(item_id) + "&owner_id=eq." + encodeURIComponent(user.id) + "&select=*");
         const item = items?.[0];
         if (!item) return res.status(403).json({ok:false,error:"you do not own this item"});
@@ -478,7 +599,7 @@ export default async function handler(req, res) {
     // ---- 3b) UPDATE COLLECTIBLE COSMETICS (serial code + skin) -----
     // POST /api/bot?action=update_card_settings { item_id, serial_code, skin_id }
     // Header: Authorization: Bearer <telegram_initData>
-    // Cosmetic-only fields: an 8-digit player-chosen serial code and a
+    // Cosmetic-only fields: an 16-digit player-chosen serial code and a
     // skin preset id. Validated server-side; owner-only.
     if (action === "update_card_settings" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
@@ -487,8 +608,8 @@ export default async function handler(req, res) {
       }
 
       const { item_id, serial_code, skin_id } = req.body || {};
-      if (serial_code && !/^\d{8}$/.test(String(serial_code))) {
-        return res.status(400).json({ ok: false, error: "serial_code must be exactly 8 digits" });
+      if (serial_code && !/^\d{16}$/.test(String(serial_code))) {
+        return res.status(400).json({ ok: false, error: "serial_code must be exactly 16 digits" });
       }
 
       const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
