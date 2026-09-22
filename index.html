@@ -389,8 +389,8 @@ html,body,#appRoot{width:100%;min-height:100%;margin:0}
     <button id="settingsBtn" onclick="switchTab('settings')" class="glass active:press w-9 h-9 rounded-full flex items-center justify-center">
       <i data-lucide="settings" class="w-4 h-4"></i>
     </button>
-    <button id="tonConnectBtn" class="glass active:press px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1">
-      <i data-lucide="wallet" class="w-4 h-4"></i><span id="walletLabel">Кошелёк</span>
+    <button id="tonConnectBtn" class="glass active:press px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1" aria-label="Привязать кошелёк">
+      <i data-lucide="wallet" class="w-4 h-4"></i><span id="walletLabel">Привязать кошелёк</span>
     </button>
   </div>
 </header>
@@ -450,29 +450,12 @@ html,body,#appRoot{width:100%;min-height:100%;margin:0}
     <button onclick="event.stopPropagation(); flipCard();" class="glass active:press flex-1 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
       <i data-lucide="rotate-3d" class="w-4 h-4"></i> Перевернуть
     </button>
-    <button onclick="openFocusModal()" class="glass active:press flex-1 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
-      <i data-lucide="palette" class="w-4 h-4"></i> Дизайн
-    </button>
   </div>
 
-
-  <div id="cardWalletBar" class="card-wallet-bar" onclick="attachWalletToCurrentCard()">
-    <div class="card-wallet-icon"><i data-lucide="wallet-cards"></i></div>
-    <div class="card-wallet-copy">
-      <span id="cardWalletTitle">Кошелёк не привязан</span>
-      <strong id="cardWalletAddress">Добавить кошелёк</strong>
-    </div>
-    <i data-lucide="chevron-down" class="card-wallet-chevron"></i>
-  </div>
 
   <div id="emptyCardState" class="empty-card-state hidden" onclick="createNewCard()">
     <i data-lucide="plus"></i>
-    <span>Добавить карту</span>
-  </div>
-
-  <div id="cardActions" class="card-actions-row">
-    <button class="card-action-btn" onclick="attachWalletToCurrentCard()"><i data-lucide="wallet"></i><span>Добавить кошелёк</span></button>
-    <button class="card-action-btn primary-card-action" onclick="openAuctionForCard()"><i data-lucide="gavel"></i><span>На аукцион</span></button>
+    <span>Создать карточку</span>
   </div>
 
   <!-- SHAKE TO CHARGE -->
@@ -1416,7 +1399,19 @@ try{
   });
   state.tonConnectUI.onStatusChange(wallet=>{
     state.wallet = wallet?.account?.address || null;
-    document.getElementById('walletLabel').textContent = state.wallet ? (state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)) : 'Connect';
+    document.getElementById('walletLabel').textContent = state.wallet ? (state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)) : 'Привязать кошелёк';
+    if(state.wallet){
+      const cards=cvReadCards();
+      const c=state.pendingWalletCardId ? cards.find(x=>x.id===state.pendingWalletCardId) : cvCurrent();
+      if(c){
+        c.wallet=state.wallet;
+        const ix=cards.findIndex(x=>x.id===c.id);
+        if(ix>=0)cards[ix]=c;
+        cvWriteCards(cards);
+        if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:state.wallet}).catch(()=>{});
+        state.pendingWalletCardId=null;
+      }
+    }
   });
 }catch(e){ console.warn('TonConnect init failed', e); }
 
@@ -1516,9 +1511,9 @@ function cvWriteCards(arr){
   localStorage.setItem(CV_CARDS_KEY, JSON.stringify(arr));
 }
 function cvPhoto(index){
-  return 'https://picsum.photos/seed/cardvault_' + (index + 1) + '/900/570';
+  return 'https://picsum.photos/seed/cardvault_' + (index + 1) + '/1200/760';
 }
-const CV_SKINS = Array.from({length:64},(_,i)=>({
+const CV_SKINS = Array.from({length:120},(_,i)=>({
   id:'photo_'+(i+1),
   name:'Design '+(i+1),
   url:cvPhoto(i)
@@ -1601,17 +1596,13 @@ function ensureCardState(){
   if(!cards.length){
     state.activeCardId=null;
     document.getElementById('cardStageMain').classList.add('hidden');
-    document.getElementById('cardWalletBar').classList.add('hidden');
-    document.getElementById('cardActions').classList.add('hidden');
-    document.getElementById('emptyCardState').classList.remove('hidden');
+            document.getElementById('emptyCardState').classList.remove('hidden');
     updateCvWalletBar();
     return;
   }
   document.getElementById('emptyCardState').classList.add('hidden');
   document.getElementById('cardStageMain').classList.remove('hidden');
-  document.getElementById('cardWalletBar').classList.remove('hidden');
-  document.getElementById('cardActions').classList.remove('hidden');
-  let c=cards.find(x=>x.id===state.activeCardId)||cards[0];
+      let c=cards.find(x=>x.id===state.activeCardId)||cards[0];
   cvSyncState(c);
   renderManagerCards();
   renderCardCarousel();
@@ -1626,7 +1617,7 @@ function renderCardCarousel(){
   const dots=document.getElementById('cardCarouselDots');
   if(!dots)return;
   if(!cards.length){dots.innerHTML='<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';try{lucide.createIcons();}catch(e){};return;}
-  if(cvCarouselIndex>=cards.length)cvCarouselIndex=cards.length-1;
+  if(cvCarouselIndex>cards.length)cvCarouselIndex=cards.length;
   if(cvCarouselIndex<0)cvCarouselIndex=0;
   dots.innerHTML=cards.map((x,i)=>'<button class="card-carousel-dot '+(i===cvCarouselIndex?'active':'')+'" onclick="cycleCardTo('+i+')" aria-label="Карточка '+(i+1)+'"></button>').join('')+
     '<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';
@@ -1634,16 +1625,46 @@ function renderCardCarousel(){
 }
 function cycleCardTo(index){
   const cards=getCarouselItems();
-  if(!cards.length)return;
+  if(!cards.length){renderCreateCardSlide();return;}
+  if(index>=cards.length){cvCarouselIndex=cards.length;renderCreateCardSlide();renderCardCarousel();return;}
+  restoreCardSlide();
   cvCarouselIndex=Math.max(0,Math.min(index,cards.length-1));
   cvSyncState(cards[cvCarouselIndex]);
   renderManagerCards();renderCardCarousel();haptic('light');
 }
+function renderCreateCardSlide(){
+  const stage=document.getElementById('cardStageMain');
+  if(!stage)return;
+  stage.classList.remove('hidden');
+  stage.innerHTML='<button class="create-card-slide" onclick="createNewCard()" aria-label="Создать новую карточку"><span class="create-card-slide-icon"><i data-lucide="plus"></i></span><span>Создать карточку</span></button>';
+  try{lucide.createIcons();}catch(e){}
+}
+function restoreCardSlide(){
+  const stage=document.getElementById('cardStageMain');
+  if(!stage)return;
+  if(stage.querySelector('.create-card-slide')){
+    stage.innerHTML='<div id="card3d" class="card-3d" onclick="openFocusModal()"><div class="card-face card-front" id="cardFront"><div class="specular" id="specularFront"></div><div class="absolute inset-0 p-4 flex flex-col justify-between text-white"><div class="card-topline"><div class="chip"></div><i data-lucide="contactless" class="card-contactless"></i></div><div class="card-center"><div id="cardTitleMain" class="card-brand">CARDS AUCTION</div><div id="cardNumber" class="emboss card-number">0000</div></div><div class="card-bottomline"><span><i data-lucide="shield-check"></i> SECURE</span></div></div></div><div class="card-face card-back" id="cardBack"><div class="specular" id="specularBack"></div><div class="mag-stripe"></div><div class="p-4 flex flex-col gap-4"><div class="hologram w-16 h-10 rounded-md opacity-90"></div><div class="card-back-label">CARDS AUCTION</div><div class="card-pass-box"><span>КОД КАРТЫ</span><strong id="cardPassBack">••••••</strong></div><div class="card-back-foot"><span>SECURE</span><i data-lucide="shield-check"></i></div></div></div></div>';
+    try{lucide.createIcons();}catch(e){}
+  }
+}
 function cycleCard(dir){
   const cards=getCarouselItems();
-  if(!cards.length){createNewCard();return;}
+  if(!cards.length){renderCreateCardSlide();cvCarouselIndex=0;haptic('light');return;}
+  if(dir>0 && cvCarouselIndex===cards.length-1){
+    cvCarouselIndex=cards.length;
+    renderCreateCardSlide();
+    renderCardCarousel();
+    haptic('light');
+    return;
+  }
+  if(dir<0 && cvCarouselIndex===cards.length){
+    cvCarouselIndex=cards.length-1;
+    restoreCardSlide();
+    cycleCardTo(cvCarouselIndex);
+    return;
+  }
   const next=cvCarouselIndex+dir;
-  if(next>=cards.length){renderCardCarousel();haptic('light');return;}
+  if(next>=cards.length){cvCarouselIndex=cards.length;renderCreateCardSlide();renderCardCarousel();return;}
   if(next<0)return;
   cycleCardTo(next);
 }
@@ -1676,7 +1697,7 @@ function openCreateCardModal(){
   haptic('medium');
 }
 function closeCreateCardModal(){document.getElementById('cardCreateModal').classList.add('hidden');}
-async async function submitCreateCard(){
+async function submitCreateCard(){
   const modal=document.getElementById('cardCreateModal');
   const input=document.getElementById('createCardNumberInput');
   const serial=input.value.replace(/\\D/g,'').slice(0,4);
@@ -1838,6 +1859,8 @@ async function confirmCardId(){
       const d=await apiPost('check_card_number',{card_number:full,item_id:c.backendId});
       if(!d.ok||!d.available){const er=document.getElementById('cardIdError');er.textContent=d.error||'Этот номер уже используется';er.classList.remove('hidden');haptic('heavy');return;}
     }
+    const d=await apiPost('update_card_settings',{item_id:c.backendId||null,serial_code:full});
+    if(!d.ok) throw new Error(d.error||'Не удалось сохранить номер');
     c.serial_code=full;
     const cards=cvReadCards(); const ix=cards.findIndex(x=>x.id===c.id); if(ix>=0)cards[ix]=c; cvWriteCards(cards);
     cvSyncState(c); closeCardIdEditor(); haptic('medium');
