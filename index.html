@@ -260,7 +260,23 @@ body{background:#090b10; background-image:none;}
 @keyframes createSheetIn{from{opacity:0;transform:translateY(30px) scale(.985)}to{opacity:1;transform:none}}
 @media (min-width:700px){.card-create-backdrop{align-items:center}.card-create-sheet{max-height:88dvh}}
 </style>
-</head>
+<style>
+.card-carousel-shell{position:relative;width:100%;display:flex;align-items:center;justify-content:center}
+.card-carousel-arrow{position:absolute;z-index:8;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s,border-color .22s;box-shadow:0 12px 30px rgba(0,0,0,.22)}
+.card-carousel-arrow svg{width:19px;height:19px}
+.card-carousel-prev{left:0}.card-carousel-next{right:0}
+.card-carousel-arrow:active{transform:scale(.88)}
+.card-carousel-dots{height:12px;display:flex;justify-content:center;align-items:center;gap:6px;margin-top:-8px}
+.card-carousel-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .25s}
+.card-carousel-dot.active{width:18px;border-radius:999px;background:#fff}
+.card-create-dot{width:30px;height:30px;border-radius:50%;background:#fff;color:#05070a;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;transition:transform .2s}
+.card-create-dot svg{width:15px;height:15px}
+@media (hover:hover) and (pointer:fine){
+ .card-carousel-arrow:hover{transform:scale(1.08);background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3)}
+ .card-create-dot:hover{transform:scale(1.08)}
+}
+@media (hover:none),(pointer:coarse){.card-carousel-arrow:hover{transform:none}}
+</style></head>
 <body class="pb-28">
 
 <div id="flash" class="flash-overlay"></div>
@@ -348,7 +364,12 @@ body{background:#090b10; background-image:none;}
 <!-- ================= SCREEN: BANK ================= -->
 <main id="screen-bank" class="px-4 space-y-5">
 
+  <div class="card-carousel-shell">
+  <button class="card-carousel-arrow card-carousel-prev" aria-label="Предыдущая карточка" onclick="cycleCard(-1)"><i data-lucide="chevron-left"></i></button>
   <div class="card-stage select-none" id="cardStageMain">
+  <button class="card-carousel-arrow card-carousel-next" aria-label="Следующая карточка" onclick="cycleCard(1)"><i data-lucide="chevron-right"></i></button>
+</div>
+<div id="cardCarouselDots" class="card-carousel-dots" aria-hidden="true"></div>
     <div class="card-status"><span class="card-status-dot"></span><span>Виртуальная карта</span></div>
     <div id="card3d" class="card-3d" onclick="openFocusModal()">
       <!-- FRONT -->
@@ -440,8 +461,6 @@ body{background:#090b10; background-image:none;}
 <main id="screen-market" class="px-4 space-y-4 hidden">
   <div class="flex items-center justify-between mb-1"><div><h2 class="text-lg font-semibold">Cards Auction</h2><div class="text-xs text-white/40 mt-1">Поиск коллекционных карточек</div></div><i data-lucide="gavel" class="w-5 h-5 text-white/50"></i></div>
   <div class="glass rounded-2xl p-3 flex items-center gap-2"><i data-lucide="search" class="w-4 h-4 text-white/40"></i><input id="cardSearchInput" oninput="searchPublicCards()" maxlength="4" inputmode="numeric" class="bg-transparent outline-none flex-1 text-sm" placeholder="Номер карточки"></div>
-  <div id="marketList" class="space-y-3"></div>
-</main>
   <div id="marketList" class="space-y-3"></div>
 </main>
 
@@ -929,6 +948,14 @@ const focusCard3d = document.getElementById('focusCard3d');
 const resetMainTilt = setupTilt(document.getElementById('cardStageMain'), card3d, 'specularFront','specularBack', ()=>state.cardFlipped);
 const resetFocusTilt = setupTilt(document.querySelector('.focus-card-wrap .card-stage'), focusCard3d, 'focusSpecularFront','focusSpecularBack', ()=>state.cardFlipped);
 function resetTilt(){ resetMainTilt(); resetFocusTilt(); }
+const mainCardStage=document.getElementById('cardStageMain');
+if(mainCardStage) mainCardStage.addEventListener('wheel',handleCardWheel,{passive:false});
+let cardTouchX=0,cardTouchY=0;
+if(mainCardStage){
+ mainCardStage.addEventListener('touchstart',e=>{const t=e.touches[0];cardTouchX=t.clientX;cardTouchY=t.clientY},{passive:true});
+ mainCardStage.addEventListener('touchend',e=>{const t=e.changedTouches[0];const dx=t.clientX-cardTouchX,dy=t.clientY-cardTouchY;if(Math.max(Math.abs(dx),Math.abs(dy))>45)cycleCard((Math.abs(dx)>Math.abs(dy)?dx<0:dy>0)?1:-1)},{passive:true});
+}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')cycleCard(1);if(e.key==='ArrowLeft')cycleCard(-1);});
 
 function flipCard(fromFocus){
   state.cardFlipped = !state.cardFlipped;
@@ -1445,6 +1472,7 @@ function cvCurrent(){
 }
 function cvSyncState(card){
   if(!card) return;
+  const idx=cvReadCards().findIndex(x=>x.id===card.id); if(idx>=0) cvCarouselIndex=idx;
   state.activeCardId=card.id;
   state.itemId=card.backendId || null;
   state.cardId=card.serial_code;
@@ -1513,6 +1541,43 @@ function ensureCardState(){
   let c=cards.find(x=>x.id===state.activeCardId)||cards[0];
   cvSyncState(c);
   renderManagerCards();
+  renderCardCarousel();
+}
+let cvCarouselIndex=0;
+function getCarouselItems(){
+  const cards=cvReadCards();
+  return cards;
+}
+function renderCardCarousel(){
+  const cards=getCarouselItems();
+  const dots=document.getElementById('cardCarouselDots');
+  if(!dots)return;
+  if(!cards.length){dots.innerHTML='<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';try{lucide.createIcons();}catch(e){};return;}
+  if(cvCarouselIndex>=cards.length)cvCarouselIndex=cards.length-1;
+  if(cvCarouselIndex<0)cvCarouselIndex=0;
+  dots.innerHTML=cards.map((x,i)=>'<button class="card-carousel-dot '+(i===cvCarouselIndex?'active':'')+'" onclick="cycleCardTo('+i+')" aria-label="Карточка '+(i+1)+'"></button>').join('')+
+    '<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';
+  try{lucide.createIcons();}catch(e){}
+}
+function cycleCardTo(index){
+  const cards=getCarouselItems();
+  if(!cards.length)return;
+  cvCarouselIndex=Math.max(0,Math.min(index,cards.length-1));
+  cvSyncState(cards[cvCarouselIndex]);
+  renderManagerCards();renderCardCarousel();haptic('light');
+}
+function cycleCard(dir){
+  const cards=getCarouselItems();
+  if(!cards.length){createNewCard();return;}
+  const next=cvCarouselIndex+dir;
+  if(next>=cards.length){renderCardCarousel();haptic('light');return;}
+  if(next<0)return;
+  cycleCardTo(next);
+}
+function handleCardWheel(e){
+  if(Math.abs(e.deltaY)<8 && Math.abs(e.deltaX)<8)return;
+  e.preventDefault();
+  cycleCard(e.deltaY>0||e.deltaX>0?1:-1);
 }
 function setCreateVisibility(v){
   state.createVisibility=v;
@@ -1538,7 +1603,7 @@ function openCreateCardModal(){
   haptic('medium');
 }
 function closeCreateCardModal(){document.getElementById('cardCreateModal').classList.add('hidden');}
-async function submitCreateCard(){
+async async function submitCreateCard(){
   const modal=document.getElementById('cardCreateModal');
   const input=document.getElementById('createCardNumberInput');
   const serial=input.value.replace(/\\D/g,'').slice(0,4);
