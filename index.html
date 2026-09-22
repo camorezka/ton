@@ -525,9 +525,9 @@ body{background:#090b10; background-image:none;}
   <div class="glass rounded-2xl p-5 w-full max-w-xs">
     <div class="text-sm font-semibold mb-1">Изменить номер карты</div>
     <div class="text-xs text-white/40 mb-3">Ровно 4 цифры. Номер можно сохранить только если он свободен.</div>
-    <input id="cardIdInput" maxlength="16" inputmode="numeric" pattern="[0-9]*"
+    <input id="cardIdInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
       class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-center text-lg emboss tracking-widest mb-3"
-      placeholder="0000 0000 0000 0000" />
+      placeholder="0000" />
     <div id="cardIdError" class="text-xs text-red-300 mb-2 hidden"></div>
     <div class="flex gap-2">
       <button class="glass active:press flex-1 py-2.5 rounded-xl text-sm" onclick="closeCardIdEditor()">Отмена</button>
@@ -929,10 +929,10 @@ function syncFocusFromMain(){
 // CARD DATA
 // =====================================================================
 function genCardId(){
-  const arr = new Uint32Array(16);
+  const arr = new Uint32Array(4);
   crypto.getRandomValues(arr);
   let out = '';
-  for(let i=0;i<16;i++) out += String(arr[i] % 10);
+  for(let i=0;i<4;i++) out += String(arr[i] % 10);
   return out;
 }
 function genPassword(){
@@ -942,10 +942,8 @@ function genPassword(){
   for(let i=0;i<6;i++) out += String(arr[i] % 10);
   return out;
 }
-function formatCardNumber(id){
-  return String(id || '').replace(/\D/g,'').slice(0,4).replace(/(.{4})/g,'$1 ').trim();
-}
-function maskCardId(id){ return formatCardNumber(id) || '•••• •••• •••• ••••'; }
+function formatCardNumber(id){ return String(id || '').replace(/\D/g,'').slice(-4).padStart(4,'0'); }
+function maskCardId(id){ return formatCardNumber(id) || '••••'; }
 
 async function loadMyCard(){
   try{
