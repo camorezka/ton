@@ -320,7 +320,7 @@ body{display:flex;justify-content:center;align-items:stretch}
 .card-carousel-shell{min-height:260px}
 .card-3d{max-width:350px!important;width:min(350px,calc(100vw - 72px))!important}
 .card-create-sheet{width:min(430px,100%)!important;max-height:88dvh}
-.skin-gallery-wrap{overflow:hidden;max-height:58px;transition:max-height .35s cubic-bezier(.2,.8,.2,1)}
+.skin-gallery-wrap .skin-grid{display:none}.skin-gallery-wrap.open .skin-grid{display:grid}.skin-gallery-wrap{overflow:hidden;max-height:58px;transition:max-height .35s cubic-bezier(.2,.8,.2,1)}
 .skin-gallery-wrap.open{max-height:360px}
 .skin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 1px 4px;max-height:310px;overflow:auto;overscroll-behavior:contain}
 .skin-grid .skin-tile{width:100%;height:auto;aspect-ratio:1.586;}
@@ -473,11 +473,10 @@ body{display:flex;justify-content:center;align-items:stretch}
 </div>
 <div id="cardCarouselDots" class="card-carousel-dots" aria-hidden="true"></div>
 
-  <div class="card-description">
-    <div class="card-description-head"><i data-lucide="sparkles"></i><span>Особенная карточка</span></div>
-    <div class="card-description-title">Карточка для коллекции и торговли</div>
-    <p>Четыре цифры на лицевой стороне — публичный идентификатор этой карточки. По нему её можно находить в коллекции и использовать при обмене или выставлении на торговлю. Для создания карточки TON-кошелёк не нужен; он потребуется только при публикации на аукционе.</p>
-  </div>
+  <section id="historyBlock" class="history-block glass rounded-2xl p-4 mt-4">
+    <div class="flex items-center justify-between mb-3"><div><div class="text-sm font-medium">История операций</div><div class="text-xs text-white/40 mt-1">Покупки, продажи и статусы сделок</div></div><i data-lucide="history" class="w-4 h-4 text-white/40"></i></div>
+    <div id="historyList" class="space-y-2"><div class="text-xs text-white/40 text-center py-4">Загрузка истории…</div></div>
+  </section>
 
   <div class="flex gap-3">
     
@@ -1027,6 +1026,7 @@ function switchTab(tab){
   haptic('light');
   if(tab==='market') loadMarket();
   if(tab==='profile') updateProfile();
+  if(tab==='bank') loadHistory();
   try{ lucide.createIcons(); }catch(e){}
 }
 function openSheet(name){ document.getElementById('sheet-'+name).classList.remove('hidden'); haptic('light'); }
@@ -1378,6 +1378,14 @@ async function openPublicCard(id){
     const c=d.card;
     alert((c.title||'Без названия')+'\\n\\nНомер: '+c.serial_code+'\\n\\n'+(c.description||'Без описания')+'\\n\\nПередач: '+(c.transfer_count||0));
   }catch(e){haptic('heavy');}
+}
+
+async function loadHistory(){
+  const box=document.getElementById('historyList'); if(!box)return;
+  try{ const d=await apiPost('my_history'); const rows=d.orders||[];
+    if(!rows.length){box.innerHTML='<div class="text-xs text-white/40 text-center py-4">Операций пока нет</div>';return;}
+    box.innerHTML=rows.map(o=>{const isBuy=String(o.buyer_id)!==String(state.userDbId||'');const amount=Number(o.amount_ton||0).toFixed(2);const status=o.status==='confirmed'?'Завершено':o.status==='expired'?'Истёк':'В ожидании';return '<div class="history-row"><div><div class="text-xs">'+(isBuy?'Покупка':'Продажа')+'</div><div class="text-[10px] text-white/35">'+new Date(o.created_at).toLocaleString()+'</div></div><div class="text-right"><div class="text-xs">'+amount+' TON</div><div class="text-[10px] text-white/40">'+status+'</div></div></div>';}).join('');
+  }catch(e){box.innerHTML='<div class="text-xs text-white/40 text-center py-4">Историю пока не удалось загрузить</div>';}
 }
 function updateProfile(){
   const u=state.tgUser||{}; const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
@@ -1912,7 +1920,7 @@ function applySkin(skin){
 function toggleSkinGallery(){ const wrap=document.getElementById('skinGalleryWrap'),btn=document.getElementById('skinToggle'); if(!wrap)return; const open=wrap.classList.toggle('open'); btn?.classList.toggle('open',open); if(btn)btn.querySelector('span').textContent=open?'Скрыть дизайны':'Показать дизайны'; haptic('light'); }
 function rebuildPhotoGallery(){
   const box=document.getElementById('skinScroller'); if(!box)return; box.innerHTML=''; setText('skinCount',CV_SKINS.length);
-  CV_SKINS.forEach(s=>{ const b=document.createElement('button'); b.className='skin-tile active:press'; b.dataset.skinId=s.id; b.style.backgroundImage=`url("${s.url}")`; b.title=s.name; b.setAttribute('aria-label',s.name); b.onclick=()=>applySkin(s); box.appendChild(b); });
+  CV_SKINS.forEach(s=>{ const b=document.createElement('button'); b.className='skin-tile active:press'; b.dataset.skinId=s.id; b.title=s.name; b.setAttribute('aria-label',s.name); b.innerHTML='<img loading="lazy" decoding="async" alt="" src="'+s.url+'"><span class="skin-name">'+s.name+'</span>'; b.onclick=()=>applySkin(s); box.appendChild(b); });
   const c=cvCurrent(); box.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===c?.skin_id));
 }
 async function saveCardSettings(){
