@@ -282,7 +282,6 @@ async function getOrCreateUser(verifiedUser) {
         owner_id: user.id,
         serial_code,
         recovery_code,
-        access_key: recovery_code,
         skin_id: "cyberpunk_6",
         nickname: "My Card",
         edition_label: "Original",
