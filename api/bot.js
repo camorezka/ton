@@ -383,7 +383,7 @@ export default async function handler(req, res) {
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
 
-      const requested = String(req.body?.serial_code || "").replace(/\\D/g, "").slice(0, 4);
+      const requested = String(req.body?.serial_code || "").replace(/\D/g, "").slice(0, 4);
       const skinId = String(req.body?.skin_id || "photo_1").slice(0, 80);
       const title = String(req.body?.title || "Без названия").trim().slice(0, 60) || "Без названия";
       const description = String(req.body?.description || "").trim().slice(0, 300) || null;
@@ -393,7 +393,7 @@ export default async function handler(req, res) {
       const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(requested)}&select=id&limit=1`);
       if (existing?.[0]) return res.status(409).json({ ok: false, error: "Этот номер уже используется" });
 
-      const password = String(req.body?.card_password || "").replace(/\\D/g, "").slice(0, 6) || String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
+      const password = String(req.body?.card_password || "").replace(/\D/g, "").slice(0, 6) || String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
       const rows = await sb("collectibles", {
         method: "POST",
         body: JSON.stringify({ owner_id: user.id, serial_code: requested, card_password: password, skin_id: skinId, wallet_address: null, title, description, visibility })
