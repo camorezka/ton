@@ -1063,8 +1063,8 @@ async function refreshCardsFromServer(){
     }
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
 }
-async function switchTab(tab){
-  await flushSkinSaves();
+function switchTab(tab){
+  flushSkinSaves().catch(()=>{});
   ['collection','market','profile','settings'].forEach(t=>{
     const el=document.getElementById('screen-'+t);
     if(el){ el.classList.toggle('hidden', t!==tab); if(t===tab){ el.classList.remove('screen-enter'); void el.offsetWidth; el.classList.add('screen-enter'); }}
@@ -1249,20 +1249,28 @@ setText('skinCount',typeof CV_SKINS!=='undefined'?CV_SKINS.length:SKINS.length);
 
 const pendingSkinSaves=new Map();
 function queueSkinSave(card){
-  if(!card?.backendId)return Promise.resolve();
+  if(!card?.backendId)return;
   const id=String(card.backendId), skin=String(card.skin_id||'');
-  const p=apiPost('update_card_settings',{item_id:card.backendId,skin_id:skin})
-    .then(d=>{ if(!d.ok) throw new Error(d.error||'save failed'); return d; })
-    .catch(e=>{ console.warn('skin autosave failed',e); return null; })
-    .finally(()=>{ if(pendingSkinSaves.get(id)===p) pendingSkinSaves.delete(id); });
-  pendingSkinSaves.set(id,p);
-  return p;
+  const prev=pendingSkinSaves.get(id);
+  if(prev?.timer) clearTimeout(prev.timer);
+  const entry={timer:setTimeout(async()=>{
+    try{
+      const d=await apiPost('update_card_settings',{item_id:card.backendId,skin_id:skin});
+      if(!d.ok) throw new Error(d.error||'save failed');
+    }catch(e){
+      console.warn('skin autosave failed',e);
+      setTimeout(()=>{if(cvCurrent()?.backendId===card.backendId&&cvCurrent()?.skin_id===skin)queueSkinSave(card);},1000);
+    }finally{
+      const cur=pendingSkinSaves.get(id);
+      if(cur?.timer===entry.timer) pendingSkinSaves.delete(id);
+    }
+  },180)};
+  pendingSkinSaves.set(id,entry);
 }
 async function flushSkinSaves(){
   const pending=[...pendingSkinSaves.values()];
-  if(pending.length) await Promise.allSettled(pending);
-}
-function applySkin(skin){
+  await Promise.allSettled(pending.map(x=>new Promise(resolve=>setTimeout(resolve,Math.min(250,Math.max(0,x.timer-Date.now()))))));
+}function applySkin(skin){
   if(!skin)return;
   state.currentSkin=skin.id;
   const cc=cvCurrent();
@@ -1933,7 +1941,7 @@ function cvNavIndicator(tab){
 }
 const cvOriginalSwitchTab=switchTab;
 switchTab=function(tab){cvOriginalSwitchTab(tab);requestAnimationFrame(()=>cvNavIndicator(tab));};
-requestAnimationFrame(()=>cvNavIndicator('bank'));
+requestAnimationFrame(()=>cvNavIndicator('collection'));
 
 const cvOriginalHandlePinComplete=handlePinComplete;
 handlePinComplete=async function(){
