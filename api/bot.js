@@ -136,7 +136,7 @@ function extractCommentFallback(inMsg) {
 //   computed_hash = HMAC_SHA256(secret_key, data_check_string) as hex
 //   valid if computed_hash === hash (constant-time compare)
 // =====================================================================
-const MAX_INITDATA_AGE_SEC = 24 * 60 * 60; // 24h — reject stale sessions
+const MAX_INITDATA_AGE_SEC = 10 * 60; // 10 minutes — reject stale sessions
 
 function verifyInitData(initData) {
   if (!initData || typeof initData !== "string") return null;
@@ -370,20 +370,29 @@ export default async function handler(req, res) {
       }
       const memo = `deal_${auction.id.slice(0, 8)}_${Math.random().toString(36).slice(2, 9)}`;
 
-      const orderRows = await sb("orders", {
-        method: "POST",
-        body: JSON.stringify({
-          deal_memo: memo,
-          auction_id: auction.id,
-          item_id: auction.item_id,
-          buyer_id: buyer.id,
-          seller_id: auction.seller_id,
-          amount_ton: totalAmount,
-          commission_ton: commission,
-          service_wallet: SERVICE_WALLET,
-          status: "pending",
-        }),
-      });
+      let orderRows;
+      try {
+        orderRows = await sb("orders", {
+          method: "POST",
+          body: JSON.stringify({
+            deal_memo: memo,
+            auction_id: auction.id,
+            item_id: auction.item_id,
+            buyer_id: buyer.id,
+            seller_id: auction.seller_id,
+            amount_ton: totalAmount,
+            commission_ton: commission,
+            service_wallet: SERVICE_WALLET,
+            status: "pending",
+          }),
+        });
+      } catch (e) {
+        // Never leave a card locked if order creation itself failed.
+        await sb(`collectibles?id=eq.${auction.item_id}&owner_id=eq.${auction.seller_id}`, {
+          method:"PATCH", prefer:"return=minimal", body:JSON.stringify({is_locked:false})
+        }).catch(()=>{});
+        throw e;
+      }
 
       return res.status(200).json({
         ok: true,
@@ -631,6 +640,8 @@ async function adminStats(){
       const update = req.body;
       const msg = update.message;
       const cb = update.callback_query;
+      const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+      if (webhookSecret && req.headers?.["x-telegram-bot-api-secret-token"] !== webhookSecret) return res.status(401).json({ok:false});
 
       if (cb) {
         if (!isAdminTelegramId(cb.from?.id)) { await tg("answerCallbackQuery",{callback_query_id:cb.id,text:"Нет доступа",show_alert:true}); return res.status(200).json({ok:true}); }
@@ -641,11 +652,11 @@ async function adminStats(){
         else if(d==="adm:users"){ const us=await sb("users?select=telegram_id,username,first_name,daily_streak,created_at&order=created_at.desc&limit=12"); const lines=(us||[]).map((u,n)=>(n+1)+". <code>"+u.telegram_id+"</code> "+(u.username?"@"+u.username:(u.first_name||"—"))+" · streak "+(u.daily_streak||0)); await adminEdit(chatId,messageId,"👥 <b>Последние игроки</b>\n\n"+(lines.join("\n")||"Нет игроков"),{inline_keyboard:[[{text:"← Назад",callback_data:"adm:menu"}]]}); }
         else if(d==="adm:cards"){ const cs=await sb("collectibles?select=id,owner_id,serial_code,is_charged,is_locked,created_at&order=created_at.desc&limit=12"); const lines=(cs||[]).map((x,n)=>(n+1)+". #"+x.id+" · <code>"+x.serial_code+"</code> · owner "+x.owner_id+" · "+(x.is_charged?"⚡":"○")+" "+(x.is_locked?"🔒":"🔓")); await adminEdit(chatId,messageId,"🎴 <b>Последние карточки</b>\n\n"+(lines.join("\n")||"Нет карточек"),{inline_keyboard:[[{text:"← Назад",callback_data:"adm:menu"}]]}); }
         else if(d==="adm:charge_all") await adminEdit(chatId,messageId,"⚡ <b>Зарядить ВСЕ карточки?</b>",{inline_keyboard:[[{text:"Да, зарядить",callback_data:"adm:confirm_charge_all"}],[{text:"Отмена",callback_data:"adm:menu"}]]});
-        else if(d==="adm:confirm_charge_all"){ await sb("collectibles",{method:"PATCH",body:JSON.stringify({is_charged:true,charge_progress:100})}); await adminEdit(chatId,messageId,"✅ Все карточки заряжены.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:confirm_charge_all"){ await sb("collectibles",{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({is_charged:true,charge_progress:100})}); await adminEdit(chatId,messageId,"✅ Все карточки заряжены.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
         else if(d==="adm:unlock_all") await adminEdit(chatId,messageId,"🔓 <b>Разблокировать ВСЕ карточки?</b>",{inline_keyboard:[[{text:"Да, разблокировать",callback_data:"adm:confirm_unlock_all"}],[{text:"Отмена",callback_data:"adm:menu"}]]});
-        else if(d==="adm:confirm_unlock_all"){ await sb("collectibles",{method:"PATCH",body:JSON.stringify({is_locked:false})}); await adminEdit(chatId,messageId,"✅ Все карточки разблокированы.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:confirm_unlock_all"){ await sb("collectibles",{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({is_locked:false})}); await adminEdit(chatId,messageId,"✅ Все карточки разблокированы.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
         else if(d==="adm:reset_all") await adminEdit(chatId,messageId,"♻️ <b>Сбросить streak ВСЕМ пользователям?</b>",{inline_keyboard:[[{text:"Да, сбросить",callback_data:"adm:confirm_reset_all"}],[{text:"Отмена",callback_data:"adm:menu"}]]});
-        else if(d==="adm:confirm_reset_all"){ await sb("users",{method:"PATCH",body:JSON.stringify({daily_streak:0,last_shake_at:null})}); await adminEdit(chatId,messageId,"✅ Streak сброшен у всех.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:confirm_reset_all"){ await sb("users",{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({daily_streak:0,last_shake_at:null})}); await adminEdit(chatId,messageId,"✅ Streak сброшен у всех.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
         else if(d==="adm:cleanup"){ const n=await sb("rpc/cleanup_expired_orders",{method:"POST",body:"{}"}); await adminEdit(chatId,messageId,"🧹 Очистка завершена: <b>"+n+"</b>",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
         else if(d==="adm:player") await tg("sendMessage",{chat_id:chatId,text:"🔎 Отправь: <code>игрок 123456789</code>",parse_mode:"HTML"});
         else if(d==="adm:grant") await tg("sendMessage",{chat_id:chatId,text:"➕ Отправь: <code>выдать 123456789 1234 111111 photo_1</code>",parse_mode:"HTML"});
