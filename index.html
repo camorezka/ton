@@ -166,6 +166,59 @@ body{background:#090b10; background-image:none;}
 .card-3d.burning::after{content:'';position:absolute;inset:-3px;border-radius:23px;pointer-events:none;z-index:20;box-shadow:0 0 0 2px rgba(255,102,0,.55),0 0 22px rgba(255,70,0,.42),inset 0 0 26px rgba(35,5,0,.72);background:radial-gradient(circle at 8% 18%,rgba(255,180,70,.65),transparent 14%),radial-gradient(circle at 90% 75%,rgba(255,60,0,.48),transparent 17%);mix-blend-mode:screen;opacity:.85;}
 @keyframes burnPulse{from{filter:saturate(1)}to{filter:saturate(1.35) brightness(1.06)}}
 @media (max-width:380px){.nav-btn{font-size:8px}.nav-btn svg{width:17px;height:17px}.navbar{left:5px;right:5px;}}
+
+/* ===== Card Vault multi-card UI ===== */
+.card-wallet-bar{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #252b35;background:#0f1319;border-radius:15px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.card-wallet-bar:active{transform:scale(.985);background:#141922}
+.card-wallet-icon{width:34px;height:34px;border-radius:10px;background:#181e27;border:1px solid #2a313d;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.card-wallet-icon svg{width:16px;height:16px;color:#9ca7b6}
+.card-wallet-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.card-wallet-copy span{font-size:10px;color:#737d8d}
+.card-wallet-copy strong{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-wallet-chevron{width:16px;color:#6d7582}
+.card-actions-row{display:flex;gap:9px}
+.card-action-btn{flex:1;min-height:46px;border:1px solid #252b35;background:#11151c;border-radius:13px;color:#dfe5ed;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;transition:transform .16s ease,background .16s ease}
+.card-action-btn:active{transform:scale(.97);background:#171c24}
+.card-action-btn svg{width:16px;height:16px}
+.primary-card-action{background:#e9edf2;color:#090b10;border-color:#e9edf2}
+.empty-card-state{min-height:235px;border:1px solid #303641;background:#090b10;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#7f8896;cursor:pointer}
+.empty-card-state svg{width:30px;height:30px}
+.empty-card-state span{font-size:13px}
+.sheet-grabber{width:40px;height:4px;border-radius:99px;background:#343b46;margin:0 auto 15px}
+.sheet-close-icon{width:34px;height:34px;border-radius:50%;border:1px solid #252b35;background:#11151c;display:flex;align-items:center;justify-content:center;color:#8993a1}
+.sheet-close-icon svg{width:16px;height:16px}
+.manager-preview{display:flex;align-items:center;justify-content:center;padding:5px 0 15px}
+.manager-preview-card{width:170px;aspect-ratio:1.586/1;border-radius:14px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 35px rgba(0,0,0,.35);padding:12px;display:flex;flex-direction:column;justify-content:space-between}
+.manager-preview-number{font:600 12px 'Courier New',monospace;letter-spacing:1px}
+.manager-wallet-row{display:flex;align-items:center;gap:10px;border:1px solid #252b35;background:#0f1319;border-radius:14px;padding:11px}
+.manager-wallet-icon{width:34px;height:34px;border-radius:10px;background:#181e27;display:flex;align-items:center;justify-content:center}
+.manager-wallet-icon svg{width:16px}
+.manager-wallet-connect{height:36px;padding:0 11px;border-radius:10px;background:#1d65d8;color:#fff;border:0;display:flex;align-items:center;gap:6px;font-size:11px}
+.manager-wallet-connect svg{width:14px}
+.manager-actions{display:flex;gap:9px;margin-top:10px}
+.manager-actions button{flex:1;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;border:1px solid}
+.manager-actions svg{width:16px}
+.manager-add-btn{background:#1d65d8;border-color:#2e76ec;color:#fff}
+.manager-delete-btn{background:#d83232;border-color:#eb4747;color:#fff}
+.manager-card-list{display:flex;gap:8px;overflow-x:auto;padding:13px 1px 3px}
+.manager-card-mini{width:82px;flex:0 0 82px;aspect-ratio:1.586/1;border-radius:10px;background-size:cover;background-position:center;border:2px solid transparent;padding:7px;cursor:pointer}
+.manager-card-mini.active{border-color:#fff}
+.manager-card-mini span{font:600 7px 'Courier New',monospace;text-shadow:0 1px 4px #000}
+.auction-wallet-notice{padding:11px 12px;border-radius:13px;background:#171c24;border:1px solid #303743;color:#9ba5b3;font-size:12px;line-height:1.45;margin:10px 0}
+.auction-card-list{display:flex;flex-direction:column;gap:9px;max-height:54vh;overflow:auto;padding-bottom:5px}
+.auction-card-row{display:flex;align-items:center;gap:11px;padding:10px;border:1px solid #252b35;background:#0f1319;border-radius:14px;cursor:pointer;transition:transform .16s ease,background .16s ease}
+.auction-card-row:active{transform:scale(.985);background:#161b23}
+.auction-card-thumb{width:72px;height:46px;border-radius:9px;background-size:cover;background-position:center;flex:0 0 auto;border:1px solid rgba(255,255,255,.12)}
+.auction-card-meta{min-width:0;flex:1}
+.auction-card-meta strong{display:block;font:600 12px 'Courier New',monospace;letter-spacing:1px}
+.auction-card-meta span{display:block;font-size:10px;color:#707a89;margin-top:4px}
+.auction-card-row .chev{width:16px;color:#697382}
+.navbar{overflow:visible;position:fixed}
+.nav-indicator{position:absolute;bottom:5px;height:3px;width:38px;border-radius:99px;background:#e7ecf3;left:0;transform:translateX(0);transition:transform .32s cubic-bezier(.22,.8,.2,1);pointer-events:none}
+.pin-dot.filled{background:#fff;border-color:#fff;box-shadow:none}
+.pin-dot.err{background:#ff5b5b;border-color:#ff5b5b;box-shadow:none}
+.pin-header-icon{width:28px;height:28px;margin:0 auto 7px;color:#e9edf2}
+
 </style>
 </head>
 <body class="pb-28">
@@ -175,7 +228,7 @@ body{background:#090b10; background-image:none;}
 <!-- ================= PIN SCREEN ================= -->
 <div id="pinScreen" class="pin-screen hidden">
   <div class="text-center">
-    <i data-lucide="lock" class="w-6 h-6 mb-1"></i>
+    <i data-lucide="lock" class="pin-header-icon"></i>
     <div id="pinTitle" class="text-base font-semibold">Введите PIN-код</div>
     <div id="pinSubtitle" class="text-xs text-white/40 mt-1"></div>
   </div>
@@ -269,6 +322,26 @@ body{background:#090b10; background-image:none;}
     </button>
   </div>
 
+
+  <div id="cardWalletBar" class="card-wallet-bar" onclick="openCardManager()">
+    <div class="card-wallet-icon"><i data-lucide="wallet-cards"></i></div>
+    <div class="card-wallet-copy">
+      <span id="cardWalletTitle">Кошелёк не привязан</span>
+      <strong id="cardWalletAddress">Добавить кошелёк</strong>
+    </div>
+    <i data-lucide="chevron-down" class="card-wallet-chevron"></i>
+  </div>
+
+  <div id="emptyCardState" class="empty-card-state hidden" onclick="createNewCard()">
+    <i data-lucide="plus"></i>
+    <span>Добавить карту</span>
+  </div>
+
+  <div id="cardActions" class="card-actions-row">
+    <button class="card-action-btn" onclick="openCardManager()"><i data-lucide="layers-2"></i><span>Мои карты</span></button>
+    <button class="card-action-btn primary-card-action" onclick="openAuctionForCard()"><i data-lucide="gavel"></i><span>На аукцион</span></button>
+  </div>
+
   <!-- SHAKE TO CHARGE -->
   <div class="glass rounded-2xl p-4">
     <div class="flex items-center justify-between mb-2">
@@ -340,7 +413,7 @@ body{background:#090b10; background-image:none;}
 </main>
 
 <!-- ================= BOTTOM NAV ================= -->
-<nav class="navbar glass px-1.5 py-2 flex justify-around">
+<nav id="bottomNav" class="navbar glass px-1.5 py-2 flex justify-around"><div id="navIndicator" class="nav-indicator"></div>
   <button class="nav-btn active" data-tab="bank" onclick="switchTab('bank')"><i data-lucide="credit-card"></i><span>Банк</span></button>
   <button class="nav-btn" data-tab="market" onclick="switchTab('market')"><i data-lucide="gavel"></i><span>Маркет</span></button>
   <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')"><i data-lucide="user"></i><span>Профиль</span></button>
@@ -428,6 +501,54 @@ body{background:#090b10; background-image:none;}
       <button class="glass active:press flex-1 py-2.5 rounded-xl text-sm" onclick="closeCardIdEditor()">Отмена</button>
       <button class="frosted active:press flex-1 py-2.5 rounded-xl text-sm font-medium" onclick="confirmCardId()">Применить</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ================= CARD MANAGER ================= -->
+<div id="cardManagerSheet" class="sheet hidden">
+  <div class="sheet-backdrop" onclick="closeCardManager()"></div>
+  <div class="sheet-panel glass p-4">
+    <div class="sheet-grabber"></div>
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <div class="text-base font-semibold">Мои карты</div>
+        <div class="text-xs text-white/40 mt-1">Каждая карта может иметь свой кошелёк</div>
+      </div>
+      <button class="sheet-close-icon" onclick="closeCardManager()"><i data-lucide="x"></i></button>
+    </div>
+    <div id="managerCardPreview" class="manager-preview"></div>
+    <div class="manager-wallet-row">
+      <div class="manager-wallet-icon"><i data-lucide="wallet"></i></div>
+      <div class="min-w-0 flex-1">
+        <div class="text-xs text-white/40">Кошелёк карты</div>
+        <div id="managerWalletAddress" class="text-sm truncate mt-1">Не привязан</div>
+      </div>
+      <button class="manager-wallet-connect" onclick="attachWalletToCurrentCard()"><i data-lucide="link"></i><span>Привязать</span></button>
+    </div>
+    <div class="manager-actions">
+      <button class="manager-add-btn" onclick="createNewCard(); closeCardManager();"><i data-lucide="plus"></i><span>Добавить карту</span></button>
+      <button class="manager-delete-btn" onclick="beginDeleteCard()"><i data-lucide="trash-2"></i><span>Удалить карту</span></button>
+    </div>
+    <div id="managerDeleteHint" class="text-xs text-white/40 text-center mt-3 hidden">Нажмите на карту, которую хотите удалить.</div>
+    <div id="managerCardList" class="manager-card-list"></div>
+  </div>
+</div>
+
+<!-- ================= AUCTION CARD PICKER ================= -->
+<div id="auctionPickerSheet" class="sheet hidden">
+  <div class="sheet-backdrop" onclick="closeAuctionPicker()"></div>
+  <div class="sheet-panel glass p-4">
+    <div class="sheet-grabber"></div>
+    <div class="flex items-center justify-between mb-2">
+      <div>
+        <div class="text-base font-semibold">Опубликовать на аукционе</div>
+        <div class="text-xs text-white/40 mt-1">Выберите существующую карту</div>
+      </div>
+      <button class="sheet-close-icon" onclick="closeAuctionPicker()"><i data-lucide="x"></i></button>
+    </div>
+    <div id="auctionWalletNotice" class="auction-wallet-notice hidden"></div>
+    <div id="auctionCardList" class="auction-card-list"></div>
   </div>
 </div>
 
@@ -821,7 +942,7 @@ function openCardIdEditor(){
   haptic('light');
 }
 function closeCardIdEditor(){ document.getElementById('cardIdEditor').classList.add('hidden'); }
-function confirmCardId(){
+async function confirmCardId(){
   const val = document.getElementById('cardIdInput').value.trim();
   if(!/^\d{16}$/.test(val)){
     const er=document.getElementById('cardIdError');
@@ -1169,5 +1290,384 @@ async function checkOrderStatus(){
   }
 }
 </script>
+
+<script>
+/* ===== MULTI-CARD FRONTEND CONTROLLER ===== */
+const CV_CARDS_KEY = 'cv_cards_v2';
+let cvDeleteMode = false;
+
+function cvReadCards(){
+  try{
+    const raw = localStorage.getItem(CV_CARDS_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){ return []; }
+}
+function cvWriteCards(arr){
+  localStorage.setItem(CV_CARDS_KEY, JSON.stringify(arr));
+}
+function cvPhoto(index){
+  return 'https://picsum.photos/seed/cardvault_' + (index + 1) + '/900/570';
+}
+const CV_SKINS = Array.from({length:64},(_,i)=>({
+  id:'photo_'+(i+1),
+  name:'Design '+(i+1),
+  url:cvPhoto(i)
+}));
+
+function cvGen16(){
+  const a=new Uint32Array(16); crypto.getRandomValues(a);
+  let s=''; for(let i=0;i<16;i++) s+=String(a[i]%10);
+  return s;
+}
+function cvGen6(){
+  const a=new Uint32Array(6); crypto.getRandomValues(a);
+  let s=''; for(let i=0;i<6;i++) s+=String(a[i]%10);
+  return s;
+}
+function cvMasked(n){
+  const s=String(n||'').replace(/\D/g,'').padEnd(16,'0').slice(0,16);
+  return s.slice(0,4)+' •••• •••• '+s.slice(12);
+}
+function cvCardStyle(card){
+  const ix=Math.max(0,(Number(String(card.skin||'').replace('photo_',''))||1)-1)%CV_SKINS.length;
+  return CV_SKINS[ix].url;
+}
+function cvCurrent(){
+  const cards=cvReadCards();
+  return cards.find(x=>x.id===state.itemId) || cards.find(x=>x.id===state.activeCardId) || cards[0] || null;
+}
+function cvSyncState(card){
+  if(!card) return;
+  state.activeCardId=card.id;
+  state.itemId=card.backendId || null;
+  state.cardId=card.serial_code;
+  state.cardPassword=card.card_password;
+  state.currentSkin=card.skin_id;
+  state.wallet=card.wallet || null;
+  applyCvCardVisual(card);
+}
+function applyCvCardVisual(card){
+  if(!card) return;
+  const bg='url("' + cvCardStyle(card) + '")';
+  card3d.style.backgroundImage=bg;
+  card3d.style.backgroundSize='cover';
+  card3d.style.backgroundPosition='center';
+  if(typeof focusCard3d!=='undefined' && focusCard3d){
+    focusCard3d.style.backgroundImage=bg;
+    focusCard3d.style.backgroundSize='cover';
+    focusCard3d.style.backgroundPosition='center';
+  }
+  document.getElementById('cardNumber').textContent=formatCardNumber(card.serial_code);
+  const back=document.getElementById('cardPassBack'); if(back) back.textContent=card.card_password;
+  const f=document.getElementById('focusCardNumber'); if(f) f.textContent=formatCardNumber(card.serial_code);
+  const fb=document.getElementById('focusCardIdBack'); if(fb) fb.textContent=cvMasked(card.serial_code);
+  const fp=document.getElementById('focusCardPassBack'); if(fp) fp.textContent=card.card_password;
+  updateCvWalletBar();
+}
+function updateCvWalletBar(){
+  const c=cvCurrent();
+  const title=document.getElementById('cardWalletTitle');
+  const addr=document.getElementById('cardWalletAddress');
+  if(!c){ title.textContent='Кошелёк не привязан'; addr.textContent='Добавить карту'; return; }
+  const w=c.wallet || null;
+  title.textContent=w ? 'Кошелёк карты' : 'Кошелёк не привязан';
+  addr.textContent=w ? (w.slice(0,7)+'…'+w.slice(-7)) : 'Нажмите, чтобы настроить';
+  document.getElementById('managerWalletAddress')?.replaceChildren(document.createTextNode(w || 'Не привязан'));
+}
+function ensureCardState(){
+  let cards=cvReadCards();
+  if(!cards.length && state.itemId){
+    cards=[{
+      id:'db_'+state.itemId,
+      backendId:state.itemId,
+      serial_code:/^\d{16}$/.test(state.cardId||'')?state.cardId:cvGen16(),
+      card_password:/^\d{6}$/.test(state.cardPassword||'')?state.cardPassword:cvGen6(),
+      skin_id:state.currentSkin||'photo_1',
+      wallet:null
+    }];
+    cvWriteCards(cards);
+  }
+  if(!cards.length){
+    state.activeCardId=null;
+    document.getElementById('cardStageMain').classList.add('hidden');
+    document.getElementById('cardWalletBar').classList.add('hidden');
+    document.getElementById('cardActions').classList.add('hidden');
+    document.getElementById('emptyCardState').classList.remove('hidden');
+    updateCvWalletBar();
+    return;
+  }
+  document.getElementById('emptyCardState').classList.add('hidden');
+  document.getElementById('cardStageMain').classList.remove('hidden');
+  document.getElementById('cardWalletBar').classList.remove('hidden');
+  document.getElementById('cardActions').classList.remove('hidden');
+  let c=cards.find(x=>x.id===state.activeCardId)||cards[0];
+  cvSyncState(c);
+  renderManagerCards();
+}
+function createNewCard(){
+  const cards=cvReadCards();
+  const card={
+    id:'local_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    backendId:null,
+    serial_code:cvGen16(),
+    card_password:cvGen6(),
+    skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),
+    wallet:null
+  };
+  cards.push(card); cvWriteCards(cards);
+  cvSyncState(card); ensureCardState(); renderManagerCards();
+  openFocusModal(); haptic('medium');
+}
+function selectCvCard(id){
+  const cards=cvReadCards(), c=cards.find(x=>x.id===id); if(!c)return;
+  cvSyncState(c); renderManagerCards(); updateProfile();
+  haptic('light');
+}
+function openCardManager(){
+  ensureCardState();
+  renderManagerCards();
+  document.getElementById('cardManagerSheet').classList.remove('hidden');
+  haptic('light'); try{lucide.createIcons();}catch(e){}
+}
+function closeCardManager(){document.getElementById('cardManagerSheet').classList.add('hidden');cvDeleteMode=false;document.getElementById('managerDeleteHint').classList.add('hidden');}
+function renderManagerCards(){
+  const list=document.getElementById('managerCardList'); if(!list)return;
+  list.innerHTML='';
+  cvReadCards().forEach(c=>{
+    const b=document.createElement('button');
+    b.className='manager-card-mini'+(c.id===state.activeCardId?' active':'');
+    b.style.backgroundImage='url("'+cvCardStyle(c)+'")';
+    b.innerHTML='<span>'+cvMasked(c.serial_code)+'</span>';
+    b.onclick=()=>cvDeleteMode?confirmDeleteSelection(c.id):selectCvCard(c.id);
+    list.appendChild(b);
+  });
+  const c=cvCurrent();
+  const p=document.getElementById('managerCardPreview');
+  if(c&&p)p.innerHTML='<div class="manager-preview-card" style="background-image:url(&quot;'+cvCardStyle(c)+'&quot;)"><div></div><div class="manager-preview-number">'+cvMasked(c.serial_code)+'</div></div>';
+  updateCvWalletBar();
+}
+function attachWalletToCurrentCard(){
+  const c=cvCurrent();
+  if(!c){createNewCard();return;}
+  if(state.wallet && c.wallet===state.wallet){return;}
+  state.pendingWalletCardId=c.id;
+  state.tonConnectUI?.openModal();
+}
+function beginDeleteCard(){
+  const cards=cvReadCards();
+  if(cards.length===0)return;
+  cvDeleteMode=true;
+  document.getElementById('managerDeleteHint').classList.remove('hidden');
+  haptic('warning');
+}
+function confirmDeleteSelection(id){
+  if(!cvDeleteMode)return;
+  cvDeleteMode=false;
+  document.getElementById('managerDeleteHint').classList.add('hidden');
+  state.deleteTargetCardId=id;
+  pinState.mode='delete';
+  pinState.deleteCardId=id;
+  pinState.buffer='';
+  document.getElementById('pinTitle').textContent='Введите PIN-код';
+  document.getElementById('pinSubtitle').textContent='Подтвердите удаление карты';
+  renderPinDots();
+  document.getElementById('cardManagerSheet').classList.add('hidden');
+  document.getElementById('pinScreen').classList.remove('hidden');
+  haptic('medium');
+}
+async function deleteCardAfterPin(id){
+  const cards=cvReadCards().filter(c=>c.id!==id);
+  cvWriteCards(cards);
+  state.deleteTargetCardId=null;
+  if(cards.length){
+    cvSyncState(cards[0]);
+  }else{
+    state.activeCardId=null; state.itemId=null;
+  }
+  ensureCardState(); renderManagerCards(); updateProfile(); haptic('heavy');
+}
+function openAuctionForCard(){
+  const cards=cvReadCards();
+  if(!cards.length)return;
+  const c=cvCurrent();
+  if(!state.wallet){
+    state.pendingWalletCardId=c.id;
+    state.pendingAuction=true;
+    document.getElementById('auctionWalletNotice').classList.remove('hidden');
+    document.getElementById('auctionWalletNotice').textContent='Для публикации на аукционе сначала привяжите TON-кошелёк к выбранной карте.';
+    state.tonConnectUI?.openModal();
+    return;
+  }
+  if(c && !c.wallet){ c.wallet=state.wallet; cvWriteCards(cards); }
+  openAuctionPicker();
+}
+function openAuctionPicker(){
+  renderAuctionCards();
+  document.getElementById('auctionPickerSheet').classList.remove('hidden');
+  try{lucide.createIcons();}catch(e){}
+}
+function closeAuctionPicker(){document.getElementById('auctionPickerSheet').classList.add('hidden');}
+function renderAuctionCards(){
+  const list=document.getElementById('auctionCardList'); list.innerHTML='';
+  const cards=cvReadCards();
+  cards.forEach(c=>{
+    const row=document.createElement('button'); row.className='auction-card-row';
+    row.innerHTML='<div class="auction-card-thumb" style="background-image:url(&quot;'+cvCardStyle(c)+'&quot;)"></div><div class="auction-card-meta"><strong>'+cvMasked(c.serial_code)+'</strong><span>'+(c.wallet?'Кошелёк привязан':'Нужен кошелёк для публикации')+'</span></div><i data-lucide="chevron-right" class="chev"></i>';
+    row.onclick=()=>publishCvAuction(c.id);
+    list.appendChild(row);
+  });
+  try{lucide.createIcons();}catch(e){}
+}
+function publishCvAuction(id){
+  const c=cvReadCards().find(x=>x.id===id); if(!c)return;
+  if(!c.wallet){
+    state.pendingWalletCardId=id;
+    state.pendingAuction=true;
+    closeAuctionPicker();
+    document.getElementById('auctionWalletNotice').classList.remove('hidden');
+    document.getElementById('auctionWalletNotice').textContent='Подключите кошелёк этой карты, затем снова откройте публикацию.';
+    state.tonConnectUI?.openModal();
+    return;
+  }
+  if(!state.wallet || state.wallet!==c.wallet){
+    alert('Подключите кошелёк, который привязан к этой карте.');
+    return;
+  }
+  closeAuctionPicker();
+  alert('Карта выбрана для публикации. Серверный endpoint аукциона не менялся: здесь готовится выбор карты, а публикация должна выполняться существующим backend.');
+}
+function openCardIdEditor(){
+  const c=cvCurrent(); if(!c)return;
+  const input=document.getElementById('cardIdInput');
+  input.value=String(c.serial_code||'').slice(0,5);
+  input.maxLength=5;
+  input.placeholder='Первые 5 цифр';
+  document.querySelector('#cardIdEditor .text-sm').textContent='Изменить первые 5 цифр';
+  document.querySelector('#cardIdEditor .text-xs').textContent='Можно менять только первые 5 цифр. Остальные 11 остаются неизменными.';
+  document.getElementById('cardIdError').classList.add('hidden');
+  document.getElementById('cardIdEditor').classList.remove('hidden');
+  haptic('light');
+}
+async function confirmCardId(){
+  const c=cvCurrent(); if(!c)return;
+  const prefix=document.getElementById('cardIdInput').value.replace(/\D/g,'').slice(0,5);
+  const old=String(c.serial_code||cvGen16()).padEnd(16,'0').slice(0,16);
+  if(!/^\d{5}$/.test(prefix)){
+    const er=document.getElementById('cardIdError');er.textContent='Введите ровно 5 цифр';er.classList.remove('hidden');haptic('heavy');return;
+  }
+  const full=prefix+old.slice(5);
+  try{
+    if(c.backendId){
+      const d=await apiPost('check_card_number',{card_number:full,item_id:c.backendId});
+      if(!d.ok||!d.available){const er=document.getElementById('cardIdError');er.textContent=d.error||'Этот номер уже используется';er.classList.remove('hidden');haptic('heavy');return;}
+    }
+    c.serial_code=full;
+    const cards=cvReadCards(); const ix=cards.findIndex(x=>x.id===c.id); if(ix>=0)cards[ix]=c; cvWriteCards(cards);
+    cvSyncState(c); closeCardIdEditor(); haptic('medium');
+  }catch(e){
+    const er=document.getElementById('cardIdError');er.textContent='Не удалось проверить номер';er.classList.remove('hidden');
+  }
+}
+function applySkin(skin){
+  const c=cvCurrent(); if(!c)return;
+  c.skin_id=skin.id;
+  const cards=cvReadCards(), ix=cards.findIndex(x=>x.id===c.id);if(ix>=0)cards[ix]=c;cvWriteCards(cards);
+  cvSyncState(c);
+  document.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===skin.id));
+  haptic('light');
+}
+function rebuildPhotoGallery(){
+  const box=document.getElementById('skinScroller'); if(!box)return;
+  box.innerHTML='';
+  CV_SKINS.forEach(s=>{
+    const b=document.createElement('button');b.className='skin-tile active:press';b.dataset.skinId=s.id;
+    b.style.backgroundImage='url("'+s.url+'")';b.style.backgroundSize='cover';b.style.backgroundPosition='center';
+    b.title=s.name;b.onclick=()=>applySkin(s);box.appendChild(b);
+  });
+  const c=cvCurrent();document.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===c?.skin_id));
+}
+async function saveCardSettings(){
+  const c=cvCurrent(); if(!c)return;
+  const btn=document.getElementById('saveDesignBtn');const st=document.getElementById('saveDesignStatus');
+  btn.disabled=true;st.textContent='Сохранение...';
+  try{
+    if(c.backendId){
+      const d=await apiPost('update_card_settings',{item_id:c.backendId,serial_code:c.serial_code,skin_id:c.skin_id});
+      if(!d.ok)throw new Error(d.error||'Ошибка');
+    }
+    cvWriteCards(cvReadCards());st.textContent='Сохранено';haptic('medium');
+    setTimeout(()=>{st.textContent='';},1300);
+  }catch(e){st.textContent=e.message||'Ошибка сохранения';}
+  btn.disabled=false;
+}
+function updateProfile(){
+  const u=state.tgUser||{};
+  document.getElementById('profName').textContent=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
+  document.getElementById('profUsername').textContent=u.username?'@'+u.username:'@guest';
+  document.getElementById('profTgId').textContent=u.id||'—';
+  const cards=cvReadCards();document.getElementById('profCards').textContent=String(cards.length);
+  document.getElementById('profWallet').textContent=cvCurrent()?.wallet||'не подключен';
+  const img=document.getElementById('profAvatar'),icon=document.getElementById('profAvatarIcon');
+  if(u.photo_url){img.src=u.photo_url;img.classList.remove('hidden');icon.classList.add('hidden');}
+}
+const oldTonStatusHandler = state.tonConnectUI?.onStatusChange;
+try{
+  state.tonConnectUI?.onStatusChange?.(wallet=>{
+    state.wallet=wallet?.account?.address||null;
+    const cards=cvReadCards();
+    if(state.pendingWalletCardId && state.wallet){
+      const c=cards.find(x=>x.id===state.pendingWalletCardId);
+      if(c){c.wallet=state.wallet;cvWriteCards(cards);cvSyncState(c);}
+      state.pendingWalletCardId=null;
+      if(state.pendingAuction){state.pendingAuction=false;openAuctionPicker();}
+    }
+    updateCvWalletBar();updateProfile();renderManagerCards();
+  });
+}catch(e){}
+
+function cvNavIndicator(tab){
+  const nav=document.getElementById('bottomNav'), ind=document.getElementById('navIndicator');
+  const btn=nav?.querySelector('[data-tab="'+tab+'"]');if(!nav||!ind||!btn)return;
+  ind.style.transform='translateX('+(btn.offsetLeft+btn.offsetWidth/2-ind.offsetWidth/2)+'px)';
+}
+const cvOriginalSwitchTab=switchTab;
+switchTab=function(tab){cvOriginalSwitchTab(tab);requestAnimationFrame(()=>cvNavIndicator(tab));};
+requestAnimationFrame(()=>cvNavIndicator('bank'));
+
+const cvOriginalHandlePinComplete=handlePinComplete;
+handlePinComplete=async function(){
+  const entered=pinState.buffer;
+  if(pinState.mode==='delete'){
+    const storedHash=await cloudGet('cv_pin_hash');
+    const enteredHash=await sha256Hex(entered);
+    if(enteredHash===storedHash){
+      const id=pinState.deleteCardId;
+      document.getElementById('pinScreen').classList.add('hidden');
+      pinState.buffer='';pinState.mode='enter';
+      await deleteCardAfterPin(id);
+      document.getElementById('pinTitle').textContent='Введите PIN-код';
+      document.getElementById('pinSubtitle').textContent='';
+      renderPinDots();
+    }else{
+      await pinFail('Неверный PIN-код');
+    }
+    return;
+  }
+  return cvOriginalHandlePinComplete();
+};
+
+async function initCvCards(){
+  try{
+    await new Promise(r=>setTimeout(r,120));
+    ensureCardState();
+    rebuildPhotoGallery();
+    updateProfile();
+    try{lucide.createIcons();}catch(e){}
+  }catch(e){console.error(e);}
+}
+setTimeout(initCvCards,450);
+</script>
+
 </body>
 </html>
