@@ -381,6 +381,16 @@ export default async function handler(req, res) {
       const message = String(req.body?.message || "").trim().slice(0, 2000);
       if (!message) return res.status(400).json({ ok:false, error:"Введите сообщение" });
 
+      await sb("support_messages", {
+        method: "POST",
+        body: JSON.stringify({
+          telegram_id: verifiedUser.id,
+          username: verifiedUser.username || null,
+          first_name: verifiedUser.first_name || null,
+          message
+        })
+      });
+
       const text = [
         "🆘 Поддержка Cards Auction",
         "",
@@ -391,11 +401,14 @@ export default async function handler(req, res) {
         message
       ].join("\n");
 
-      const sent = await tg("sendMessage", {
-        chat_id: process.env.SUPPORT_CHAT_ID || verifiedUser.id,
-        text
-      });
-      if (!sent?.ok) return res.status(502).json({ ok:false, error:"Не удалось отправить сообщение в поддержку" });
+      if (process.env.SUPPORT_CHAT_ID) {
+        const sent = await tg("sendMessage", {
+          chat_id: process.env.SUPPORT_CHAT_ID,
+          text
+        });
+        if (!sent?.ok) console.error("Support Telegram delivery failed:", sent.description);
+      }
+
       return res.status(200).json({ ok:true });
     }
 
