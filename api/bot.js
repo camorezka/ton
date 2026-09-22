@@ -385,6 +385,9 @@ export default async function handler(req, res) {
 
       const requested = String(req.body?.serial_code || "").replace(/\\D/g, "").slice(0, 4);
       const skinId = String(req.body?.skin_id || "photo_1").slice(0, 80);
+      const title = String(req.body?.title || "Без названия").trim().slice(0, 60) || "Без названия";
+      const description = String(req.body?.description || "").trim().slice(0, 300) || null;
+      const visibility = req.body?.visibility === "private" ? "private" : "public";
       if (!/^\\d{4}$/.test(requested)) return res.status(400).json({ ok: false, error: "Введите ровно 4 цифры" });
 
       const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(requested)}&select=id&limit=1`);
@@ -393,7 +396,7 @@ export default async function handler(req, res) {
       const password = String(req.body?.card_password || "").replace(/\\D/g, "").slice(0, 6) || String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
       const rows = await sb("collectibles", {
         method: "POST",
-        body: JSON.stringify({ owner_id: user.id, serial_code: requested, card_password: password, skin_id: skinId, wallet_address: null })
+        body: JSON.stringify({ owner_id: user.id, serial_code: requested, card_password: password, skin_id: skinId, wallet_address: null, title, description, visibility })
       });
       return res.status(200).json({ ok: true, card: rows?.[0] || null });
     }
@@ -407,7 +410,7 @@ export default async function handler(req, res) {
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
 
-      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_password,wallet_address,created_at&order=created_at.asc`);
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_password,wallet_address,title,description,visibility,transfer_count,created_at&order=created_at.asc`);
       return res.status(200).json({ ok: true, card: cards?.[0] || null });
     }
 
@@ -441,7 +444,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ ok: false, error: "invalid or missing initData" });
       }
 
-      const { item_id, serial_code, skin_id, wallet_address } = req.body || {};
+      const { item_id, serial_code, skin_id, wallet_address, title, description, visibility } = req.body || {};
       if (serial_code && !/^\d{4}$/.test(String(serial_code))) {
         return res.status(400).json({ ok: false, error: "serial_code must be exactly 4 digits" });
       }
@@ -460,6 +463,9 @@ export default async function handler(req, res) {
       if (serial_code) patch.serial_code = String(serial_code);
       if (skin_id) patch.skin_id = String(skin_id);
       if (wallet_address !== undefined) patch.wallet_address = wallet_address ? String(wallet_address) : null;
+      if (title !== undefined) patch.title = String(title).trim().slice(0,60) || 'Без названия';
+      if (description !== undefined) patch.description = String(description).trim().slice(0,300) || null;
+      if (visibility !== undefined) patch.visibility = visibility === 'private' ? 'private' : 'public';
 
       if (item_id) {
         // Updating a specific owned collectible
