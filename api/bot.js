@@ -388,7 +388,7 @@ export default async function handler(req, res) {
       const title = String(req.body?.title || "Без названия").trim().slice(0, 60) || "Без названия";
       const description = String(req.body?.description || "").trim().slice(0, 300) || null;
       const visibility = req.body?.visibility === "private" ? "private" : "public";
-      if (!/^\\d{4}$/.test(requested)) return res.status(400).json({ ok: false, error: "Введите ровно 4 цифры" });
+      if (!/^\d{4}$/.test(requested)) return res.status(400).json({ ok: false, error: "Введите ровно 4 цифры" });
 
       const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(requested)}&select=id&limit=1`);
       if (existing?.[0]) return res.status(409).json({ ok: false, error: "Этот номер уже используется" });
@@ -421,7 +421,7 @@ export default async function handler(req, res) {
 
       const { card_number, item_id } = req.body || {};
       const value = String(card_number || "");
-      if (!/^\\d{4}$/.test(value)) {
+      if (!/^\d{4}$/.test(value)) {
         return res.status(400).json({ ok: false, available: false, error: "Номер должен содержать ровно 4 цифры" });
       }
 
