@@ -40,6 +40,26 @@ body{
 .frosted{ background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .active\:press:active{ transform:scale(.95); }
 ::-webkit-scrollbar{ display:none; }
+#screen-collection,#screen-profile,#screen-settings{overflow:hidden;overscroll-behavior:none;}
+#screen-market{height:calc(100dvh - 150px);overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:110px;}
+.history-sort{display:flex;align-items:center;gap:7px;font-size:10px;color:rgba(255,255,255,.4);}
+.history-sort select{background:#11151c;color:#dfe5ed;border:1px solid #252b35;border-radius:10px;padding:7px 8px;outline:none;font-size:11px;max-width:145px;}
+.history-head,.history-row{display:grid;grid-template-columns:minmax(0,1fr) 62px;gap:10px;align-items:center;}
+.history-head{padding:0 10px 7px;color:rgba(255,255,255,.32);font-size:9px;text-transform:uppercase;letter-spacing:.08em;}
+.history-row{width:100%;text-align:left;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);border-radius:13px;padding:12px 10px;color:#fff;transition:transform .16s ease,background .16s ease;}
+.history-row:active{transform:scale(.985);background:rgba(255,255,255,.07);}
+.history-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.history-time{font-size:10px;color:rgba(255,255,255,.4);text-align:right;}
+.history-detail-sheet{position:fixed;inset:0;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+.history-detail-sheet.open{opacity:1;pointer-events:auto;}
+.history-detail-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);}
+.history-detail-panel{position:absolute;left:0;right:0;bottom:0;background:#11151c;border:1px solid #252b35;border-bottom:0;border-radius:24px 24px 0 0;padding:22px 18px calc(24px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.85,.2,1);}
+.history-detail-sheet.open .history-detail-panel{transform:translateY(0);}
+.history-detail-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border-radius:50%;background:#20252e;display:flex;align-items:center;justify-content:center;}
+.history-detail-title{font-size:17px;font-weight:600;padding:12px 40px 16px 0;}
+.history-detail-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-top:1px solid rgba(255,255,255,.07);font-size:12px;}
+.history-detail-row span{color:rgba(255,255,255,.45);}
+
 
 /* ---------- 3D CARD ---------- */
 .card-stage{ perspective: 1200px; max-width: 380px; margin: 0 auto; }
@@ -429,7 +449,7 @@ body{display:flex;justify-content:center;align-items:stretch}
     <div class="text-xs text-white/40 flex items-center gap-1.5">Cards Auction
       
     </div>
-    <div class="text-lg font-semibold" id="greetName">My Bank</div>
+    <div class="text-lg font-semibold" id="greetName">Коллекционные карточки</div>
   </div>
   <div class="flex items-center gap-2">
     <button id="settingsBtn" onclick="switchTab('settings')" class="glass active:press w-9 h-9 rounded-full flex items-center justify-center">
@@ -441,8 +461,8 @@ body{display:flex;justify-content:center;align-items:stretch}
   </div>
 </header>
 
-<!-- ================= SCREEN: BANK ================= -->
-<main id="screen-bank" class="px-4 space-y-5">
+<!-- ================= SCREEN: COLLECTION ================= -->
+<main id="screen-collection" class="px-4 space-y-5">
 
   <div class="card-carousel-shell">
   <button class="card-carousel-arrow card-carousel-prev" aria-label="Предыдущая карточка" onclick="cycleCard(-1)"><i data-lucide="chevron-left"></i></button>
@@ -487,8 +507,21 @@ body{display:flex;justify-content:center;align-items:stretch}
 <div id="cardCarouselDots" class="card-carousel-dots" aria-hidden="true"></div>
 
   <section id="historyBlock" class="history-block glass rounded-2xl p-4 mt-4">
-    <div class="flex items-center justify-between mb-3"><div><div class="text-sm font-medium">История операций</div><div class="text-xs text-white/40 mt-1">Покупки, продажи и статусы сделок</div></div><i data-lucide="history" class="w-4 h-4 text-white/40"></i></div>
-    <div id="historyList" class="space-y-2"><div class="text-xs text-white/40 text-center py-4">Загрузка истории…</div></div>
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <div class="text-sm font-medium">История</div>
+      <label class="history-sort">
+        <span>Сортировка</span>
+        <select id="historySort" onchange="renderHistory()">
+          <option value="newest">Сначала новые</option>
+          <option value="price_desc">Цена ↓</option>
+          <option value="price_asc">Цена ↑</option>
+          <option value="alpha">По алфавиту</option>
+          <option value="oldest">Сначала старые</option>
+        </select>
+      </label>
+    </div>
+    <div class="history-head"><span>Название операции</span><span>Время</span></div>
+    <div id="historyList" class="space-y-2"><div class="text-xs text-white/40 text-center py-4">Загрузка…</div></div>
   </section>
 
   <div class="flex gap-3">
@@ -501,24 +534,12 @@ body{display:flex;justify-content:center;align-items:stretch}
     <span>Создать карточку</span>
   </div>
 
-  <!-- SHAKE TO CHARGE -->
-  <div class="glass rounded-2xl p-4">
-    <div class="flex items-center justify-between mb-2">
-      <div class="text-sm font-medium flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4" style="color:var(--gold)"></i> Shake-To-Charge</div>
-      <div id="chargePct" class="text-xs text-white/50">0%</div>
-    </div>
-    <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-      <div id="chargeBar" class="h-full rounded-full" style="width:0%; background:linear-gradient(90deg,var(--cyan),var(--gold));"></div>
-    </div>
-    <p class="text-xs text-white/40 mt-2">Трясите телефон 3 секунды, чтобы зарядить карту и продлить streak <i data-lucide="flame" class="w-3.5 h-3.5 inline-block align-middle"></i> <span id="streakLabel">0</span></p>
-  </div>
-
   <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-40"></canvas>
 </main>
 
 <!-- ================= SCREEN: MARKET ================= -->
 <main id="screen-market" class="px-4 space-y-4 hidden">
-  <div class="flex items-center justify-between mb-1"><div><h2 class="text-lg font-semibold">Cards Auction</h2><div class="text-xs text-white/40 mt-1">Поиск коллекционных карточек</div></div><i data-lucide="gavel" class="w-5 h-5 text-white/50"></i></div>
+  <div class="flex items-center justify-between mb-1"><div><h2 class="text-lg font-semibold">Коллекционные карточки</h2><div class="text-xs text-white/40 mt-1">Поиск коллекционных карточек</div></div><i data-lucide="gavel" class="w-5 h-5 text-white/50"></i></div>
   <div class="glass rounded-2xl p-3 flex items-center gap-2"><i data-lucide="search" class="w-4 h-4 text-white/40"></i><input id="cardSearchInput" oninput="searchPublicCards()" maxlength="4" inputmode="numeric" class="bg-transparent outline-none flex-1 text-sm" placeholder="Номер карточки"></div>
   <div id="marketList" class="space-y-3"></div>
 </main>
@@ -544,7 +565,7 @@ body{display:flex;justify-content:center;align-items:stretch}
       <div class="text-sm font-medium">Кошелёк</div>
       <i data-lucide="wallet-cards" class="w-4 h-4 text-white/35"></i>
     </div>
-    <div id="profWallet" class="text-xs text-white/50 break-all mb-3">не подключен</div>
+    <div id="walletList" class="space-y-2 mb-3"><div class="text-xs text-white/50">кошельки не подключены</div></div>
     <div class="wallet-actions">
       <button onclick="connectWalletFromProfile()" class="wallet-action wallet-action-add active:press"><i data-lucide="plus"></i><span>Добавить</span></button>
       <button id="disconnectBtn" onclick="disconnectWallet()" class="wallet-action wallet-action-delete active:press"><i data-lucide="trash-2"></i><span>Удалить</span></button>
@@ -559,18 +580,21 @@ body{display:flex;justify-content:center;align-items:stretch}
     <label class="setting-row"><span>Вибрация</span><input id="hapticsToggleScreen" type="checkbox" checked onchange="state.hapticsEnabled=this.checked"></label>
     <label class="setting-row"><span>3D-эффект карты</span><input id="tiltToggleScreen" type="checkbox" checked onchange="state.tiltEnabled=this.checked;resetTilt();"></label>
     <button class="setting-action" onclick="toggleFullscreen()"><i data-lucide="maximize-2"></i><span>Полный экран</span></button>
+    <button class="setting-action" onclick="openPrivacyPolicy()"><i data-lucide="shield-check"></i><span>Политика конфиденциальности</span></button>
     <button class="setting-action danger" onclick="resetPin()"><i data-lucide="lock-keyhole"></i><span>Сбросить PIN-код</span></button>
   </div>
 </main>
 
 <!-- ================= BOTTOM NAV ================= -->
 <nav id="bottomNav" class="navbar glass px-1.5 py-2 flex justify-around"><div id="navIndicator" class="nav-indicator"></div>
-  <button class="nav-btn active" data-tab="bank" onclick="switchTab('bank')"><i data-lucide="credit-card"></i><span>Банк</span></button>
+  <button class="nav-btn active" data-tab="collection" onclick="switchTab('collection')"><i data-lucide="credit-card"></i><span>Коллекция</span></button>
   <button class="nav-btn" data-tab="market" onclick="switchTab('market')"><i data-lucide="gavel"></i><span>Маркет</span></button>
   <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')"><i data-lucide="user"></i><span>Профиль</span></button>
   <button class="nav-btn" data-tab="settings" onclick="switchTab('settings')"><i data-lucide="settings"></i><span>Настройки</span></button>
   
 </nav>
+
+<div id="historyDetailSheet" class="history-detail-sheet"><div class="history-detail-backdrop" onclick="closeHistoryDetails()"></div><div class="history-detail-panel"><button class="history-detail-close" onclick="closeHistoryDetails()" aria-label="Закрыть"><i data-lucide="x"></i></button><div id="historyDetailContent"></div></div></div>
 
 <!-- ================= FOCUS MODAL (click on card) ================= -->
 <div id="focusModal" class="focus-modal"><button class="focus-back-top" onclick="closeFocusModal()" aria-label="Назад"><i data-lucide="chevron-left"></i></button>
@@ -782,7 +806,7 @@ const state = {
   itemId: null,
 };
 
-setText('greetName', state.tgUser.first_name || 'My Bank');
+setText('greetName', state.tgUser.first_name || 'Коллекционные карточки');
 setText('profTgId', state.tgUser.id || '—');
 setText('settingsTgId', state.tgUser.id || '—');
 {
@@ -1032,13 +1056,14 @@ async function refreshCardsFromServer(){
     if(d.ok && Array.isArray(d.cards)){
       const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
       cvWriteCards(cards);
+      state.cardsServerLoaded=true;
       if(cards.length) cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]);
       ensureCardState(); renderManagerCards(); updateProfile(); renderCardCarousel();
     }
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
 }
 function switchTab(tab){
-  ['bank','market','profile','settings'].forEach(t=>{
+  ['collection','market','profile','settings'].forEach(t=>{
     const el=document.getElementById('screen-'+t);
     if(el){ el.classList.toggle('hidden', t!==tab); if(t===tab){ el.classList.remove('screen-enter'); void el.offsetWidth; el.classList.add('screen-enter'); }}
   });
@@ -1046,7 +1071,7 @@ function switchTab(tab){
   haptic('light');
   if(tab==='market') loadMarket();
   if(tab==='profile') updateProfile();
-  if(tab==='bank'){ loadHistory(); refreshCardsFromServer(); }
+  if(tab==='collection'){ loadHistory(); if(!state.cardsServerLoaded) refreshCardsFromServer(); }
   try{ lucide.createIcons(); }catch(e){}
 }
 function openSheet(name){ document.getElementById('sheet-'+name).classList.remove('hidden'); haptic('light'); }
@@ -1293,174 +1318,6 @@ async function saveCardSettings(){
   btn.disabled = false;
 }
 
-// =====================================================================
-// SHAKE-TO-CHARGE
-// =====================================================================
-let lastShakeTime = 0, lastAccel = {x:0,y:0,z:0}, chargeInterval=null, shakeStart=null;
-const chargeBar = document.getElementById('chargeBar');
-const chargePct = document.getElementById('chargePct');
-
-async function enableShake(){
-  try{
-    if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
-      const p=await DeviceMotionEvent.requestPermission();
-      if(p!=='granted') return;
-    }
-    window.removeEventListener('devicemotion',onDeviceMotion);
-    window.addEventListener('devicemotion',onDeviceMotion,{passive:true});
-    haptic('light');
-  }catch(e){ console.warn('motion permission',e); }
-}
-document.addEventListener('touchstart',()=>enableShake(),{once:true,passive:true});
-document.addEventListener('click',()=>enableShake(),{once:true});
-function onDeviceMotion(e){
-  const a = e.accelerationIncludingGravity || e.acceleration;
-  if(!a) return;
-  const ax=Number(a.x||0), ay=Number(a.y||0), az=Number(a.z||0);
-  const delta = Math.abs(ax-lastAccel.x) + Math.abs(ay-lastAccel.y) + Math.abs(az-lastAccel.z);
-  lastAccel = {x:a.x, y:a.y, z:a.z};
-  const now = Date.now();
-  if(delta > 3.5 && now - lastShakeTime > 70){ lastShakeTime = now; registerShakeTick(); }
-}
-function registerShakeTick(){
-  if(!shakeStart) shakeStart = Date.now();
-  const elapsed = Date.now() - shakeStart;
-  const pct = Math.min(100, Math.round((elapsed/3000)*100));
-  updateChargeUI(pct);
-  clearTimeout(chargeInterval);
-  chargeInterval = setTimeout(()=>{ shakeStart=null; if(pct<100) updateChargeUI(0); }, 500);
-}
-function updateChargeUI(pct){
-  state.chargeProgress = pct;
-  chargeBar.style.width = pct+'%';
-  if(chargePct) chargePct.textContent = pct+'%';
-  card3d.classList.toggle('shaking', pct>0 && pct<100);
-  card3d.classList.toggle('burning', pct>0 && pct<100);
-  if(pct>0 && pct<34){ haptic('light'); }
-  else if(pct>=34 && pct<67){ haptic('medium'); spawnParticles(6, ['#ff8c00','#ffd700']); }
-  else if(pct>=67 && pct<100){ haptic('heavy'); spawnParticles(14, ['#ff4500','#00f2fe','#ffd700']); }
-  else if(pct>=100){ completeCharge(); }
-}
-function completeCharge(){
-  card3d.classList.remove('shaking','burning');
-  const flash = document.getElementById('flash');
-  flash.style.opacity = '1';
-  setTimeout(()=> flash.style.opacity='0', 120);
-  haptic('heavy');
-  spawnParticles(40, ['#ff4500','#ffd700','#00f2fe']);
-  try{ confetti({particleCount:80, spread:90, colors:['#00F2FE','#FFD700','#4FACFE']}); }catch(e){}
-
-  apiPost('charge_complete', { item_id: state.itemId })
-    .then(d=>{ if(d.ok) setText('streakLabel', d.daily_streak); })
-    .catch(()=>{});
-
-  setTimeout(()=> updateChargeUI(0), 1500);
-}
-function simulateShake(){
-  let p = state.chargeProgress;
-  const iv = setInterval(()=>{ p = Math.min(100, p+8); updateChargeUI(p); if(p>=100) clearInterval(iv); }, 120);
-}
-function initMotion(){
-  if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
-    DeviceMotionEvent.requestPermission().then(s=>{ if(s==='granted') window.addEventListener('devicemotion', onDeviceMotion); }).catch(()=>{});
-  } else if(typeof DeviceMotionEvent !== 'undefined'){
-    window.addEventListener('devicemotion', onDeviceMotion);
-  }
-}
-document.body.addEventListener('click', initMotion, {once:true});
-
-// =====================================================================
-// PARTICLE SYSTEM
-// =====================================================================
-const canvas = document.getElementById('particleCanvas');
-const ctx = canvas.getContext('2d');
-function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; }
-resizeCanvas(); window.addEventListener('resize', resizeCanvas);
-let particles = [];
-function spawnParticles(n, colors){
-  const rect = card3d.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    particles.push({
-      x: rect.left + rect.width/2 + (Math.random()-.5)*rect.width,
-      y: rect.top + rect.height/2 + (Math.random()-.5)*rect.height,
-      vx: (Math.random()-.5)*4, vy: -Math.random()*3-1,
-      r: Math.random()*3+1, life: 1, color: colors[Math.floor(Math.random()*colors.length)]
-    });
-  }
-}
-(function loop(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  particles.forEach(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.life-=0.02;
-    ctx.globalAlpha = Math.max(p.life,0);
-    ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill();
-  });
-  particles = particles.filter(p=>p.life>0);
-  ctx.globalAlpha = 1;
-  requestAnimationFrame(loop);
-})();
-
-let searchTimer=null;
-async function searchPublicCards(){
-  clearTimeout(searchTimer);
-  const q=document.getElementById('cardSearchInput')?.value.replace(/\\D/g,'').slice(0,4)||'';
-  const list=document.getElementById('marketList'); if(!list)return;
-  if(!q){list.innerHTML='<div class="empty-market"><i data-lucide="search"></i><span>Введите 1–4 цифры</span></div>';try{lucide.createIcons();}catch(e){};return;}
-  searchTimer=setTimeout(async()=>{
-    try{
-      const d=await apiPost('search_cards',{query:q});
-      list.innerHTML='';
-      (d.cards||[]).forEach(card=>{
-        const row=document.createElement('button');row.className='auction-card-row';
-        row.innerHTML='<div class="auction-card-thumb" style="background-image:url(&quot;'+cvCardStyle(card)+'&quot;)"></div><div class="auction-card-meta"><strong>'+cvMasked(card.serial_code)+'</strong><span>'+String(card.title||'Без названия').replace(/[<>]/g,'')+'</span></div><i data-lucide="chevron-right" class="chev"></i>';
-        row.onclick=()=>openPublicCard(card.id);
-        list.appendChild(row);
-      });
-      if(!d.cards?.length) list.innerHTML='<div class="empty-market"><i data-lucide="search-x"></i><span>Карточка не найдена</span></div>';
-      try{lucide.createIcons();}catch(e){}
-    }catch(e){list.innerHTML='<div class="empty-market"><i data-lucide="wifi-off"></i><span>Не удалось выполнить поиск</span></div>';try{lucide.createIcons();}catch(e){}}
-  },180);
-}
-async function openPublicCard(id){
-  try{
-    const d=await apiPost('get_card_public',{item_id:id});
-    if(!d.ok) throw new Error();
-    const c=d.card;
-    alert((c.title||'Без названия')+'\\n\\nНомер: '+c.serial_code+'\\n\\n'+(c.description||'Без описания')+'\\n\\nПередач: '+(c.transfer_count||0));
-  }catch(e){haptic('heavy');}
-}
-
-async function loadHistory(){
-  const box=document.getElementById('historyList'); if(!box)return;
-  try{ const d=await apiPost('my_history'); const rows=d.orders||[];
-    if(!rows.length){box.innerHTML='<div class="text-xs text-white/40 text-center py-4">Операций пока нет</div>';return;}
-    box.innerHTML=rows.map(o=>{const isBuy=o.role==='buyer';const amount=Number(o.amount_ton||0).toFixed(2);const status=o.status==='confirmed'?'Завершено':o.status==='expired'?'Истёк':'В ожидании';return '<div class="history-row"><div><div class="text-xs">'+(isBuy?'Покупка':'Продажа')+'</div><div class="text-[10px] text-white/35">'+new Date(o.created_at).toLocaleString()+'</div></div><div class="text-right"><div class="text-xs">'+amount+' TON</div><div class="text-[10px] text-white/40">'+status+'</div></div></div>';}).join('');
-  }catch(e){box.innerHTML='<div class="text-xs text-white/40 text-center py-4">Историю пока не удалось загрузить</div>';}
-}
-function updateProfile(){
-  const u=state.tgUser||{}; const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
-  setText('profName',name); setText('profUsername',u.username?'@'+u.username:'@guest'); setText('profTgId',u.id||'—');
-  setText('profRegion',((navigator.language||u.language_code||'—').includes('-')?(navigator.language||u.language_code).split('-')[1].toUpperCase():(navigator.language||u.language_code||'—').toUpperCase()));
-  setText('profTimezone',Intl.DateTimeFormat().resolvedOptions().timeZone||'—'); setText('profWallet',state.wallet||'не подключен');
-  const cards=cvReadCards(); setText('profCards',cards.length); setText('profStreak',localStorage.getItem('cv_daily_streak')||'0');
-  const img=document.getElementById('profAvatar'),icon=document.getElementById('profAvatarIcon');
-  if(u.photo_url&&img&&icon){img.src=u.photo_url;img.classList.remove('hidden');icon.classList.add('hidden');}
-}
-async function sendSupportMessage(){
-  const input=document.getElementById('supportText'),btn=document.getElementById('supportSendBtn');
-  const value=input?.value.trim()||'';
-  if(!value){setText('supportStatus','Введите сообщение');return;}
-  if(btn)btn.disabled=true;
-  setText('supportStatus','Отправка...');
-  try{
-    const d=await apiPost('support_message',{message:value});
-    if(!d.ok)throw new Error(d.error||'Не удалось отправить сообщение');
-    input.value='';setText('supportStatus','Сообщение отправлено');haptic('medium');
-  }catch(e){setText('supportStatus',e.message||'Не удалось отправить сообщение');}
-  if(btn)btn.disabled=false;
-}
-
 updateProfile();
 requestAppFullscreen();
 loadMyCard().finally(()=>{ try{ lucide.createIcons(); }catch(e){} });
@@ -1478,6 +1335,7 @@ async function initTonConnect(){
     });
   state.tonConnectUI.onStatusChange(wallet=>{
     state.wallet = wallet?.account?.address || null;
+    if(state.wallet) saveWalletAddress(state.wallet);
     setText('walletLabel', state.wallet ? (state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)) : 'Привязать кошелёк');
     if(state.wallet){
       const cards=cvReadCards();
@@ -1522,7 +1380,7 @@ async function disconnectWallet(){
   const current=cvCurrent();
   if(current?.backendId) apiPost('update_card_settings',{item_id:current.backendId,wallet_address:null}).catch(()=>{});
   state.wallet=null;
-  cvWriteCards(cards); updateProfile(); updateCvWalletBar(); renderManagerCards();
+  cvWriteCards(cards); updateProfile(); renderWalletList(); updateCvWalletBar(); renderManagerCards();
 }
 
 // =====================================================================
@@ -2011,6 +1869,126 @@ async function saveCardSettings(){
   }catch(e){st.textContent=e.message||'Ошибка сохранения';}
   btn.disabled=false;
 }
+function getSavedWallets(){try{return JSON.parse(localStorage.getItem('cv_wallets')||'[]').filter(Boolean);}catch(e){return[];}}
+function saveWalletAddress(addr){if(!addr)return;const a=getSavedWallets().filter(x=>x!==addr);a.unshift(addr);localStorage.setItem('cv_wallets',JSON.stringify(a.slice(0,8)));renderWalletList();}
+function renderWalletList(){const box=document.getElementById('walletList');if(!box)return;const a=getSavedWallets();box.innerHTML=a.length?a.map((x,i)=>'<button class="wallet-list-row '+(x===state.wallet?'active':'')+'" onclick="selectSavedWallet('+i+')"><span>'+escapeHtml(x.slice(0,6)+'…'+x.slice(-6))+'</span><i data-lucide="'+(x===state.wallet?'check':'wallet')+'"></i></button>').join(''):'<div class="text-xs text-white/50">кошельки не подключены</div>';try{lucide.createIcons();}catch(e){}}
+function selectSavedWallet(i){const a=getSavedWallets();if(a[i]){state.wallet=a[i];setText('walletLabel',state.wallet.slice(0,4)+'…'+state.wallet.slice(-4));renderWalletList();updateProfile();}}
+
+function openPrivacyPolicy(){ window.location.href="/privacy-policy.html"; }
+function updateProfile(){
+  const u=state.tgUser||{}; const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
+  setText('profName',name); setText('profUsername',u.username?'@'+u.username:'@guest'); setText('profTgId',u.id||'—');
+  setText('profRegion',((navigator.language||u.language_code||'—').includes('-')?(navigator.language||u.language_code).split('-')[1].toUpperCase():(navigator.language||u.language_code||'—').toUpperCase()));
+  setText('profTimezone',Intl.DateTimeFormat().resolvedOptions().timeZone||'—'); renderWalletList();
+  const cards=cvReadCards(); setText('profCards',cards.length); setText('profStreak',localStorage.getItem('cv_daily_streak')||'0');
+  const img=document.getElementById('profAvatar'),icon=document.getElementById('profAvatarIcon');
+  if(u.photo_url&&img&&icon){img.src=u.photo_url;img.classList.remove('hidden');icon.classList.add('hidden');}
+}
+const oldTonStatusHandler = state.tonConnectUI?.onStatusChange;
+try{
+  state.tonConnectUI?.onStatusChange?.(wallet=>{
+    state.wallet=wallet?.account?.address||null;
+    const cards=cvReadCards();
+    if(state.pendingWalletCardId && state.wallet){
+      const c=cards.find(x=>x.id===state.pendingWalletCardId);
+      if(c){
+        c.wallet=state.wallet;
+        cvWriteCards(cards);
+        if(c.backendId){
+          apiPost('update_card_settings',{item_id:c.backendId,wallet_address:state.wallet}).catch(()=>{});
+        }
+        cvSyncState(c);
+      }
+      state.pendingWalletCardId=null;
+      if(state.pendingAuction){state.pendingAuction=false;openAuctionPicker();}
+    }
+    updateCvWalletBar();updateProfile();renderManagerCards();
+  });
+}catch(e){}
+
+function cvNavIndicator(tab){
+  const nav=document.getElementById('bottomNav'), ind=document.getElementById('navIndicator');
+  const btn=nav?.querySelector('[data-tab="'+tab+'"]');if(!nav||!ind||!btn)return;
+  ind.style.transform='translateX('+(btn.offsetLeft+btn.offsetWidth/2-ind.offsetWidth/2)+'px)';
+}
+const cvOriginalSwitchTab=switchTab;
+switchTab=function(tab){cvOriginalSwitchTab(tab);requestAnimationFrame(()=>cvNavIndicator(tab));};
+requestAnimationFrame(()=>cvNavIndicator('bank'));
+
+const cvOriginalHandlePinComplete=handlePinComplete;
+handlePinComplete=async function(){
+  const entered=pinState.buffer;
+  if(pinState.mode==='delete'){
+    const storedHash=await cloudGet('cv_pin_hash');
+    const enteredHash=await sha256Hex(entered);
+    if(enteredHash===storedHash){
+      const id=pinState.deleteCardId;
+      document.getElementById('pinScreen').classList.add('hidden');
+      pinState.buffer='';pinState.mode='enter';
+      await deleteCardAfterPin(id);
+      document.getElementById('pinTitle').textContent='Введите PIN-код';
+      document.getElementById('pinSubtitle').textContent='';
+      renderPinDots();
+    }else{
+      await pinFail('Неверный PIN-код');
+    }
+    return;
+  }
+  return cvOriginalHandlePinComplete();
+};
+
+async function initCvCards(){
+  try{
+    await new Promise(r=>setTimeout(r,120));
+    ensureCardState();
+    rebuildPhotoGallery();
+    updateProfile();
+    try{lucide.createIcons();}catch(e){}
+  }catch(e){console.error(e);}
+}
+setTimeout(initCvCards,450);
+</script>
+
+</body>
+</html>let historyRows=[];
+function renderHistory(){
+  const box=document.getElementById('historyList'); if(!box)return;
+  const sort=document.getElementById('historySort')?.value||'newest';
+  const rows=[...historyRows].sort((a,b)=>{
+    if(sort==='price_desc') return Number(b.amount_ton||0)-Number(a.amount_ton||0);
+    if(sort==='price_asc') return Number(a.amount_ton||0)-Number(b.amount_ton||0);
+    if(sort==='alpha') return String(a.operationTitle||'').localeCompare(String(b.operationTitle||''),'ru');
+    if(sort==='oldest') return new Date(a.created_at)-new Date(b.created_at);
+    return new Date(b.created_at)-new Date(a.created_at);
+  });
+  if(!rows.length){box.innerHTML='<div class="text-xs text-white/40 text-center py-5">Операций пока нет</div>';return;}
+  box.innerHTML=rows.map((o,i)=>{
+    const title=escapeHtml(o.operationTitle||((o.role==='buyer'?'Покупка':'Продажа')+' коллекционной карточки'));
+    const time=new Date(o.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    return '<button class="history-row" onclick="openHistoryDetails('+i+')" data-history-id="'+o.id+'"><span class="history-title">'+title+'</span><span class="history-time">'+time+'</span></button>';
+  }).join('');
+}
+async function loadHistory(){
+  const box=document.getElementById('historyList'); if(!box)return;
+  box.innerHTML='<div class="text-xs text-white/40 text-center py-5">Загрузка…</div>';
+  try{ const d=await apiPost('my_history'); historyRows=d.orders||[]; renderHistory(); }
+  catch(e){box.innerHTML='<div class="text-xs text-white/40 text-center py-5">Историю пока не удалось загрузить</div>';}
+}
+function openHistoryDetails(index){
+  const o=historyRows[index]; if(!o)return;
+  const role=o.role==='buyer'?'Покупка':'Продажа';
+  const status=o.status==='confirmed'?'Завершено':o.status==='expired'?'Истёк':'В ожидании';
+  const html='<div class="history-detail-title">'+escapeHtml(o.operationTitle||role+' коллекционной карточки')+'</div>'+
+    '<div class="history-detail-row"><span>Тип операции</span><b>'+role+'</b></div>'+
+    '<div class="history-detail-row"><span>Сумма</span><b>'+Number(o.amount_ton||0).toFixed(2)+' TON</b></div>'+
+    '<div class="history-detail-row"><span>Статус</span><b>'+status+'</b></div>'+
+    '<div class="history-detail-row"><span>Время</span><b>'+new Date(o.created_at).toLocaleString()+'</b></div>'+
+    (o.serial_code?'<div class="history-detail-row"><span>Код карточки</span><b>'+escapeHtml(o.serial_code)+'</b></div>':'')+
+    (o.tx_hash?'<div class="history-detail-row"><span>TX</span><b class="break-all">'+escapeHtml(o.tx_hash)+'</b></div>':'');
+  document.getElementById('historyDetailContent').innerHTML=html;
+  document.getElementById('historyDetailSheet').classList.add('open');
+}
+function closeHistoryDetails(){document.getElementById('historyDetailSheet').classList.remove('open');}
 function updateProfile(){
   const u=state.tgUser||{}; const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
   setText('profName',name); setText('profUsername',u.username?'@'+u.username:'@guest'); setText('profTgId',u.id||'—');
