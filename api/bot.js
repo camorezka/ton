@@ -444,7 +444,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ ok: false, error: "invalid or missing initData" });
       }
 
-      const { item_id, serial_code, skin_id, wallet_address, title, description, visibility } = req.body || {};
+      const { item_id, serial_code, card_password, skin_id, wallet_address, title, description, visibility } = req.body || {};
       if (serial_code && !/^\d{4}$/.test(String(serial_code))) {
         return res.status(400).json({ ok: false, error: "serial_code must be exactly 4 digits" });
       }
@@ -461,6 +461,11 @@ export default async function handler(req, res) {
 
       const patch = {};
       if (serial_code) patch.serial_code = String(serial_code);
+      if (card_password !== undefined) {
+        const cp = String(card_password).replace(/\D/g, '').slice(0,6);
+        if (!/^\d{6}$/.test(cp)) return res.status(400).json({ ok:false, error:'Код карты должен содержать 6 цифр' });
+        patch.card_password = cp;
+      }
       if (skin_id) patch.skin_id = String(skin_id);
       if (wallet_address !== undefined) patch.wallet_address = wallet_address ? String(wallet_address) : null;
       if (title !== undefined) patch.title = String(title).trim().slice(0,60) || 'Без названия';
