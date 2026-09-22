@@ -143,7 +143,7 @@ body{background:#090b10; background-image:none;}
 @keyframes screenEnter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .sheet-panel{background:#11151c;border-color:#252b35;animation:sheetIn .24s cubic-bezier(.2,.8,.2,1);}
 @keyframes sheetIn{from{transform:translateY(18px);opacity:.5}to{transform:translateY(0);opacity:1}}
-.focus-modal{background:#090b10;}.focus-back-btn{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:14px;z-index:10;width:42px;height:42px;border-radius:12px;background:#11151c;border:1px solid #252b35;display:flex;align-items:center;justify-content:center;color:#fff}.focus-back-btn svg{width:20px;height:20px}
+.focus-modal{background:#090b10;}.focus-back-btn{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:14px;z-index:10;width:42px;height:42px;border-radius:12px;background:#11151c;border:1px solid #252b35;display:flex;align-items:center;justify-content:center;color:#fff}.focus-back-btn svg{width:20px;height:20px}.focus-back-btn:before{display:none!important}
 .focus-backdrop{background:#090b10;backdrop-filter:none;-webkit-backdrop-filter:none;}
 .focus-card-wrap{animation:focusIn .28s cubic-bezier(.2,.8,.2,1);}
 @keyframes focusIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
@@ -231,7 +231,7 @@ body{background:#090b10; background-image:none;}
             <div class="text-xs font-medium tracking-[0.18em] opacity-70">CARD VAULT</div>
           </div>
           <div>
-            <div id="cardNumber" class="emboss text-lg md:text-xl mb-2">00000000</div>
+            <div id="cardNumber" class="emboss text-lg md:text-xl mb-2">0000000000000000</div>
             <div class="flex justify-between text-xs emboss opacity-90">
               
             </div>
@@ -243,7 +243,7 @@ body{background:#090b10; background-image:none;}
         <div class="specular" id="specularBack"></div>
         <div class="p-4 flex flex-col gap-3">
           <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
-            <span class="opacity-60">CARD ID</span><span id="cardIdBack" class="emboss text-blue-400">00000000</span>
+            <span class="opacity-60">CARD ID</span><span id="cardIdBack" class="emboss text-blue-400">0000000000000000</span>
           </div>
           <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
             <span class="opacity-60">Recovery code</span><span id="cardPassBack" class="pw-key text-blue-400">000000</span>
@@ -347,7 +347,7 @@ body{background:#090b10; background-image:none;}
               <div class="text-xs font-medium tracking-[0.18em] opacity-70">CARD VAULT</div>
             </div>
             <div>
-              <div class="emboss text-2xl md:text-3xl mb-2" id="focusCardNumber">00000000</div>
+              <div class="emboss text-2xl md:text-3xl mb-2" id="focusCardNumber">0000000000000000</div>
             </div>
           </div>
         </div>
@@ -355,10 +355,10 @@ body{background:#090b10; background-image:none;}
           <div class="specular" id="focusSpecularBack"></div>
           <div class="p-4 flex flex-col gap-3">
             <button class="glass active:press rounded-md px-3 py-2 flex justify-between text-xs text-left" onclick="event.stopPropagation(); openCardIdEditor();">
-              <span class="opacity-60">CARD ID</span><span id="focusCardIdBack" class="emboss text-blue-400">00000000</span>
+              <span class="opacity-60">CARD ID</span><span id="focusCardIdBack" class="emboss text-blue-400">0000000000000000</span>
             </button>
-            <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
-              <span class="opacity-60">Recovery code</span><span id="focusCardPassBack" class="pw-key text-blue-400">000000</span>
+            <div class="glass rounded-md px-3 py-2 flex items-center justify-center text-xs">
+              <i data-lucide="lock-keyhole" class="w-4 h-4 text-blue-400 mr-2"></i><span id="focusCardPassBack" class="pw-key text-blue-400">000000</span>
             </div>
           </div>
         </div>
@@ -395,11 +395,11 @@ body{background:#090b10; background-image:none;}
 <!-- ================= CARD ID EDITOR ================= -->
 <div id="cardIdEditor" class="editor-backdrop hidden">
   <div class="glass rounded-2xl p-5 w-full max-w-xs">
-    <div class="text-sm font-semibold mb-3">Изменить CARD ID (8 цифр)</div>
-    <input id="cardIdInput" maxlength="8" inputmode="numeric" pattern="[0-9]*"
+    <div class="text-sm font-semibold mb-3">Изменить CARD ID (16 цифр)</div>
+    <input id="cardIdInput" maxlength="16" inputmode="numeric" pattern="[0-9]*"
       class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-center text-lg emboss tracking-widest mb-3"
-      placeholder="00000000" />
-    <div id="cardIdError" class="text-xs text-red-300 mb-2 hidden">Введите ровно 8 цифр</div>
+      placeholder="0000000000000000" />
+    <div id="cardIdError" class="text-xs text-red-300 mb-2 hidden">Введите ровно 16 цифр</div>
     <div class="flex gap-2">
       <button class="glass active:press flex-1 py-2.5 rounded-xl text-sm" onclick="closeCardIdEditor()">Отмена</button>
       <button class="frosted active:press flex-1 py-2.5 rounded-xl text-sm font-medium" onclick="confirmCardId()">Применить</button>
@@ -800,23 +800,26 @@ function syncFocusFromMain(){
 }
 
 // =====================================================================
-// (2) COLLECTIBLE FIELDS: 8-digit custom Serial Code + auto-generated
+// (2) COLLECTIBLE FIELDS: 16-digit custom Serial Code + auto-generated
 // cosmetic Access Key. Purely flavor/cosmetic fields for a fantasy
 // crypto collectible card game — no real payment-card data involved.
 // =====================================================================
 function genCardId(){
-  return String(Math.floor(10000000 + Math.random()*89999999));
-}
-function genPassword(len=10){
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let out = '';
-  const arr = new Uint32Array(len);
-  crypto.getRandomValues(arr);
-  for(let i=0;i<len;i++) out += chars[arr[i] % chars.length];
+  let out='';
+  const a=new Uint32Array(16);
+  crypto.getRandomValues(a);
+  for(let i=0;i<16;i++) out += String(a[i] % 10);
   return out;
 }
-function maskCardId(id){ return id || '00000000'; }
-async function loadMyCard(){try{const d=await apiPost('get_card');if(!d.ok||!d.card)return;state.itemId=d.card.id||null;state.cardId=d.card.serial_code||'00000000';state.cardPassword=d.card.recovery_code||'000000';document.getElementById('cardIdBack').textContent=state.cardId;document.getElementById('cardNumber').textContent=state.cardId;document.getElementById('focusCardNumber').textContent=state.cardId;document.getElementById('focusCardIdBack').textContent=state.cardId;document.getElementById('cardPassBack').textContent=state.cardPassword;document.getElementById('focusCardPassBack').textContent=state.cardPassword;const savedSkin=SKINS.find(x=>x.id===d.card.skin_id);if(savedSkin)applySkin(savedSkin);document.getElementById('profCards').textContent=d.card_count??1;}catch(e){console.error(e)}}
+function genPassword(){
+  const a=new Uint32Array(6);
+  crypto.getRandomValues(a);
+  let out='';
+  for(let i=0;i<6;i++) out += String(a[i] % 10);
+  return out;
+}
+function maskCardId(id){ return id || '0000000000000000'; }
+async function loadMyCard(){try{const d=await apiPost('get_card');if(!d.ok||!d.card)return;state.itemId=d.card.id||null;state.cardId=d.card.serial_code||'0000000000000000';state.cardPassword=d.card.recovery_code||'000000';document.getElementById('cardIdBack').textContent=state.cardId;document.getElementById('cardNumber').textContent=state.cardId;document.getElementById('focusCardNumber').textContent=state.cardId;document.getElementById('focusCardIdBack').textContent=state.cardId;document.getElementById('cardPassBack').textContent=state.cardPassword;document.getElementById('focusCardPassBack').textContent=state.cardPassword;const savedSkin=SKINS.find(x=>x.id===d.card.skin_id);if(savedSkin)applySkin(savedSkin);document.getElementById('profCards').textContent=d.card_count??1;}catch(e){console.error(e)}}
 
 {
   const saved = DEMO_MODE ? demoLoad() : {};
@@ -833,7 +836,7 @@ function openCardIdEditor(){
   haptic('light');
 }
 function closeCardIdEditor(){ document.getElementById('cardIdEditor').classList.add('hidden'); }
-async function confirmCardId(){const val=document.getElementById('cardIdInput').value.trim(),err=document.getElementById('cardIdError');if(!/^\d{8}$/.test(val)){err.textContent='Введите ровно 8 цифр';err.classList.remove('hidden');haptic('heavy');return}if(val===state.cardId){closeCardIdEditor();return}try{const d=await apiPost('update_card_settings',{item_id:state.itemId,serial_code:val,skin_id:state.currentSkin});if(!d.ok){err.textContent=d.error||'Этот номер занят, выберите другое';err.classList.remove('hidden');haptic('heavy');return}state.cardId=val;document.getElementById('cardIdBack').textContent=val;document.getElementById('cardNumber').textContent=val;document.getElementById('focusCardNumber').textContent=val;document.getElementById('focusCardIdBack').textContent=val;haptic('medium');closeCardIdEditor()}catch(e){err.textContent='Не удалось проверить номер';err.classList.remove('hidden');haptic('heavy')}}
+async function confirmCardId(){const val=document.getElementById('cardIdInput').value.trim(),err=document.getElementById('cardIdError');if(!/^\d{8}$/.test(val)){err.textContent='Введите ровно 16 цифр';err.classList.remove('hidden');haptic('heavy');return}if(val===state.cardId){closeCardIdEditor();return}try{const d=await apiPost('update_card_settings',{item_id:state.itemId,serial_code:val,skin_id:state.currentSkin});if(!d.ok){err.textContent=d.error||'Этот номер занят, выберите другое';err.classList.remove('hidden');haptic('heavy');return}state.cardId=val;document.getElementById('cardIdBack').textContent=val;document.getElementById('cardNumber').textContent=val;document.getElementById('focusCardNumber').textContent=val;document.getElementById('focusCardIdBack').textContent=val;haptic('medium');closeCardIdEditor()}catch(e){err.textContent='Не удалось проверить номер';err.classList.remove('hidden');haptic('heavy')}}
 function regeneratePassword(){
   state.cardPassword = genPassword();
   document.getElementById('cardPassBack').textContent = state.cardPassword;
@@ -862,6 +865,7 @@ SKINS.forEach(skin=>{
 });
 
 function applySkin(skin){
+  if(!skin) return;
   state.currentSkin = skin.id;
   card3d.style.background = skin.full;
   focusCard3d.style.background = skin.full;
@@ -884,7 +888,7 @@ async function saveCardSettings(){
   statusEl.textContent = 'Сохранение...';
   try{
     const d = await apiPost('update_card_settings', {
-      item_id: state.itemId || null,   // null while using the local demo item
+      item_id: state.itemId || null,
       serial_code: state.cardId,
       skin_id: state.currentSkin,
     });
