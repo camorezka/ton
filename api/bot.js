@@ -374,6 +374,38 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, daily_streak: newStreak });
     }
 
+    // ---- 3b) LOAD CURRENT CARD -------------------------------------
+    if (action === "get_my_card" && req.method === "POST") {
+      const verifiedUser = getVerifiedUser(req);
+      if (!verifiedUser) return res.status(401).json({ ok: false, error: "invalid or missing initData" });
+
+      const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
+      const user = users?.[0];
+      if (!user) return res.status(404).json({ ok: false, error: "user not found" });
+
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,created_at&order=created_at.asc&limit=1`);
+      return res.status(200).json({ ok: true, card: cards?.[0] || null });
+    }
+
+    // ---- 3c) CHECK 16-DIGIT CARD NUMBER -----------------------------
+    if (action === "check_card_number" && req.method === "POST") {
+      const verifiedUser = getVerifiedUser(req);
+      if (!verifiedUser) return res.status(401).json({ ok: false, error: "invalid or missing initData" });
+
+      const { card_number, item_id } = req.body || {};
+      const value = String(card_number || "");
+      if (!/^\\d{16}$/.test(value)) {
+        return res.status(400).json({ ok: false, available: false, error: "Номер должен содержать ровно 16 цифр" });
+      }
+
+      const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(value)}&select=id&limit=1`);
+      if (existing?.[0] && String(existing[0].id) !== String(item_id || "")) {
+        return res.status(200).json({ ok: true, available: false, error: "Этот номер уже используется" });
+      }
+
+      return res.status(200).json({ ok: true, available: true });
+    }
+
     // ---- 3b) UPDATE COLLECTIBLE COSMETICS (serial code + skin) -----
     // POST /api/bot?action=update_card_settings { item_id, serial_code, skin_id }
     // Header: Authorization: Bearer <telegram_initData>
@@ -386,8 +418,14 @@ export default async function handler(req, res) {
       }
 
       const { item_id, serial_code, skin_id } = req.body || {};
-      if (serial_code && !/^\d{8}$/.test(String(serial_code))) {
-        return res.status(400).json({ ok: false, error: "serial_code must be exactly 8 digits" });
+      if (serial_code && !/^\d{16}$/.test(String(serial_code))) {
+        return res.status(400).json({ ok: false, error: "serial_code must be exactly 16 digits" });
+      }
+      if (serial_code) {
+        const duplicate = await sb(`collectibles?serial_code=eq.${encodeURIComponent(String(serial_code))}&select=id&limit=1`);
+        if (duplicate?.[0] && String(duplicate[0].id) !== String(item_id || "")) {
+          return res.status(409).json({ ok: false, error: "Этот номер уже используется" });
+        }
       }
 
       const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
