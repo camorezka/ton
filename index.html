@@ -18,7 +18,7 @@
    actually hide/show correctly. */
 .hidden{ display:none !important; }
 /* Slightly lower the whole app so the fixed bottom area does not leave a harsh black gap. */
-#appRoot{padding-top:16px;padding-bottom:2px;}
+#appRoot{padding-top:22px;padding-bottom:2px;}
 
 :root{
   --cyan:#00F2FE; --violet:#4FACFE; --gold:#FFD700;
@@ -40,6 +40,19 @@ body{
 .frosted{ background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .active\:press:active{ transform:scale(.95); }
 ::-webkit-scrollbar{ display:none; }
+#appRoot{height:100dvh;min-height:0;overflow:hidden;box-sizing:border-box;}
+#screen-collection{height:calc(100dvh - 132px);min-height:0;display:flex;flex-direction:column;overflow:hidden !important;}
+#screen-collection > .card-carousel-shell{flex:0 0 auto;}
+#screen-collection > #cardCarouselDots{flex:0 0 auto;}
+#historyBlock{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;margin-top:10px !important;padding:18px !important;-webkit-overflow-scrolling:touch;}
+.history-block .text-sm.font-medium{font-size:20px !important;font-weight:600;}
+.history-sort{font-size:14px !important;}
+.history-sort select{font-size:15px !important;padding:9px 11px !important;min-height:40px;max-width:180px;}
+.history-head{font-size:11px !important;padding:0 10px 10px !important;}
+.history-row{padding:15px 12px !important;min-height:58px;}
+.history-title{font-size:15px !important;}
+.history-time{font-size:12px !important;}
+.history-block .text-xs{font-size:14px !important;}
 #screen-collection,#screen-profile,#screen-settings{overflow:hidden;overscroll-behavior:none;}
 #screen-market{height:calc(100dvh - 150px);overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:110px;}
 .history-sort{display:flex;align-items:center;gap:7px;font-size:10px;color:rgba(255,255,255,.4);}
@@ -446,16 +459,13 @@ body{display:flex;justify-content:center;align-items:stretch}
 <!-- ================= HEADER ================= -->
 <header class="px-4 pt-4 pb-2 flex items-center justify-between">
   <div>
-    <div class="text-xs text-white/40 flex items-center gap-1.5">Cards Auction
-      
-    </div>
     <div class="text-lg font-semibold" id="greetName">Коллекционные карточки</div>
   </div>
   <div class="flex items-center gap-2">
     <button id="settingsBtn" onclick="switchTab('settings')" class="glass active:press w-9 h-9 rounded-full flex items-center justify-center">
       <i data-lucide="settings" class="w-4 h-4"></i>
     </button>
-    <button id="tonConnectBtn" class="glass active:press px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1" aria-label="Привязать кошелёк">
+    <button id="tonConnectBtn" onclick="connectHeaderWallet()" class="glass active:press px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1" aria-label="Привязать кошелёк">
       <i data-lucide="wallet" class="w-4 h-4"></i><span id="walletLabel">Привязать кошелёк</span>
     </button>
   </div>
@@ -1334,30 +1344,33 @@ async function initTonConnect(){
       uiPreferences: { theme: 'SYSTEM' }
     });
   state.tonConnectUI.onStatusChange(wallet=>{
-    state.wallet = wallet?.account?.address || null;
-    if(state.wallet) saveWalletAddress(state.wallet);
-    setText('walletLabel', state.wallet ? (state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)) : 'Привязать кошелёк');
-    if(state.wallet){
-      const cards=cvReadCards();
-      const c=state.pendingWalletCardId ? cards.find(x=>x.id===state.pendingWalletCardId) : cvCurrent();
-      if(c){
-        c.wallet=state.wallet;
-        const ix=cards.findIndex(x=>x.id===c.id);
-        if(ix>=0)cards[ix]=c;
-        cvWriteCards(cards);
-        if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:state.wallet}).catch(()=>{});
-        state.pendingWalletCardId=null;
-      }
-    }
+    applyConnectedWallet(wallet);
   });
   }catch(e){ console.error('TonConnect init failed', e); state.tonConnectUI=null; }
   return state.tonConnectUI;
 }
+function applyConnectedWallet(wallet){
+  const address=wallet?.account?.address || null;
+  state.wallet=address;
+  setText('walletLabel', address ? (address.slice(0,4)+'…'+address.slice(-4)) : 'Привязать кошелёк');
+  if(address) saveWalletAddress(address);
+  const cards=cvReadCards();
+  const c=state.pendingWalletCardId ? cards.find(x=>x.id===state.pendingWalletCardId) : cvCurrent();
+  if(address && c){
+    c.wallet=address;
+    const ix=cards.findIndex(x=>x.id===c.id);
+    if(ix>=0) cards[ix]=c;
+    cvWriteCards(cards);
+    if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:address}).catch(()=>{});
+    state.pendingWalletCardId=null;
+  }
+  try{ updateProfile(); updateCvWalletBar(); renderManagerCards(); renderWalletList(); }catch(e){}
+}
 initTonConnect();
-document.getElementById('tonConnectBtn')?.addEventListener('click',()=>{
+function connectHeaderWallet(){
   state.pendingWalletCardId=cvCurrent()?.id||null;
-  openWalletModal();
-});
+  return openWalletModal();
+}
 async function waitForTonConnect(timeout=10000){
   let ui=await initTonConnect();
   const started=Date.now();
@@ -1370,7 +1383,7 @@ async function openWalletModal(){
   if(!ui){ alert('TON Connect не загрузился. Обновите приложение и попробуйте снова.'); return; }
   try{ ui.openModal(); }catch(e){ console.error(e); alert('Не удалось открыть подключение кошелька'); }
 }
-function connectWalletFromProfile(){ state.pendingWalletCardId=cvCurrent()?.id||null; openWalletModal(); }
+function connectWalletFromProfile(){ state.pendingWalletCardId=cvCurrent()?.id||null; return openWalletModal(); }
 async function disconnectWallet(){
   haptic('warning');
   const ui=await waitForTonConnect();
@@ -1872,7 +1885,13 @@ async function saveCardSettings(){
 function getSavedWallets(){try{return JSON.parse(localStorage.getItem('cv_wallets')||'[]').filter(Boolean);}catch(e){return[];}}
 function saveWalletAddress(addr){if(!addr)return;const a=getSavedWallets().filter(x=>x!==addr);a.unshift(addr);localStorage.setItem('cv_wallets',JSON.stringify(a.slice(0,8)));renderWalletList();}
 function renderWalletList(){const box=document.getElementById('walletList');if(!box)return;const a=getSavedWallets();box.innerHTML=a.length?a.map((x,i)=>'<button class="wallet-list-row '+(x===state.wallet?'active':'')+'" onclick="selectSavedWallet('+i+')"><span>'+escapeHtml(x.slice(0,6)+'…'+x.slice(-6))+'</span><i data-lucide="'+(x===state.wallet?'check':'wallet')+'"></i></button>').join(''):'<div class="text-xs text-white/50">кошельки не подключены</div>';try{lucide.createIcons();}catch(e){}}
-function selectSavedWallet(i){const a=getSavedWallets();if(a[i]){state.wallet=a[i];setText('walletLabel',state.wallet.slice(0,4)+'…'+state.wallet.slice(-4));renderWalletList();updateProfile();}}
+async function selectSavedWallet(i){
+  const a=getSavedWallets(); if(!a[i])return;
+  state.pendingWalletCardId=cvCurrent()?.id||null;
+  const ui=await waitForTonConnect();
+  if(!ui)return;
+  try{ ui.openModal(); }catch(e){console.warn('wallet selector failed',e);}
+}
 
 function openPrivacyPolicy(){ window.location.href="/privacy-policy.html"; }
 let historyRows=[];
