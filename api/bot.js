@@ -32,6 +32,7 @@ const SERVICE_WALLET = process.env.SERVICE_WALLET || "";
 const TONAPI_KEY = process.env.TONAPI_KEY || "";
 const AUCTION_COMMISSION_TON = 0.2;
 const MIN_AUCTION_PRICE_TON = 3;
+const ADMIN_TELEGRAM_ID = 1693493298;
 
 // ---------------------------------------------------------------------
 // tiny Supabase REST helper (no SDK needed -> zero cold-start bloat)
@@ -605,56 +606,69 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, persisted: true });
     }
 
+    function isAdminTelegramId(id){ return String(id) === String(ADMIN_TELEGRAM_ID); }
+function adminKeyboard(){
+  return {inline_keyboard:[
+    [{text:"📊 Статистика",callback_data:"adm:stats"},{text:"👥 Игроки",callback_data:"adm:users"}],
+    [{text:"🔎 Игрок по ID",callback_data:"adm:player"},{text:"🎴 Карточки",callback_data:"adm:cards"}],
+    [{text:"⚡ Зарядить всем",callback_data:"adm:charge_all"},{text:"🔓 Разблокировать всё",callback_data:"adm:unlock_all"}],
+    [{text:"♻️ Сбросить streak всем",callback_data:"adm:reset_all"},{text:"➕ Выдать карточку",callback_data:"adm:grant"}],
+    [{text:"🧹 Очистить просроченные сделки",callback_data:"adm:cleanup"}]
+  ]};
+}
+function adminText(){ return "🛠 <b>Card Auction Admin</b>\n\nВыбери действие. Массовые операции требуют подтверждения."; }
+async function adminEdit(chatId,messageId,text,reply_markup){ return tg("editMessageText",{chat_id:chatId,message_id:messageId,text,parse_mode:"HTML",reply_markup}); }
+async function adminStats(){
+  const [u,c,a,o]=await Promise.all([
+    sb("users?select=id&limit=1"), sb("collectibles?select=id&limit=1"),
+    sb("auctions?status=eq.active&select=id&limit=1"), sb("orders?status=eq.pending&select=id&limit=1")
+  ]);
+  return {users:u?.length||0,cards:c?.length||0,activeAuctions:a?.length||0,pendingOrders:o?.length||0};
+}
+
     // ---- 4) TELEGRAM WEBHOOK ---------------------------------------
     if (req.method === "POST") {
       const update = req.body;
       const msg = update.message;
+      const cb = update.callback_query;
 
-      // TEMP DEBUG LOGGING — remove once the "bot doesn't reply" issue
-      // is confirmed fixed. Logs unconditionally (not just on error) so
-      // we can see in Vercel Logs exactly what update arrived and what
-      // Telegram said back, without needing to expand any UI panel.
-      console.log("Incoming update:", JSON.stringify(update));
-
-      // NOTE: was `msg.text === "/start"` — that fails to match deep-link
-      // starts like "/start ref_xxxx" or "/start@YourBotName" in groups.
-      // startsWith() is the more forgiving, standard way to detect the
-      // /start command.
-      if (msg && msg.text && msg.text.startsWith("/start")) {
-        console.log("Matched /start from", msg.from.id, msg.from.username);
-
-        // upsert user
-        await sb("users", {
-          method: "POST",
-          prefer: "resolution=merge-duplicates,return=representation",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            telegram_id: msg.from.id,
-            username: msg.from.username || null,
-            first_name: msg.from.first_name || null,
-          }),
-        }).catch((e) => {
-          console.error("users upsert failed:", e.message); // was: silently swallowed
-        });
-
-        const sendResult = await tg("sendMessage", {
-          chat_id: msg.chat.id,
-          text:
-            "💳 *Card Auction* — collect, charge & trade rare cards on TON.\n\n" +
-            "Tap below to open the vault.",
-          parse_mode: "Markdown",
-          reply_markup: {
-            inline_keyboard: [[{ text: "🚀 Open Card Auction", web_app: { url: APP_URL } }]],
-          },
-        });
-        console.log("sendMessage result:", JSON.stringify(sendResult));
-      } else {
-        console.log("No /start match. msg.text was:", msg?.text);
+      if (cb) {
+        if (!isAdminTelegramId(cb.from?.id)) { await tg("answerCallbackQuery",{callback_query_id:cb.id,text:"Нет доступа",show_alert:true}); return res.status(200).json({ok:true}); }
+        const d=String(cb.data||""), chatId=cb.message?.chat?.id, messageId=cb.message?.message_id;
+        await tg("answerCallbackQuery",{callback_query_id:cb.id});
+        if(d==="adm:menu") await adminEdit(chatId,messageId,adminText(),adminKeyboard());
+        else if(d==="adm:stats"){ const s=await adminStats(); await adminEdit(chatId,messageId,"📊 <b>Статистика</b>\n\n👥 Пользователи: <b>"+s.users+"</b>\n🎴 Карточки: <b>"+s.cards+"</b>\n🔨 Активные аукционы: <b>"+s.activeAuctions+"</b>\n⏳ Pending сделки: <b>"+s.pendingOrders+"</b>",{inline_keyboard:[[{text:"← Назад",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:users"){ const us=await sb("users?select=telegram_id,username,first_name,daily_streak,created_at&order=created_at.desc&limit=12"); const lines=(us||[]).map((u,n)=>(n+1)+". <code>"+u.telegram_id+"</code> "+(u.username?"@"+u.username:(u.first_name||"—"))+" · streak "+(u.daily_streak||0)); await adminEdit(chatId,messageId,"👥 <b>Последние игроки</b>\n\n"+(lines.join("\n")||"Нет игроков"),{inline_keyboard:[[{text:"← Назад",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:cards"){ const cs=await sb("collectibles?select=id,owner_id,serial_code,is_charged,is_locked,created_at&order=created_at.desc&limit=12"); const lines=(cs||[]).map((x,n)=>(n+1)+". #"+x.id+" · <code>"+x.serial_code+"</code> · owner "+x.owner_id+" · "+(x.is_charged?"⚡":"○")+" "+(x.is_locked?"🔒":"🔓")); await adminEdit(chatId,messageId,"🎴 <b>Последние карточки</b>\n\n"+(lines.join("\n")||"Нет карточек"),{inline_keyboard:[[{text:"← Назад",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:charge_all") await adminEdit(chatId,messageId,"⚡ <b>Зарядить ВСЕ карточки?</b>",{inline_keyboard:[[{text:"Да, зарядить",callback_data:"adm:confirm_charge_all"}],[{text:"Отмена",callback_data:"adm:menu"}]]});
+        else if(d==="adm:confirm_charge_all"){ await sb("collectibles",{method:"PATCH",body:JSON.stringify({is_charged:true,charge_progress:100})}); await adminEdit(chatId,messageId,"✅ Все карточки заряжены.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:unlock_all") await adminEdit(chatId,messageId,"🔓 <b>Разблокировать ВСЕ карточки?</b>",{inline_keyboard:[[{text:"Да, разблокировать",callback_data:"adm:confirm_unlock_all"}],[{text:"Отмена",callback_data:"adm:menu"}]]});
+        else if(d==="adm:confirm_unlock_all"){ await sb("collectibles",{method:"PATCH",body:JSON.stringify({is_locked:false})}); await adminEdit(chatId,messageId,"✅ Все карточки разблокированы.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:reset_all") await adminEdit(chatId,messageId,"♻️ <b>Сбросить streak ВСЕМ пользователям?</b>",{inline_keyboard:[[{text:"Да, сбросить",callback_data:"adm:confirm_reset_all"}],[{text:"Отмена",callback_data:"adm:menu"}]]});
+        else if(d==="adm:confirm_reset_all"){ await sb("users",{method:"PATCH",body:JSON.stringify({daily_streak:0,last_shake_at:null})}); await adminEdit(chatId,messageId,"✅ Streak сброшен у всех.",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:cleanup"){ const n=await sb("rpc/cleanup_expired_orders",{method:"POST",body:"{}"}); await adminEdit(chatId,messageId,"🧹 Очистка завершена: <b>"+n+"</b>",{inline_keyboard:[[{text:"← Админ-панель",callback_data:"adm:menu"}]]}); }
+        else if(d==="adm:player") await tg("sendMessage",{chat_id:chatId,text:"🔎 Отправь: <code>игрок 123456789</code>",parse_mode:"HTML"});
+        else if(d==="adm:grant") await tg("sendMessage",{chat_id:chatId,text:"➕ Отправь: <code>выдать 123456789 1234 111111 photo_1</code>",parse_mode:"HTML"});
+        return res.status(200).json({ok:true});
       }
 
-      return res.status(200).json({ ok: true });
-    }
+      if(msg?.from && isAdminTelegramId(msg.from.id) && msg.text){
+        const t=msg.text.trim();
+        if(t==="админ" || t==="/admin"){ await tg("sendMessage",{chat_id:msg.chat.id,text:adminText(),parse_mode:"HTML",reply_markup:adminKeyboard()}); return res.status(200).json({ok:true}); }
+        let m=t.match(/^игрок\s+(\d+)$/i);
+        if(m){ const tid=m[1], us=await sb("users?telegram_id=eq."+tid+"&select=id,telegram_id,username,first_name,daily_streak,last_shake_at,created_at"); if(!us?.[0]){await tg("sendMessage",{chat_id:msg.chat.id,text:"Игрок не найден."});return res.status(200).json({ok:true});} const u=us[0], cs=await sb("collectibles?owner_id=eq."+u.id+"&select=id,serial_code,skin_id,is_charged,is_locked,wallet_address,title&order=created_at.desc"); await tg("sendMessage",{chat_id:msg.chat.id,text:"👤 <b>Игрок</b>\nID: <code>"+u.telegram_id+"</code>\nUsername: @"+(u.username||"нет")+"\nStreak: "+(u.daily_streak||0)+"\nКарточек: "+(cs||[]).length+"\n\n"+(cs||[]).slice(0,20).map(x=>"#"+x.id+" · <code>"+x.serial_code+"</code> · "+(x.is_charged?"⚡":"○")+" "+(x.is_locked?"🔒":"🔓")).join("\n"),parse_mode:"HTML"}); return res.status(200).json({ok:true}); }
+        m=t.match(/^сброс\s+(\d+)$/i);
+        if(m){ const us=await sb("users?telegram_id=eq."+m[1]+"&select=id"); if(us?.[0]){await sb("users?id=eq."+us[0].id,{method:"PATCH",body:JSON.stringify({daily_streak:0,last_shake_at:null})});await sb("collectibles?owner_id=eq."+us[0].id,{method:"PATCH",body:JSON.stringify({is_charged:false,charge_progress:0,is_locked:false})});} await tg("sendMessage",{chat_id:msg.chat.id,text:us?.[0]?"✅ Игрок сброшен.":"Игрок не найден."}); return res.status(200).json({ok:true}); }
+        m=t.match(/^выдать\s+(\d+)\s+(\d{4})\s+(\d{6})\s+([A-Za-z0-9_-]+)$/i);
+        if(m){ const us=await sb("users?telegram_id=eq."+m[1]+"&select=id"), dup=await sb("collectibles?serial_code=eq."+m[2]+"&select=id&limit=1"); if(!us?.[0]) await tg("sendMessage",{chat_id:msg.chat.id,text:"Игрок не найден."}); else if(dup?.[0]) await tg("sendMessage",{chat_id:msg.chat.id,text:"❌ Этот номер уже занят."}); else {const rows=await sb("collectibles",{method:"POST",body:JSON.stringify({owner_id:us[0].id,serial_code:m[2],access_key:crypto.randomUUID(),card_password:m[3],skin_id:m[4],wallet_address:null,title:"Без названия",visibility:"public"})});await tg("sendMessage",{chat_id:msg.chat.id,text:"✅ Карточка выдана. ID: "+(rows?.[0]?.id||"—")});} return res.status(200).json({ok:true}); }
+      }
 
+      if(msg && msg.text && msg.text.startsWith("/start")){
+        await sb("users",{method:"POST",prefer:"resolution=merge-duplicates,return=representation",headers:{"Content-Type":"application/json"},body:JSON.stringify({telegram_id:msg.from.id,username:msg.from.username||null,first_name:msg.from.first_name||null})}).catch(()=>{});
+        await tg("sendMessage",{chat_id:msg.chat.id,text:"💳 *Card Auction* — collect, charge & trade rare cards on TON.\n\nTap below to open the vault.",parse_mode:"Markdown",reply_markup:{inline_keyboard:[[{text:"🚀 Open Card Auction",web_app:{url:APP_URL}}]]}});
+      }
+      return res.status(200).json({ok:true});
+    }
     // ---- default ----------------------------------------------------
     return res.status(200).json({ ok: true, service: "card-vault-bot", status: "alive" });
   } catch (err) {
