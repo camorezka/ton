@@ -81,6 +81,13 @@ body{
 /* ---------- NAV ---------- */
 .navbar{ position:fixed; left:12px; right:12px; bottom: calc(12px + env(safe-area-inset-bottom,0px)); border-radius:22px; z-index:50; }
 .nav-btn.active{ color:var(--cyan); text-shadow:0 0 12px rgba(0,242,254,.8); }
+.nav-btn,.frosted,.card-carousel-dot,.card-create-dot,.skin-tile{transition:transform .18s ease,opacity .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease;}
+.nav-btn:active,.frosted:active,.card-carousel-dot:active,.card-create-dot:active,.skin-tile:active{transform:scale(.97);}
+.screen-enter{animation:screenEnter .24s cubic-bezier(.2,.8,.2,1);}
+@keyframes screenEnter{from{opacity:.45;transform:translateY(8px)}to{opacity:1;transform:none}}
+.focus-modal.open .focus-settings{animation:sheetEnter .3s cubic-bezier(.2,.85,.2,1);}
+@keyframes sheetEnter{from{opacity:.6;transform:translateY(18px)}to{opacity:1;transform:none}}
+
 
 .sheet{ position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; }
 .sheet-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.6); }
@@ -106,7 +113,7 @@ body{
   padding: 54px 24px 24px;
   transform: scale(.9); transition: transform .32s cubic-bezier(.2,.9,.25,1);
 }
-.focus-modal.open .focus-card-wrap{ transform: translateY(24px) scale(1.08); }
+ .focus-modal.open .focus-card-wrap{ transform: translateY(17px) scale(1.08); }
 .focus-card-wrap .card-stage{ max-width: 340px; width:100%; }
 .focus-settings{
   position:relative; z-index:2;
@@ -283,7 +290,7 @@ body{background:var(--bg); background-image:none;}
 }
 @media (hover:none),(pointer:coarse){.card-carousel-arrow:hover{transform:none}}
 </style><style>
-.focus-modal .focus-back-top{position:absolute;left:58px;top:96px;z-index:30;width:42px;height:42px;background:transparent;color:#fff;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(0,0,0,.28)}
+.focus-modal .focus-back-top{position:absolute;left:18px;top:91px;z-index:30;width:42px;height:42px;background:transparent;color:#fff;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(0,0,0,.28)}
 .focus-modal .focus-back-top svg{width:20px;height:20px}
 .focus-modal .focus-settings{padding-top:58px}
 .focus-modal .focus-card-wrap .card-3d{width:min(88vw,350px)}
@@ -756,7 +763,7 @@ const API = "/api/bot";
 // Telegram Mini App bootstrap: notify Telegram immediately so the Start/Open action is responsive.
 try{
   tg?.ready?.();
-  tg?.expand?.();
+  tg?.expand?.(); tg?.viewport?.expand?.();
   tg?.setHeaderColor?.('#0A0B0E');
   tg?.setBackgroundColor?.('#0A0B0E');
 }catch(e){ console.warn('Telegram bootstrap failed',e); }
@@ -1050,11 +1057,13 @@ function closeSheet(name){ document.getElementById('sheet-'+name).classList.add(
 // =====================================================================
 function openFocusModal(){
   document.getElementById('focusModal').classList.add('open');
+  try{ tg?.BackButton?.show?.(); tg?.BackButton?.offClick?.(closeFocusModal); tg?.BackButton?.onClick?.(closeFocusModal); }catch(e){}
   haptic('medium');
   syncFocusFromMain();
 }
 function closeFocusModal(){
   document.getElementById('focusModal').classList.remove('open');
+  try{ tg?.BackButton?.hide?.(); tg?.BackButton?.offClick?.(closeFocusModal); }catch(e){}
   haptic('light');
 }
 function syncFocusFromMain(){
@@ -1217,8 +1226,12 @@ function queueSkinSave(card){
   skinSaveTimer=setTimeout(async()=>{
     if(!card?.backendId)return;
     try{
-      await apiPost('update_card_settings',{item_id:card.backendId,skin_id:card.skin_id});
-    }catch(e){ console.warn('skin autosave failed',e); }
+      const d=await apiPost('update_card_settings',{item_id:card.backendId,skin_id:card.skin_id});
+      if(!d.ok) throw new Error(d.error||'save failed');
+    }catch(e){
+      console.warn('skin autosave failed',e);
+      setTimeout(()=>{ if(cvCurrent()?.backendId===card.backendId && cvCurrent()?.skin_id===card.skin_id) queueSkinSave(card); },900);
+    }
   },180);
 }
 function applySkin(skin){
