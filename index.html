@@ -41,6 +41,7 @@ body{
 .active\:press:active{ transform:scale(.95); }
 ::-webkit-scrollbar{ display:none; }
 #screen-collection,#screen-profile,#screen-settings{overflow:hidden;overscroll-behavior:none;}
+html,body,#appRoot{overflow-x:hidden;max-width:100%;}
 #screen-market{height:calc(100dvh - 150px);overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:110px;}
 .history-sort{display:flex;align-items:center;gap:7px;font-size:10px;color:rgba(255,255,255,.4);}
 .history-sort select{background:#11151c;color:#dfe5ed;border:1px solid #252b35;border-radius:10px;padding:7px 8px;outline:none;font-size:11px;max-width:145px;}
@@ -1062,7 +1063,8 @@ async function refreshCardsFromServer(){
     }
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
 }
-function switchTab(tab){
+async function switchTab(tab){
+  await flushSkinSaves();
   ['collection','market','profile','settings'].forEach(t=>{
     const el=document.getElementById('screen-'+t);
     if(el){ el.classList.toggle('hidden', t!==tab); if(t===tab){ el.classList.remove('screen-enter'); void el.offsetWidth; el.classList.add('screen-enter'); }}
@@ -1245,19 +1247,20 @@ CATEGORIES.forEach(cat=>{
 });
 setText('skinCount',typeof CV_SKINS!=='undefined'?CV_SKINS.length:SKINS.length);
 
-let skinSaveTimer=null;
+const pendingSkinSaves=new Map();
 function queueSkinSave(card){
-  clearTimeout(skinSaveTimer);
-  skinSaveTimer=setTimeout(async()=>{
-    if(!card?.backendId)return;
-    try{
-      const d=await apiPost('update_card_settings',{item_id:card.backendId,skin_id:card.skin_id});
-      if(!d.ok) throw new Error(d.error||'save failed');
-    }catch(e){
-      console.warn('skin autosave failed',e);
-      setTimeout(()=>{ if(cvCurrent()?.backendId===card.backendId && cvCurrent()?.skin_id===card.skin_id) queueSkinSave(card); },900);
-    }
-  },180);
+  if(!card?.backendId)return Promise.resolve();
+  const id=String(card.backendId), skin=String(card.skin_id||'');
+  const p=apiPost('update_card_settings',{item_id:card.backendId,skin_id:skin})
+    .then(d=>{ if(!d.ok) throw new Error(d.error||'save failed'); return d; })
+    .catch(e=>{ console.warn('skin autosave failed',e); return null; })
+    .finally(()=>{ if(pendingSkinSaves.get(id)===p) pendingSkinSaves.delete(id); });
+  pendingSkinSaves.set(id,p);
+  return p;
+}
+async function flushSkinSaves(){
+  const pending=[...pendingSkinSaves.values()];
+  if(pending.length) await Promise.allSettled(pending);
 }
 function applySkin(skin){
   if(!skin)return;
@@ -1696,8 +1699,8 @@ async function submitCreateCard(){
     const b=d.card;
     const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||title,description:b.description||description,visibility:b.visibility||state.createVisibility||'public'};
     cards.push(card);cvWriteCards(cards);cvSyncState(card);ensureCardState();renderManagerCards();
-    closeCreateCardModal();switchTab('bank');cvCarouselIndex=cards.length-1;cvSyncState(card);renderCardCarousel();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
-  }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy');} finally { if(submitBtn){submitBtn.disabled=false;submitBtn.querySelector('span').textContent='Создать карточку';} }
+    closeCreateCardModal();switchTab('collection');cvCarouselIndex=cards.length-1;cvSyncState(card);renderCardCarousel();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
+  }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy');} finally { if(submitBtn){submitBtn.disabled=false;submitBtn.querySelector('span').textContent='Создать';} }
 }
 function createNewCard(){openCreateCardModal();}
 
@@ -1872,9 +1875,26 @@ async function saveCardSettings(){
 function getSavedWallets(){try{return JSON.parse(localStorage.getItem('cv_wallets')||'[]').filter(Boolean);}catch(e){return[];}}
 function saveWalletAddress(addr){if(!addr)return;const a=getSavedWallets().filter(x=>x!==addr);a.unshift(addr);localStorage.setItem('cv_wallets',JSON.stringify(a.slice(0,8)));renderWalletList();}
 function renderWalletList(){const box=document.getElementById('walletList');if(!box)return;const a=getSavedWallets();box.innerHTML=a.length?a.map((x,i)=>'<button class="wallet-list-row '+(x===state.wallet?'active':'')+'" onclick="selectSavedWallet('+i+')"><span>'+escapeHtml(x.slice(0,6)+'…'+x.slice(-6))+'</span><i data-lucide="'+(x===state.wallet?'check':'wallet')+'"></i></button>').join(''):'<div class="text-xs text-white/50">кошельки не подключены</div>';try{lucide.createIcons();}catch(e){}}
-function selectSavedWallet(i){const a=getSavedWallets();if(a[i]){state.wallet=a[i];setText('walletLabel',state.wallet.slice(0,4)+'…'+state.wallet.slice(-4));renderWalletList();updateProfile();}}
+async function selectSavedWallet(i){
+  const a=getSavedWallets(); const addr=a[i]; if(!addr)return;
+  const ui=await waitForTonConnect();
+  if(!ui)return;
+  try{
+    if(state.wallet===addr){ renderWalletList(); return; }
+    ui.openModal();
+    setText('walletLabel','Выберите кошелёк');
+  }catch(e){console.warn('wallet switch failed',e);}
+}
 
-function openPrivacyPolicy(){ window.location.href="/privacy-policy.html"; }
+function openPrivacyPolicy(){
+  const a=document.createElement('a');
+  a.href='/privacy-policy.html';
+  a.download='Card-Auction-Privacy-Policy.html';
+  a.rel='noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 function updateProfile(){
   const u=state.tgUser||{}; const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
   setText('profName',name); setText('profUsername',u.username?'@'+u.username:'@guest'); setText('profTgId',u.id||'—');
