@@ -103,10 +103,10 @@ body{
 }
 .focus-card-wrap{
   position:relative; z-index:2; flex:1; display:flex; align-items:center; justify-content:center;
-  padding: 24px;
+  padding: 54px 24px 24px;
   transform: scale(.9); transition: transform .32s cubic-bezier(.2,.9,.25,1);
 }
-.focus-modal.open .focus-card-wrap{ transform: scale(1.08); }
+.focus-modal.open .focus-card-wrap{ transform: translateY(24px) scale(1.08); }
 .focus-card-wrap .card-stage{ max-width: 340px; width:100%; }
 .focus-settings{
   position:relative; z-index:2;
@@ -283,7 +283,7 @@ body{background:var(--bg); background-image:none;}
 }
 @media (hover:none),(pointer:coarse){.card-carousel-arrow:hover{transform:none}}
 </style><style>
-.focus-modal .focus-back-top{position:absolute;left:14px;top:14px;z-index:30;width:42px;height:42px;background:transparent;color:#fff;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(0,0,0,.28)}
+.focus-modal .focus-back-top{position:absolute;left:58px;top:96px;z-index:30;width:42px;height:42px;background:transparent;color:#fff;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(0,0,0,.28)}
 .focus-modal .focus-back-top svg{width:20px;height:20px}
 .focus-modal .focus-settings{padding-top:58px}
 .focus-modal .focus-card-wrap .card-3d{width:min(88vw,350px)}
@@ -628,10 +628,7 @@ body{display:flex;justify-content:center;align-items:stretch}
       <div id="skinScroller" class="skin-grid"></div>
     </div>
 
-    <button id="saveDesignBtn" onclick="saveCardSettings()" class="mt-3 w-full frosted active:press py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
-      <i data-lucide="check" class="w-4 h-4"></i> Сохранить
-    </button>
-    <div id="saveDesignStatus" class="text-center text-xs text-white/40 mt-2"></div>
+    <div id="saveDesignStatus" class="text-center text-xs text-white/30 mt-2 min-h-[16px]"></div>
   </div>
 </div>
 
@@ -1092,11 +1089,19 @@ function formatCardNumber(id){ return String(id || '').replace(/\D/g,'').slice(-
 function maskCardId(id){ return formatCardNumber(id) || '••••'; }
 
 async function loadMyCard(){
+  // Render the cached card immediately; network sync happens in the background.
+  const cached=cvReadCards();
+  if(cached.length){
+    cvSyncState(cached.find(x=>x.id===state.activeCardId)||cached[0]);
+    ensureCardState();
+    renderCardCarousel();
+    updateProfile();
+  }
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards) && d.cards.length){
       const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
-      cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); return;
+      cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
     }
     const serial=cvGen4(), pass=cvGen6();
     const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Cards Auction',visibility:'public'});
@@ -1206,14 +1211,30 @@ CATEGORIES.forEach(cat=>{
 });
 setText('skinCount',typeof CV_SKINS!=='undefined'?CV_SKINS.length:SKINS.length);
 
+let skinSaveTimer=null;
+function queueSkinSave(card){
+  clearTimeout(skinSaveTimer);
+  skinSaveTimer=setTimeout(async()=>{
+    if(!card?.backendId)return;
+    try{
+      await apiPost('update_card_settings',{item_id:card.backendId,skin_id:card.skin_id});
+    }catch(e){ console.warn('skin autosave failed',e); }
+  },180);
+}
 function applySkin(skin){
   if(!skin)return;
   state.currentSkin=skin.id;
+  const cc=cvCurrent();
+  if(cc){
+    cc.skin_id=skin.id;
+    cvWriteCards(cvReadCards());
+  }
   const bg=skin.url ? 'url("'+skin.url+'")' : (skin.full||'');
   const main=document.getElementById('card3d'), focus=document.getElementById('focusCard3d');
   if(main){main.style.backgroundImage=bg;main.style.backgroundSize='cover';main.style.backgroundPosition='center';}
   if(focus){focus.style.backgroundImage=bg;focus.style.backgroundSize='cover';focus.style.backgroundPosition='center';}
   document.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===skin.id));
+  if(cc) queueSkinSave(cc);
   haptic('light');
 }
 
@@ -1429,7 +1450,7 @@ async function sendSupportMessage(){
 
 updateProfile();
 requestAppFullscreen();
-loadMyCard().then(()=>{ refreshCardsFromServer(); try{ lucide.createIcons(); }catch(e){} });
+loadMyCard().finally(()=>{ try{ lucide.createIcons(); }catch(e){} });
 // =====================================================================
 // TON CONNECT
 // =====================================================================
