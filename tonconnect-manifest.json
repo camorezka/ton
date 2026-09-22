@@ -1,7 +1,7 @@
 {
-  "url": "https://your-app.vercel.app",
+  "url": "https://ton-dun.vercel.app",
   "name": "Card Vault",
-  "iconUrl": "https://your-app.vercel.app/icon-192.png",
-  "termsOfServiceUrl": "https://your-app.vercel.app/terms.html",
-  "privacyPolicyUrl": "https://your-app.vercel.app/privacy.html"
+  "iconUrl": "https://ton-dun.vercel.app/icon-192.png",
+  "termsOfServiceUrl": "https://ton-dun.vercel.app/terms.html",
+  "privacyPolicyUrl": "https://ton-dun.vercel.app/privacy.html"
 }
