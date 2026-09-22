@@ -640,11 +640,11 @@ export default async function handler(req, res) {
         const sendResult = await tg("sendMessage", {
           chat_id: msg.chat.id,
           text:
-            "💳 *Card Vault* — collect, charge & trade rare bank cards on TON.\n\n" +
+            "💳 *Card Auction* — collect, charge & trade rare cards on TON.\n\n" +
             "Tap below to open the vault.",
           parse_mode: "Markdown",
           reply_markup: {
-            inline_keyboard: [[{ text: "🚀 Open Card Vault", web_app: { url: APP_URL } }]],
+            inline_keyboard: [[{ text: "🚀 Open Card Auction", web_app: { url: APP_URL } }]],
           },
         });
         console.log("sendMessage result:", JSON.stringify(sendResult));
