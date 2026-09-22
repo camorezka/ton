@@ -1609,7 +1609,7 @@ async async function submitCreateCard(){
   const serial=input.value.replace(/\\D/g,'').slice(0,4);
   const title=(document.getElementById('createCardTitleInput').value||'Без названия').trim().slice(0,60);
   const description=document.getElementById('createCardDescriptionInput').value.trim().slice(0,300);
-  if(!/^\\d{4}$/.test(serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
+  if(!/^\d{4}$/.test(serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
   const cards=cvReadCards();
   if(cards.some(x=>String(x.serial_code)===serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
   try{
