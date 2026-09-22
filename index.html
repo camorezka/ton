@@ -1010,10 +1010,10 @@ function closeFocusModal(){
 }
 function syncFocusFromMain(){
   const cc=cvCurrent();
-  document.getElementById('focusPublicCode').textContent = cc?.serial_code || state.cardId || '0000';
-  document.getElementById('focusSecretCode').textContent = cc?.card_password || state.cardPassword || '000000';
-  document.getElementById('focusCardIdBack').textContent = maskCardId(state.cardId);
-  document.getElementById('focusCardPassBack').textContent = state.cardPassword || '••••••••';
+  { const e=document.getElementById('focusPublicCode'); if(e) e.textContent = cc?.serial_code || state.cardId || '0000'; }
+  { const e=document.getElementById('focusSecretCode'); if(e) e.textContent = cc?.card_password || state.cardPassword || '000000'; }
+  { const e=document.getElementById('focusCardIdBack'); if(e) e.textContent = maskCardId(state.cardId); }
+  { const e=document.getElementById('focusCardPassBack'); if(e) e.textContent = state.cardPassword || '••••••••'; }
   focusCard3d.style.background = card3d.style.background || getComputedStyle(card3d).background;
   const t = state.cardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
   focusCard3d.style.transform = t;
@@ -1161,7 +1161,7 @@ CATEGORIES.forEach(cat=>{
     });
   }
 });
-document.getElementById('skinCount').textContent = SKINS.length;
+{ const e=document.getElementById('skinCount'); if(e) e.textContent = SKINS.length; }
 
 const skinScroller = document.getElementById('skinScroller');
 SKINS.forEach(skin=>{
