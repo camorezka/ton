@@ -374,6 +374,31 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, daily_streak: newStreak });
     }
 
+    // ---- SUPPORT MESSAGE -------------------------------------------
+    if (action === "support_message" && req.method === "POST") {
+      const verifiedUser = getVerifiedUser(req);
+      if (!verifiedUser) return res.status(401).json({ ok:false, error:"invalid or missing initData" });
+      const message = String(req.body?.message || "").trim().slice(0, 2000);
+      if (!message) return res.status(400).json({ ok:false, error:"Введите сообщение" });
+
+      const text = [
+        "🆘 Поддержка Cards Auction",
+        "",
+        "Telegram ID: " + verifiedUser.id,
+        "Username: @" + (verifiedUser.username || "нет"),
+        "Имя: " + (verifiedUser.first_name || "Пользователь"),
+        "",
+        message
+      ].join("\n");
+
+      const sent = await tg("sendMessage", {
+        chat_id: process.env.SUPPORT_CHAT_ID || verifiedUser.id,
+        text
+      });
+      if (!sent?.ok) return res.status(502).json({ ok:false, error:"Не удалось отправить сообщение в поддержку" });
+      return res.status(200).json({ ok:true });
+    }
+
     // ---- 3a) CREATE VIRTUAL COLLECTIBLE CARD ------------------------
     if (action === "create_card" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
