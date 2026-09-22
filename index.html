@@ -1439,7 +1439,7 @@ async function initTonConnect(){
     state.tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
       manifestUrl: new URL('/tonconnect-manifest.json', location.origin).toString(),
       buttonRootId: null,
-      uiPreferences: { theme: 'DARK' }
+      uiPreferences: { theme: 'SYSTEM' }
     });
   state.tonConnectUI.onStatusChange(wallet=>{
     state.wallet = wallet?.account?.address || null;
