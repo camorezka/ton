@@ -120,7 +120,7 @@ body{
 }
 .pin-dots{ display:flex; gap:16px; }
 .pin-dot{ width:16px; height:16px; border-radius:50%; border:1.5px solid rgba(255,255,255,.35); transition: all .15s; }
-.pin-dot.filled{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 10px rgba(0,242,254,.7); }
+.pin-dot.filled{ background:#1677ff; border-color:#1677ff; box-shadow:none; }
 .pin-dot.err{ background:#ff4d4d; border-color:#ff4d4d; }
 .pin-shake{ animation: pinShake .35s; }
 @keyframes pinShake{ 0%,100%{transform:translateX(0)} 20%{transform:translateX(-10px)} 40%{transform:translateX(10px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
@@ -135,7 +135,7 @@ body{background:#090b10; background-image:none;}
 .glass,.frosted{background:#11151c;border:1px solid #252b35;box-shadow:0 8px 24px rgba(0,0,0,.22);backdrop-filter:none;-webkit-backdrop-filter:none;}
 .glass:active,.frosted:active{background:#151a22;}
 @media (hover:none),(pointer:coarse){.active\\:press:hover{transform:none !important;}.nav-btn:hover,.setting-action:hover,.primary-btn:hover{background:inherit;}}
-.navbar{left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));border-radius:18px;background:#10141b;border-color:#252b35;}
+.navbar{position:fixed !important;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));border-radius:18px;background:#10141b;border-color:#252b35;}
 .nav-btn{width:20%;min-width:0;color:#707784;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 2px;border-radius:12px;transition:color .18s ease,background .18s ease;}
 .nav-btn svg{width:18px;height:18px;}
 .nav-btn.active{color:#e8edf5;text-shadow:none;background:#1a2029;}
@@ -143,7 +143,7 @@ body{background:#090b10; background-image:none;}
 @keyframes screenEnter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .sheet-panel{background:#11151c;border-color:#252b35;animation:sheetIn .24s cubic-bezier(.2,.8,.2,1);}
 @keyframes sheetIn{from{transform:translateY(18px);opacity:.5}to{transform:translateY(0);opacity:1}}
-.focus-modal{background:#090b10;}
+.focus-modal{background:#090b10;}.focus-back-btn{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:14px;z-index:10;width:42px;height:42px;border-radius:12px;background:#11151c;border:1px solid #252b35;display:flex;align-items:center;justify-content:center;color:#fff}.focus-back-btn svg{width:20px;height:20px}
 .focus-backdrop{background:#090b10;backdrop-filter:none;-webkit-backdrop-filter:none;}
 .focus-card-wrap{animation:focusIn .28s cubic-bezier(.2,.8,.2,1);}
 @keyframes focusIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
@@ -235,10 +235,9 @@ body{background:#090b10; background-image:none;}
             </div>
           </div>
           <div>
-            <div id="cardNumber" class="emboss text-lg md:text-xl mb-2">5412 &nbsp; 7788 &nbsp; 9021 &nbsp; 3345</div>
+            <div id="cardNumber" class="emboss text-lg md:text-xl mb-2">00000000</div>
             <div class="flex justify-between text-xs emboss opacity-90">
-              <span id="holderName">CARD HOLDER</span>
-              <span id="expiry">12/29</span>
+              
             </div>
           </div>
         </div>
@@ -250,10 +249,10 @@ body{background:#090b10; background-image:none;}
         <div class="p-4 flex flex-col gap-3">
           <div class="hologram w-16 h-10 rounded-md opacity-90"></div>
           <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
-            <span class="opacity-60">Serial Code</span><span id="cardIdBack" class="emboss">••••••••</span>
+            <span class="opacity-60">CARD ID</span><span id="cardIdBack" class="emboss text-blue-400">00000000</span>
           </div>
           <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
-            <span class="opacity-60">Access Key</span><span id="cardPassBack" class="pw-key">••••••••</span>
+            <span class="opacity-60">Recovery code</span><span id="cardPassBack" class="pw-key text-blue-400">000000</span>
           </div>
         </div>
       </div>
@@ -309,7 +308,7 @@ body{background:#090b10; background-image:none;}
   <div class="glass rounded-2xl p-4">
     <div class="text-sm font-medium mb-2">Кошелёк</div>
     <div id="profWallet" class="text-xs text-white/50 break-all">не подключен</div>
-    <button id="disconnectBtn" onclick="disconnectWallet()" class="w-full mt-3 glass active:press py-3 rounded-xl text-sm text-red-300">Отключить кошелёк</button>
+    <div class="flex gap-2 mt-3"><button id="connectProfileBtn" onclick="connectWallet()" class="wallet-connect-btn active:press flex-1 py-3 rounded-xl text-sm font-medium">Подключить</button><button id="disconnectBtn" onclick="disconnectWallet()" class="wallet-disconnect-btn active:press flex-1 py-3 rounded-xl text-sm font-medium">Отключить</button></div>
   </div>
 </main>
 
@@ -327,7 +326,7 @@ body{background:#090b10; background-image:none;}
 <!-- ================= SCREEN: SUPPORT ================= -->
 <main id="screen-support" class="px-4 space-y-4 hidden">
   <div class="flex items-center gap-2"><i data-lucide="life-buoy" class="w-5 h-5"></i><h2 class="text-lg font-semibold">Поддержка</h2></div>
-  <div class="support-note">Опишите проблему или вопрос. Форма уже готова на фронтенде; отправка на Telegram подключается отдельным серверным endpoint.</div>
+  <div class="support-note">Опишите проблему или вопрос — сообщение сразу уйдёт в поддержку.</div>
   <textarea id="supportText" maxlength="2000" rows="7" class="support-input" placeholder="Напишите сообщение..."></textarea>
   <button id="supportSendBtn" class="primary-btn" onclick="sendSupportMessage()"><i data-lucide="send"></i><span>Отправить</span></button>
   <div id="supportStatus" class="text-xs text-white/40 text-center"></div>
@@ -344,8 +343,7 @@ body{background:#090b10; background-image:none;}
 
 <!-- ================= FOCUS MODAL (click on card) ================= -->
 <div id="focusModal" class="focus-modal">
-  <div class="focus-backdrop" onclick="closeFocusModal()"></div>
-  <div class="focus-card-wrap">
+  <div class="focus-backdrop" onclick="closeFocusModal()"></div><button class="focus-back-btn" aria-label="Назад" onclick="closeFocusModal()"><i data-lucide="arrow-left"></i></button><div class="focus-card-wrap">
     <div class="card-stage">
       <div id="focusCard3d" class="card-3d">
         <div class="card-face card-front" id="focusCardFront">
@@ -372,10 +370,10 @@ body{background:#090b10; background-image:none;}
           <div class="p-4 flex flex-col gap-3">
             <div class="hologram w-16 h-10 rounded-md opacity-90"></div>
             <button class="glass active:press rounded-md px-3 py-2 flex justify-between text-xs text-left" onclick="event.stopPropagation(); openCardIdEditor();">
-              <span class="opacity-60">Номер карты (нажмите)</span><span id="focusCardIdBack" class="emboss">••••••••</span>
+              <span class="opacity-60">CARD ID</span><span id="focusCardIdBack" class="emboss text-blue-400">00000000</span>
             </button>
             <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
-              <span class="opacity-60">Access Key</span><span id="focusCardPassBack" class="pw-key">••••••••</span>
+              <span class="opacity-60">Recovery code</span><span id="focusCardPassBack" class="pw-key text-blue-400">000000</span>
             </div>
           </div>
         </div>
@@ -387,7 +385,7 @@ body{background:#090b10; background-image:none;}
   <div class="focus-settings frosted">
     <div class="flex items-center justify-between mb-3">
       <div class="text-sm font-semibold">Настройки дизайна</div>
-      <button class="frosted active:press px-3 py-1.5 rounded-full text-xs flex items-center gap-1" onclick="closeFocusModal()"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Назад</button>
+      
     </div>
 
     <div class="flex gap-2 mb-3">
@@ -412,7 +410,7 @@ body{background:#090b10; background-image:none;}
 <!-- ================= CARD ID EDITOR ================= -->
 <div id="cardIdEditor" class="editor-backdrop hidden">
   <div class="glass rounded-2xl p-5 w-full max-w-xs">
-    <div class="text-sm font-semibold mb-3">Изменить номер карты (8 цифр)</div>
+    <div class="text-sm font-semibold mb-3">Изменить CARD ID (8 цифр)</div>
     <input id="cardIdInput" maxlength="8" inputmode="numeric" pattern="[0-9]*"
       class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-center text-lg emboss tracking-widest mb-3"
       placeholder="00000000" />
@@ -523,7 +521,7 @@ function haptic(kind){
 // is just: set DEMO_MODE = false (real fetch() below already matches
 // the api/bot.js contract).
 // =====================================================================
-const DEMO_MODE = true;
+const DEMO_MODE = false;
 const DEMO_DB_KEY = 'cv_demo_db';
 
 function demoLoad(){
@@ -575,9 +573,6 @@ async function demoApi(action, body){
 }
 
 async function apiPost(action, body = {}) {
-  if(DEMO_MODE){
-    return demoApi(action, body);
-  }
   const res = await fetch(`${API}?action=${action}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${state.initData}` },
@@ -835,7 +830,8 @@ function genPassword(len=10){
   for(let i=0;i<len;i++) out += chars[arr[i] % chars.length];
   return out;
 }
-function maskCardId(id){ return id ? id : '••••••••'; }
+function maskCardId(id){ return id || '00000000'; }
+async function loadMyCard(){try{const d=await apiPost('get_card');if(!d.ok||!d.card)return;state.itemId=d.card.id||null;state.cardId=d.card.serial_code||'00000000';state.cardPassword=d.card.recovery_code||'000000';document.getElementById('cardIdBack').textContent=state.cardId;document.getElementById('cardNumber').textContent=state.cardId;document.getElementById('focusCardNumber').textContent=state.cardId;document.getElementById('focusCardIdBack').textContent=state.cardId;document.getElementById('cardPassBack').textContent=state.cardPassword;document.getElementById('focusCardPassBack').textContent=state.cardPassword;const savedSkin=SKINS.find(x=>x.id===d.card.skin_id);if(savedSkin)applySkin(savedSkin);document.getElementById('profCards').textContent=d.card_count??1;}catch(e){console.error(e)}}
 
 {
   const saved = DEMO_MODE ? demoLoad() : {};
@@ -852,19 +848,7 @@ function openCardIdEditor(){
   haptic('light');
 }
 function closeCardIdEditor(){ document.getElementById('cardIdEditor').classList.add('hidden'); }
-function confirmCardId(){
-  const val = document.getElementById('cardIdInput').value.trim();
-  if(!/^\d{8}$/.test(val)){
-    document.getElementById('cardIdError').classList.remove('hidden');
-    haptic('heavy');
-    return;
-  }
-  state.cardId = val;
-  document.getElementById('cardIdBack').textContent = val;
-  document.getElementById('focusCardIdBack').textContent = val;
-  haptic('medium');
-  closeCardIdEditor();
-}
+async function confirmCardId(){const val=document.getElementById('cardIdInput').value.trim(),err=document.getElementById('cardIdError');if(!/^\d{8}$/.test(val)){err.textContent='Введите ровно 8 цифр';err.classList.remove('hidden');haptic('heavy');return}if(val===state.cardId){closeCardIdEditor();return}try{const d=await apiPost('update_card_settings',{item_id:state.itemId,serial_code:val,skin_id:state.currentSkin});if(!d.ok){err.textContent=d.error||'Этот номер занят, выберите другое';err.classList.remove('hidden');haptic('heavy');return}state.cardId=val;document.getElementById('cardIdBack').textContent=val;document.getElementById('cardNumber').textContent=val;document.getElementById('focusCardNumber').textContent=val;document.getElementById('focusCardIdBack').textContent=val;haptic('medium');closeCardIdEditor()}catch(e){err.textContent='Не удалось проверить номер';err.classList.remove('hidden');haptic('heavy')}}
 function regeneratePassword(){
   state.cardPassword = genPassword();
   document.getElementById('cardPassBack').textContent = state.cardPassword;
@@ -880,55 +864,7 @@ function regeneratePassword(){
 // gradient — stars for Cosmos, a circuit grid for Cyberpunk, hairline
 // sheen for Luxury, soft blobs for Fluid, a weave for Carbon.
 // =====================================================================
-function svgUrl(svg){ return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`; }
-
-const PATTERNS = {
-  Cosmos: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'>
-    ${Array.from({length:22}).map(()=>{
-      const x=(Math.random()*120).toFixed(1), y=(Math.random()*120).toFixed(1), r=(Math.random()*1.2+.3).toFixed(2), o=(Math.random()*.6+.3).toFixed(2);
-      return `<circle cx='${x}' cy='${y}' r='${r}' fill='white' fill-opacity='${o}'/>`;
-    }).join('')}
-  </svg>`),
-  Cyberpunk: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'>
-    <path d='M0 20h40M20 0v40' stroke='white' stroke-opacity='.12' stroke-width='1'/>
-    <circle cx='20' cy='20' r='1.4' fill='white' fill-opacity='.25'/>
-  </svg>`),
-  Luxury: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'>
-    <path d='M-10 10L10 -10M-10 30L30 -10M-10 50L50 -10M10 70L70 10M30 70L70 30M50 70L70 50' stroke='white' stroke-opacity='.08' stroke-width='1'/>
-  </svg>`),
-  Fluid: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'>
-    <circle cx='30' cy='40' r='38' fill='white' fill-opacity='.06'/>
-    <circle cx='110' cy='90' r='50' fill='white' fill-opacity='.05'/>
-    <circle cx='90' cy='20' r='26' fill='white' fill-opacity='.07'/>
-  </svg>`),
-  Carbon: svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'>
-    <rect width='6' height='6' fill='white' fill-opacity='.05'/>
-    <rect x='6' y='6' width='6' height='6' fill='white' fill-opacity='.05'/>
-  </svg>`),
-};
-
-const CATEGORIES = [
-  { name:"Cosmos", base:['#0f0c29,#302b63,#24243e','#1b1b3a,#2b1055,#000','#000428,#004e92','#20002c,#cbb4d4','#000000,#3a1c71,#d76d77','#232526,#414345'] },
-  { name:"Cyberpunk", base:['#0f2027,#2c5364,#ff00e1','#360033,#0b8793','#ff0080,#7928ca','#00feba,#5b548a','#f857a6,#ff5858','#4776e6,#8e54e9'] },
-  { name:"Luxury", base:['#bdc3c7,#2c3e50','#e6b980,#eacda3','#c9d6ff,#e2e2e2','#8e9eab,#eef2f3','#232526,#d4af37','#000000,#ffd700'] },
-  { name:"Fluid", base:['#00f2fe,#4facfe','#a18cd1,#fbc2eb','#f6d365,#fda085','#84fab0,#8fd3f4','#a1c4fd,#c2e9fb','#d4fc79,#96e6a1'] },
-  { name:"Carbon", base:['#141414,#232323','#232526,#414345','#000000,#434343','#2c2c2c,#1a1a1a','#1c1c1c,#3a3a3a','#101010,#2b2b2b'] },
-];
-const SKINS = [];
-CATEGORIES.forEach(cat=>{
-  for(let i=0;i<12;i++){
-    const colors = cat.base[i % cat.base.length].split(',');
-    const angle = 45 + (i*23)%270;
-    const grad = `linear-gradient(${angle}deg, ${colors.join(',')})`;
-    SKINS.push({
-      id: `${cat.name.toLowerCase()}_${i}`,
-      category: cat.name,
-      grad,
-      full: `${PATTERNS[cat.name]}, ${grad}`, // pattern layered over gradient
-    });
-  }
-});
-document.getElementById('skinCount').textContent = SKINS.length;
+const PHOTO_SEEDS=['night-city','ocean','mountains','forest','desert','space','neon','architecture','clouds','ice','volcano','abstract','water','flowers','road','moon','sunset','snow','rain','sand','lake','galaxy','coast','rocks','lights','sky','city','bridge','tunnel','texture','glass','metal','wood','leaves','storm','river','canyon','island','stars','aurora','fog','pink-sky','blue-hour','golden-hour','dark-sea','red-sunset','green-forest','purple-sky','urban','minimal','waves','cloudscape','night-road','wild','stone','fabric','ink','paint','smoke','light-trails'];const CATEGORIES=[{name:'Cosmos',base:['#0f0c29,#302b63,#24243e','#1b1b3a,#2b1055,#000','#000428,#004e92','#20002c,#cbb4d4','#000000,#3a1c71,#d76d77','#232526,#414345']},{name:'Cyberpunk',base:['#0f2027,#2c5364,#ff00e1','#360033,#0b8793','#ff0080,#7928ca','#00feba,#5b548a','#f857a6,#ff5858','#4776e6,#8e54e9']},{name:'Luxury',base:['#bdc3c7,#2c3e50','#e6b980,#eacda3','#c9d6ff,#e2e2e2','#8e9eab,#eef2f3','#232526,#d4af37','#000000,#ffd700']},{name:'Fluid',base:['#00f2fe,#4facfe','#a18cd1,#fbc2eb','#f6d365,#fda085','#84fab0,#8fd3f4','#a1c4fd,#c2e9fb','#d4fc79,#96e6a1']},{name:'Carbon',base:['#141414,#232323','#232526,#414345','#000000,#434343','#2c2c2c,#1a1a1a','#1c1c1c,#3a3a3a','#101010,#2b2b2b']}];const SKINS=[];CATEGORIES.forEach((cat,ci)=>{for(let i=0;i<12;i++){const colors=cat.base[i%cat.base.length].split(','),angle=45+(i*23)%270,photo=`https://picsum.photos/seed/${PHOTO_SEEDS[ci*12+i]}/900/570`,grad=`linear-gradient(${angle}deg,rgba(0,0,0,.12),rgba(0,0,0,.35)),linear-gradient(${angle}deg,${colors.join(',')})`;SKINS.push({id:`${cat.name.toLowerCase()}_${i}`,category:cat.name,photo,full:`url("${photo}") center/cover, ${grad}`})}});document.getElementById('skinCount').textContent = SKINS.length;
 
 const skinScroller = document.getElementById('skinScroller');
 SKINS.forEach(skin=>{
@@ -1041,6 +977,7 @@ function initMotion(){
   }
 }
 document.body.addEventListener('click', initMotion, {once:true});
+loadMyCard();
 
 // =====================================================================
 // PARTICLE SYSTEM
@@ -1088,13 +1025,7 @@ function updateProfile(){
   const icon=document.getElementById('profAvatarIcon');
   if(u.photo_url){ img.src=u.photo_url; img.classList.remove('hidden'); icon.classList.add('hidden'); }
 }
-function sendSupportMessage(){
-  const input=document.getElementById('supportText');
-  const status=document.getElementById('supportStatus');
-  const value=input.value.trim();
-  if(!value){ status.textContent='Введите сообщение'; return; }
-  status.textContent='Форма готова. Для фактической отправки нужен серверный endpoint.';
-}
+async function sendSupportMessage(){const input=document.getElementById('supportText'),status=document.getElementById('supportStatus'),value=input.value.trim();if(!value){status.textContent='Введите сообщение';haptic('heavy');return}status.textContent='Отправка...';try{const d=await apiPost('support',{message:value});if(d.ok){input.value='';status.textContent='Сообщение отправлено';haptic('medium')}else status.textContent=d.error||'Не удалось отправить'}catch(e){status.textContent='Ошибка отправки'}}
 
 updateProfile();
 // =====================================================================
@@ -1105,9 +1036,11 @@ try{
     manifestUrl: location.origin + '/tonconnect-manifest.json',
     buttonRootId: null
   });
-  state.tonConnectUI.onStatusChange(wallet=>{
+  state.tonConnectUI.onStatusChange(async wallet=>{
     state.wallet = wallet?.account?.address || null;
     document.getElementById('walletLabel').textContent = state.wallet ? (state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)) : 'Connect';
+    updateWalletButtons();
+    if(state.wallet) await apiPost('save_wallet',{address:state.wallet});
   });
 }catch(e){ console.warn('TonConnect init failed', e); }
 
@@ -1115,7 +1048,7 @@ document.getElementById('tonConnectBtn').addEventListener('click', ()=>{
   if(state.wallet){ switchTab('profile'); return; }
   state.tonConnectUI?.openModal();
 });
-function disconnectWallet(){ state.tonConnectUI?.disconnect(); }
+function connectWallet(){state.tonConnectUI?.openModal()}function updateWalletButtons(){document.getElementById('profWallet').textContent=state.wallet||'не подключен';const c=document.getElementById('connectProfileBtn'),d=document.getElementById('disconnectBtn');c.style.opacity=state.wallet?'0.55':'1';d.style.opacity=state.wallet?'1':'0.55';c.disabled=!!state.wallet;d.disabled=!state.wallet}async function disconnectWallet(){const old=state.wallet;try{await state.tonConnectUI?.disconnect()}catch(e){}if(old){try{await apiPost('disconnect_wallet',{address:old})}catch(e){}}state.wallet=null;document.getElementById('walletLabel').textContent='Connect';updateWalletButtons();haptic('medium')}
 
 // =====================================================================
 // MARKET — demo auction listings of collectible items
