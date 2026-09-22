@@ -6,11 +6,11 @@
 //
 // Required Vercel Environment Variables:
 //   BOT_TOKEN            - Telegram bot token from @BotFather
-//   APP_URL              - e.g. https://your-app.vercel.app
-//   SUPABASE_URL         - Supabase project URL
-//   SUPABASE_SERVICE_KEY - Supabase service role key
-//   TONAPI_KEY           - (optional) TonAPI.io bearer token, raises rate limits
-//   SERVICE_WALLET        - platform TON wallet address (receives payments)
+//   APP_URL               - e.g. https://your-app.vercel.app
+//   SUPABASE_URL          - Supabase project URL
+//   SUPABASE_SERVICE_KEY  - Supabase service role key
+//   TONAPI_KEY            - (optional) TonAPI.io bearer token, raises rate limits
+//   SERVICE_WALLET         - platform TON wallet address (receives payments)
 //
 // Security notes:
 //   - Every mutating action (create_order, charge_complete, verify) requires
@@ -52,13 +52,26 @@ async function sb(path, opts = {}) {
   return res.status === 204 ? null : res.json();
 }
 
+// ---------------------------------------------------------------------
+// Telegram API helper
+// NOTE: fetch() does NOT throw on non-2xx / { ok:false } responses, so
+// without this explicit check a failed sendMessage (bad token, invalid
+// web_app URL, bad parse_mode, etc.) would silently do nothing while the
+// serverless function still returns 200 to Telegram's webhook delivery.
+// Always check the logs for "Telegram API error" after a suspected
+// "bot doesn't respond" issue.
+// ---------------------------------------------------------------------
 async function tg(method, payload) {
   const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  return res.json();
+  const data = await res.json();
+  if (!data.ok) {
+    console.error(`Telegram API error on ${method}:`, data.description, data);
+  }
+  return data;
 }
 
 // ---------------------------------------------------------------------
@@ -406,7 +419,11 @@ export default async function handler(req, res) {
       const update = req.body;
       const msg = update.message;
 
-      if (msg && msg.text === "/start") {
+      // NOTE: was `msg.text === "/start"` — that fails to match deep-link
+      // starts like "/start ref_xxxx" or "/start@YourBotName" in groups.
+      // startsWith() is the more forgiving, standard way to detect the
+      // /start command.
+      if (msg && msg.text && msg.text.startsWith("/start")) {
         // upsert user
         await sb("users", {
           method: "POST",
@@ -417,7 +434,9 @@ export default async function handler(req, res) {
             username: msg.from.username || null,
             first_name: msg.from.first_name || null,
           }),
-        }).catch(() => {}); // ignore duplicate races
+        }).catch((e) => {
+          console.error("users upsert failed:", e.message); // was: silently swallowed
+        });
 
         await tg("sendMessage", {
           chat_id: msg.chat.id,
