@@ -243,7 +243,7 @@ body{background:#000!important;background-image:none!important;} #pinScreen{back
 .card-logo{position:absolute;left:20px;top:18px;width:34px;height:34px;border-radius:50%;overflow:hidden;background:#fff;z-index:5;display:flex;align-items:center;justify-content:center}
 .card-logo img{width:100%;height:100%;object-fit:cover}
 .card-username{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:clamp(24px,5vw,38px);font-weight:500;color:#fff;text-shadow:0 4px 22px rgba(0,0,0,.5);z-index:5}
-@keyframes cardFull3D{0%{transform:rotateX(0deg) rotateY(0deg)}25%{transform:rotateX(90deg) rotateY(90deg)}50%{transform:rotateX(180deg) rotateY(180deg)}75%{transform:rotateX(270deg) rotateY(270deg)}100%{transform:rotateX(360deg) rotateY(360deg)}}
+25%{transform:rotateX(90deg) rotateY(90deg)}50%{transform:rotateX(180deg) rotateY(180deg)}75%{transform:rotateX(270deg) rotateY(270deg)}100%{transform:rotateX(360deg) rotateY(360deg)}}
 @media(hover:hover) and (pointer:fine){.card-3d:hover{animation-play-state:paused}}
 .focus-card-wrap .card-3d{width:min(92vw,560px);animation-duration:12s}
 .focus-settings{max-height:38vh;padding:18px 18px calc(22px + env(safe-area-inset-bottom))}
@@ -423,8 +423,7 @@ body{background:#000!important;background-image:none!important;} #pinScreen{back
   text-shadow:0 3px 20px rgba(0,0,0,.55);
 }
 .card-photo{position:absolute;inset:0;z-index:0}
-@keyframes cardRotateX{
-  from{transform:rotateX(0deg)}
+
   to{transform:rotateX(360deg)}
 }
 .focus-card-wrap .card-3d{width:min(92vw,620px)!important;animation-duration:12s}
@@ -1007,54 +1006,11 @@ async function loadMyCard(){
       const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
       cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
     }
-    const serial=cvGen4(), pass=cvGen6();
-    const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Collectible Cards',visibility:'public'});
+    const serial=cvGen4();
+    const created=await apiPost('create_card',{serial_code:serial,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Collectible Cards',visibility:'public'});
     if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public',acquisition_type:b.acquisition_type||'created'};cvWriteCards([card]);cvSyncState(card);}
   }catch(e){console.warn('loadMyCard failed',e)}
   ensureCardState();
-}
-function openCardDataEditor(type){ type='password';
-  state.editingCardField=type;
-  const input=document.getElementById('cardDataInput');
-  const title=document.getElementById('cardDataEditorTitle');
-  const hint=document.getElementById('cardDataEditorHint');
-  const c=cvCurrent();
-  if(!c)return;
-  input.maxLength=6;
-  input.value=c.card_password||'';
-  input.placeholder=type==='serial'?'0000':'000000';
-  title.textContent=type==='serial'?'Изменить публичный код':'Изменить секретный код';
-  hint.textContent=type==='serial'?'Ровно 4 цифры. Код должен быть свободным.':'Ровно 6 цифр. Этот код показывается только владельцу.';
-  document.getElementById('cardDataError').classList.add('hidden');
-  document.getElementById('cardDataEditor').classList.remove('hidden');
-  setTimeout(()=>input.focus(),80);
-  haptic('light');
-}
-function closeCardDataEditor(){document.getElementById('cardDataEditor').classList.add('hidden');}
-async function confirmCardData(){
-  const type=state.editingCardField;
-  const input=document.getElementById('cardDataInput');
-  const val=input.value.replace(/\D/g,'');
-  const ok=type==='serial'?/^\d{4}$/.test(val):/^\d{6}$/.test(val);
-  if(!ok){
-    const er=document.getElementById('cardDataError');er.textContent=type==='serial'?'Введите ровно 4 цифры':'Введите ровно 6 цифр';er.classList.remove('hidden');
-    input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:240});haptic('heavy');return;
-  }
-  const c=cvCurrent(); if(!c)return;
-  try{
-    if(type==='serial'){
-      const d=await apiPost('check_card_number',{card_number:val,item_id:c.backendId||null});
-      if(!d.ok||!d.available){const er=document.getElementById('cardDataError');er.textContent=d.error||'Этот номер уже занят';er.classList.remove('hidden');haptic('heavy');return;}
-    }
-    const patch={item_id:c.backendId||null};
-    if(type==='serial')patch.serial_code=val;else patch.card_password=val;
-    const d=await apiPost('update_card_settings',patch);
-    if(!d.ok)throw new Error(d.error||'Не удалось сохранить');
-    if(type==='serial')c.serial_code=val;else c.card_password=val;
-    cvWriteCards(cvReadCards());cvSyncState(c);renderCardCarousel();
-    setText('focusPublicCode',c.serial_code); setText('focusSecretCode',c.card_password);
-    closeCardDataEditor();haptic('medium');
-  }catch(e){const er=document.getElementById('cardDataError');er.textContent=e.message||'Ошибка сохранения';er.classList.remove('hidden');haptic('heavy');}
 }
 
 // =====================================================================
@@ -1155,7 +1111,6 @@ async function saveCardSettings(){
       item_id: state.itemId || null,   // null while using the local demo item
       serial_code: state.cardId,
       skin_id: state.currentSkin,
-      card_password: state.cardPassword,
       title: state.cardTitle || 'Без названия',
       description: state.cardDescription || '',
       visibility: state.cardVisibility || 'public'
@@ -1164,7 +1119,6 @@ async function saveCardSettings(){
       const cc=cvCurrent();
       if(cc){
         cc.serial_code=state.cardId;
-        cc.card_password=state.cardPassword;
         cc.skin_id=state.currentSkin;
         cc.title=state.cardTitle||cc.title||'Без названия';
         cc.description=state.cardDescription||cc.description||'';
@@ -1947,4 +1901,8 @@ body{background:#000!important;color:#f5f7fa}
 .card-carousel-dots{display:flex;justify-content:center;align-items:center;gap:7px;min-height:28px}.card-carousel-dot{width:6px;height:6px;border-radius:50%;background:#3a4048;border:0;padding:0}.card-carousel-dot.active{width:18px;border-radius:5px;background:#e8ebef}.card-create-dot{width:26px;height:26px;border-radius:50%;border:1px dashed #606872;background:transparent;color:#b9c0c9;display:flex;align-items:center;justify-content:center}.card-create-dot svg{width:14px;height:14px}.collection-description{text-align:center;color:#737a84;font-size:12px;line-height:1.45;max-width:320px;margin:0 auto}
 .focus-card-wrap{display:flex;align-items:center;justify-content:center;width:100%;padding:0 16px}.focus-card-wrap .card-3d.card-cuboid{width:min(88vw,600px);animation-duration:11s}.focus-modal .card-stage{perspective:1400px}
 @media(max-width:700px){.card-carousel-shell{min-height:310px}.card-3d.card-cuboid{width:min(88vw,380px)}}
+
+/* Card-only release hard cleanup */
+#cardDataEditor,#focusSecretCode,.focus-settings,.focus-password-label,.focus-password-value,.focus-edit-password{display:none!important}
+.card-cuboid{animation-name:cardHorizontalSpin!important;animation-timing-function:linear!important;animation-iteration-count:infinite!important}
 </style>
