@@ -1821,17 +1821,19 @@ async function deleteCardAfterPin(id){
 function openAuctionForCard(){
   const cards=cvReadCards();
   if(!cards.length)return;
-  const c=cvCurrent();
-  if(!c.wallet){
-    state.pendingWalletCardId=c.id;
-    state.pendingAuction=true;
-    document.getElementById('auctionWalletNotice').classList.remove('hidden');
-    document.getElementById('auctionWalletNotice').textContent='Для публикации на аукционе сначала привяжите TON-кошелёк к выбранной карте.';
-    openWalletModal();
+  const wallet=state.wallet || cards.find(x=>x.wallet)?.wallet || null;
+  if(wallet){
+    state.wallet=wallet;
+    cards.forEach(c=>{if(!c.wallet)c.wallet=wallet;});
+    cvWriteCards(cards);
+    updateCvWalletBar();
+    renderManagerCards();
+    openAuctionPicker();
     return;
   }
-  if(c && !c.wallet){ c.wallet=state.wallet; cvWriteCards(cards); if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:state.wallet}).catch(()=>{}); }
-  openAuctionPicker();
+  state.pendingWalletCardId=null;
+  state.pendingAuction=true;
+  openWalletModal();
 }
 function openAuctionPicker(){
   renderAuctionCards();
