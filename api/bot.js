@@ -514,38 +514,39 @@ export default async function handler(req, res) {
     // ---- 3a) CREATE VIRTUAL COLLECTIBLE CARD ------------------------
     if (action === "create_card" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
-      if (!verifiedUser) return res.status(401).json({ ok: false, error: "invalid or missing initData" });
-
+      if (!verifiedUser) return res.status(401).json({ ok:false, error:"invalid or missing initData" });
       const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
       const user = users?.[0];
-      if (!user) return res.status(404).json({ ok: false, error: "user not found" });
+      if (!user) return res.status(404).json({ok:false,error:"user not found"});
 
       const createdCards = await sb(`collectibles?owner_id=eq.${user.id}&acquisition_type=eq.created&select=id&limit=3`);
-      if ((createdCards || []).length >= 3) {
-        return res.status(409).json({ ok: false, error: "Можно создать максимум 3 карточки." });
-      }
+      if ((createdCards||[]).length >= 3) return res.status(409).json({ok:false,error:"Можно создать максимум 3 карточки."});
 
-      const requested = String(req.body?.serial_code || crypto.randomInt(0, 10000)).replace(/\D/g, "").padStart(4,"0").slice(0, 4);
-      const skinId = String(req.body?.skin_id || "photo_1").slice(0, 80);
-      const cardUsername = String(req.body?.card_username || "collector").trim().replace(/^@/,"").slice(0,8);
+      const skinId = String(req.body?.skin_id || "photo_1").trim().slice(0,80);
+      if (!/^photo_([1-9]|[1-5][0-9]|60)$/.test(skinId)) return res.status(400).json({ok:false,error:"Недопустимый дизайн"});
+      const cardUsername = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8);
       if (!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов"});
-      const title = String(req.body?.title || "Без названия").trim().slice(0, 60) || "Без названия";
-      const description = String(req.body?.description || "").trim().slice(0, 300) || null;
-      const visibility = req.body?.visibility === "private" ? "private" : "public";
-      if (!/^\d{4}$/.test(requested)) return res.status(400).json({ ok: false, error: "Не удалось создать внутренний идентификатор" });
 
-      const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(requested)}&select=id&limit=1`);
-      if (existing?.[0]) return res.status(409).json({ ok: false, error: "Этот номер уже используется" });
-
-      const password = String(req.body?.card_password || "").replace(/\D/g, "").slice(0, 6) || String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
+      const serial = String(crypto.randomInt(0,10000)).padStart(4,"0");
       const accessKey = crypto.randomUUID();
-      const rows = await sb("collectibles", {
-        method: "POST",
-        body: JSON.stringify({ owner_id: user.id, acquisition_type: "created", serial_code: requested, access_key: accessKey, card_password: password, skin_id: skinId, card_username: cardUsername, wallet_address: null, title: "Коллекционная карточка", description: null, visibility: "public" })
+      const rows = await sb("collectibles",{
+        method:"POST",
+        body:JSON.stringify({
+          owner_id:user.id,
+          acquisition_type:"created",
+          serial_code:serial,
+          access_key:accessKey,
+          card_password:"000000",
+          skin_id:skinId,
+          card_username:cardUsername,
+          wallet_address:null,
+          title:"Коллекционная карточка",
+          description:null,
+          visibility:"public"
+        })
       });
-      return res.status(200).json({ ok: true, card: rows?.[0] || null });
+      return res.status(200).json({ok:true,card:rows?.[0]||null});
     }
-
     // ---- HISTORY ---------------------------------------------------
     if (action === "my_history" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
@@ -569,7 +570,7 @@ export default async function handler(req, res) {
       const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
-      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_password,card_username,wallet_address,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_username,wallet_address,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
       return res.status(200).json({ ok: true, cards: cards || [], card: cards?.[0] || null });
     }
 
