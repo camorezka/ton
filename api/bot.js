@@ -307,6 +307,7 @@ export default async function handler(req, res) {
       if (!user) return res.status(404).json({ ok:false, error:"user not found" });
       const itemId = String(req.body?.item_id || "");
       const price = Number(req.body?.price_ton);
+      const endTime = new Date(Date.now() + AUCTION_DURATION_HOURS * 60 * 60 * 1000).toISOString();
       if (!itemId || !Number.isFinite(price) || price < MIN_AUCTION_PRICE_TON) {
         return res.status(400).json({ ok:false, error:`Минимальная ставка — ${MIN_AUCTION_PRICE_TON} TON` });
       }
