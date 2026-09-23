@@ -731,11 +731,10 @@ body{background:#000!important;background-image:none!important;}
 .card-editor-head svg{width:16px;height:16px}
 .card-editor-field{display:block;margin-top:12px}
 .card-editor-field>span{display:block;margin-bottom:7px;color:#8d96a3;font-size:10px;text-transform:uppercase;letter-spacing:.08em}
-.card-editor-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}
-.card-editor-save,.card-editor-delete{height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;border:1px solid #2a313c}
-.card-editor-save{background:#fff;color:#090b0f}
+.card-editor-actions{display:grid;grid-template-columns:1fr;gap:9px;margin-top:15px}
+.card-editor-delete{height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;border:1px solid #2a313c}
 .card-editor-delete{background:#15181e;color:#ff7777;border-color:#43262a}
-.card-editor-save svg,.card-editor-delete svg{width:16px;height:16px}
+.card-editor-delete svg{width:16px;height:16px}
 .card-editor-status{min-height:17px;margin-top:9px;text-align:center;color:#8d96a3;font-size:11px}
 .create-design-note{margin:10px 0 14px;color:#737d8b;font-size:11px;line-height:1.45}
 .profile-info-list{margin-top:22px;border-top:1px solid rgba(255,255,255,.07)}
@@ -1533,42 +1532,7 @@ function requestDeleteCurrentCard(){
   haptic('medium');
 }
 
-async function saveCardSettings(){
-  const btn = document.getElementById('saveDesignBtn');
-  const statusEl = document.getElementById('saveDesignStatus');
-  btn.disabled = true;
-  if(statusEl) statusEl.textContent = 'Сохранение...';
-  try{
-    const d = await apiPost('update_card_settings', {
-      item_id: state.itemId || null,   // null while using the local demo item
-      serial_code: state.cardId,
-      skin_id: state.currentSkin,
-      title: state.cardTitle || 'Без названия',
-      description: state.cardDescription || '',
-      visibility: state.cardVisibility || 'public'
-    });
-    if(d.ok){
-      const cc=cvCurrent();
-      if(cc){
-        cc.serial_code=state.cardId;
-        cc.skin_id=state.currentSkin;
-        cc.title=state.cardTitle||cc.title||'Без названия';
-        cc.description=state.cardDescription||cc.description||'';
-        cc.visibility=state.cardVisibility||cc.visibility||'public';
-        cvWriteCards(cvReadCards());
-        cvSyncState(cc);
-      }
-      if(statusEl) statusEl.textContent = 'Сохранено';
-      haptic('medium');
-      try{ confetti({particleCount:40, spread:60}); }catch(e){}
-    } else {
-      if(statusEl) statusEl.textContent = 'Ошибка: ' + (d.error || 'не удалось сохранить');
-    }
-  }catch(e){
-    if(statusEl) statusEl.textContent = 'Нет соединения с сервером';
-  }
-  btn.disabled = false;
-}
+
 
 updateProfile();
 requestAppFullscreen();
@@ -2084,20 +2048,7 @@ function rebuildPhotoGallery(){
   const c=cvCurrent();
   box.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===c?.skin_id));
 }
-async function saveCardSettings(){
-  const c=cvCurrent(); if(!c)return;
-  const btn=document.getElementById('saveDesignBtn');const st=document.getElementById('saveDesignStatus');
-  btn.disabled=true;st.textContent='Сохранение...';
-  try{
-    if(c.backendId){
-      const d=await apiPost('update_card_settings',{item_id:c.backendId,serial_code:c.serial_code,skin_id:c.skin_id});
-      if(!d.ok)throw new Error(d.error||'Ошибка');
-    }
-    cvWriteCards(cvReadCards());st.textContent='Сохранено';haptic('medium');
-    setTimeout(()=>{st.textContent='';},1300);
-  }catch(e){st.textContent=e.message||'Ошибка сохранения';}
-  btn.disabled=false;
-}
+
 function getSavedWallets(){try{return JSON.parse(localStorage.getItem('cv_wallets')||'[]').filter(Boolean);}catch(e){return[];}}
 function saveWalletAddress(addr){if(!addr)return;const a=getSavedWallets().filter(x=>x!==addr);a.unshift(addr);localStorage.setItem('cv_wallets',JSON.stringify(a.slice(0,8)));renderWalletList();}
 function renderWalletList(){const box=document.getElementById('walletList');if(!box)return;const a=getSavedWallets();box.innerHTML=a.length?a.map((x,i)=>'<button class="wallet-list-row '+(x===state.wallet?'active':'')+'" onclick="selectSavedWallet('+i+')"><span>'+escapeHtml(x.slice(0,6)+'…'+x.slice(-6))+'</span><i data-lucide="'+(x===state.wallet?'check':'wallet')+'"></i></button>').join(''):'<div class="text-xs text-white/50">кошельки не подключены</div>';try{lucide.createIcons();}catch(e){}}
