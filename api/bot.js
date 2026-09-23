@@ -53,7 +53,14 @@ async function sb(path, opts = {}) {
     const t = await res.text();
     throw new Error(`Supabase error ${res.status}: ${t}`);
   }
-  return res.status === 204 ? null : res.json();
+  if (res.status === 204) return null;
+  const t = await res.text();
+  if (!t) return null;
+  try {
+    return JSON.parse(t);
+  } catch (e) {
+    throw new Error(`Supabase returned invalid JSON (${res.status})`);
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -568,7 +575,19 @@ export default async function handler(req, res) {
           visibility:"public"
         })
       });
-      return res.status(200).json({ok:true,card:rows?.[0]||null});
+
+      // Some proxies can return a successful empty body even though the
+      // Supabase INSERT completed. Re-read the just-created card instead of
+      // turning that into "Unexpected end of JSON input" on the client.
+      let createdCard = rows?.[0] || null;
+      if (!createdCard) {
+        const check = await sb(
+          `collectibles?owner_id=eq.${encodeURIComponent(user.id)}&card_username=eq.${encodeURIComponent(normalizedUsername)}&select=id,serial_code,skin_id,card_username,wallet_address,title,description,visibility,acquisition_type&limit=1`
+        );
+        createdCard = check?.[0] || null;
+      }
+      if (!createdCard) return res.status(500).json({ok:false,error:"Карточка создалась, но сервер не смог её прочитать. Попробуйте ещё раз."});
+      return res.status(200).json({ok:true,card:createdCard});
     }
     // ---- DELETE OWN CARD -------------------------------------------
     if (action === "delete_card" && req.method === "POST") {
