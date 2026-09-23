@@ -1,0 +1,338 @@
+/* Collectible Card UI — release layer */
+:root{
+  --cc-bg:#000;
+  --cc-panel:#0b0d11;
+  --cc-line:rgba(255,255,255,.09);
+  --cc-muted:#747b86;
+  --cc-white:#f5f6f8;
+  --cc-accent:#dfe4eb;
+}
+
+/* Fix screen stacking: .hidden must actually hide the profile/collection screens. */
+#screen-collection.hidden,
+#screen-profile.hidden{display:none!important}
+#screen-profile.profile-screen{display:flex}
+#screen-profile.profile-screen.hidden{display:none!important}
+
+/* Main screen: no Telegram username/AI-looking greeting. */
+#greetName{display:none!important}
+#screen-collection{padding-top:10px!important}
+#screen-collection .collection-description{
+  margin:3px auto 0!important;
+  color:rgba(255,255,255,.38)!important;
+  font-size:12px!important;
+  line-height:1.5!important;
+  max-width:310px;
+}
+#screen-collection > .flex{display:none!important}
+
+/* Clean profile: only account information, never a card preview. */
+#screen-profile{
+  min-height:calc(100dvh - 110px)!important;
+  height:auto!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  padding:30px 18px 100px!important;
+  background:#000!important;
+}
+#screen-profile .profile-card{
+  width:min(100%,380px)!important;
+  margin:8px 0 0!important;
+  padding:30px 22px 26px!important;
+  background:#090b0f!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:26px!important;
+  box-shadow:0 24px 80px rgba(0,0,0,.48)!important;
+}
+#screen-profile .profile-stats{
+  margin-top:22px!important;
+}
+#screen-profile .profile-card:before,
+#screen-profile .profile-card:after{display:none!important}
+
+/* Card scene. Based on the standard perspective/preserve-3d/backface pattern. */
+.card-carousel-shell{
+  height:min(54vw,360px)!important;
+  min-height:270px!important;
+  max-height:360px!important;
+  gap:7px!important;
+  position:relative!important;
+}
+.card-stage{
+  width:100%!important;
+  height:100%!important;
+  perspective:1500px!important;
+  perspective-origin:50% 50%!important;
+}
+.card-3d.card-cuboid{
+  width:min(88vw,440px)!important;
+  aspect-ratio:1.586/1!important;
+  height:auto!important;
+  transform-style:preserve-3d!important;
+  animation:ccCardSpin 18s linear infinite!important;
+  border-radius:22px!important;
+  cursor:pointer!important;
+  will-change:transform!important;
+  filter:drop-shadow(0 26px 34px rgba(0,0,0,.48))!important;
+  transition:filter .35s ease,scale .35s ease!important;
+}
+.card-3d.card-cuboid:hover{
+  animation-play-state:paused!important;
+  filter:drop-shadow(0 34px 48px rgba(0,0,0,.58))!important;
+  scale:1.012!important;
+}
+.card-face{
+  border-radius:22px!important;
+  overflow:hidden!important;
+  backface-visibility:hidden!important;
+  -webkit-backface-visibility:hidden!important;
+  border:1px solid rgba(255,255,255,.2)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.24)!important;
+}
+.card-face .card-surface{
+  position:absolute!important;
+  inset:0!important;
+  background-position:center!important;
+  background-size:cover!important;
+  background-repeat:no-repeat!important;
+}
+.card-front{
+  transform:translateZ(4px)!important;
+  isolation:isolate!important;
+}
+.card-back{
+  transform:rotateY(180deg) translateZ(4px)!important;
+}
+.card-front:after,
+.card-back:after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(120deg,rgba(255,255,255,.24),transparent 25%,transparent 63%,rgba(0,0,0,.18)),
+    radial-gradient(circle at 50% 0%,rgba(255,255,255,.13),transparent 48%)!important;
+  mix-blend-mode:screen!important;
+  opacity:.65!important;
+}
+.card-front:before,
+.card-back:before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  border-radius:inherit!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),inset 0 -24px 45px rgba(0,0,0,.16)!important;
+  z-index:3!important;
+}
+.card-edge{
+  display:block!important;
+  opacity:.92!important;
+  background:#22262d!important;
+  border:0!important;
+  filter:brightness(.48)!important;
+}
+.card-left,.card-right{width:8px!important;top:5px!important;bottom:5px!important}
+.card-left{left:-4px!important;transform:rotateY(-90deg) translateZ(4px)!important}
+.card-right{right:-4px!important;transform:rotateY(90deg) translateZ(4px)!important}
+.card-top,.card-bottom{height:8px!important;left:5px!important;right:5px!important}
+.card-top{top:-4px!important;transform:rotateX(90deg) translateZ(4px)!important}
+.card-bottom{bottom:-4px!important;transform:rotateX(-90deg) translateZ(4px)!important}
+.card-logo{
+  position:absolute!important;
+  z-index:7!important;
+  left:20px!important;
+  top:18px!important;
+  width:34px!important;
+  height:34px!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.96)!important;
+  display:grid!important;
+  place-items:center!important;
+  box-shadow:0 6px 20px rgba(0,0,0,.28)!important;
+}
+.card-logo svg{width:19px!important;height:19px!important}
+.card-username{
+  position:absolute!important;
+  z-index:7!important;
+  inset:0 24px!important;
+  display:grid!important;
+  place-items:center!important;
+  transform:none!important;
+  color:#fff!important;
+  font-size:clamp(25px,5.4vw,42px)!important;
+  font-weight:600!important;
+  letter-spacing:-.035em!important;
+  text-shadow:0 4px 22px rgba(0,0,0,.55)!important;
+  white-space:nowrap!important;
+}
+@keyframes ccCardSpin{
+  from{transform:rotateY(0deg)}
+  to{transform:rotateY(360deg)}
+}
+
+/* Remove the ugly duplicate/legacy card shadows and movement. */
+.card-swipe-next,.card-swipe-prev{animation:none!important}
+.card-swipe-next .card-3d,.card-swipe-prev .card-3d{animation-play-state:paused!important}
+
+/* Design picker inside card focus. */
+.cc-focus-content{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  max-height:64dvh;
+  padding:18px 16px calc(16px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(5,6,8,.18),rgba(5,6,8,.96) 18%);
+  z-index:5;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+.cc-focus-card{
+  position:absolute;
+  left:0;right:0;top:8%;
+  height:36dvh;
+  min-height:245px;
+  display:grid;
+  place-items:center;
+  z-index:4;
+}
+.cc-focus-card .card-stage{height:100%;width:100%;perspective:1500px}
+.cc-focus-card .card-3d.card-cuboid{
+  width:min(86vw,520px)!important;
+  animation-duration:20s!important;
+}
+.cc-focus-title{
+  font-size:12px;
+  color:rgba(255,255,255,.46);
+  text-align:center;
+  margin:0 0 10px;
+}
+.cc-skin-scroller{
+  display:flex;
+  gap:9px;
+  overflow-x:auto;
+  padding:2px 2px 7px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+}
+.cc-skin-scroller::-webkit-scrollbar{display:none}
+.cc-skin{
+  position:relative;
+  flex:0 0 102px;
+  width:102px;
+  aspect-ratio:1.586;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:13px;
+  overflow:hidden;
+  background:#111318;
+  scroll-snap-align:start;
+  padding:0;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.cc-skin img{
+  width:100%;height:100%;display:block;object-fit:cover;
+}
+.cc-skin:after{
+  content:"";
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.16),transparent 40%);
+  pointer-events:none;
+}
+.cc-skin.selected{
+  border-color:rgba(255,255,255,.75);
+  box-shadow:0 0 0 2px rgba(255,255,255,.1),0 8px 26px rgba(0,0,0,.4);
+  transform:translateY(-2px);
+}
+.cc-skin-index{
+  position:absolute;left:7px;bottom:6px;z-index:2;
+  font-size:8px;line-height:1;
+  color:#fff;
+  background:rgba(0,0,0,.48);
+  padding:4px 5px;border-radius:6px;
+}
+.cc-save-state{
+  text-align:center;height:17px;
+  font-size:10px;color:rgba(255,255,255,.42);
+  padding-top:4px;
+}
+.focus-modal.open .cc-focus-content{animation:ccFocusUp .34s cubic-bezier(.2,.85,.2,1)}
+@keyframes ccFocusUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+/* Better focus backdrop and close button. */
+.focus-modal{background:#000!important}
+.focus-backdrop{background:rgba(0,0,0,.72)!important;backdrop-filter:blur(14px)!important}
+.focus-back-top{
+  z-index:20!important;
+  width:42px!important;height:42px!important;
+  border-radius:50%!important;
+  background:rgba(16,18,22,.86)!important;
+  border:1px solid rgba(255,255,255,.1)!important;
+  box-shadow:0 8px 25px rgba(0,0,0,.35)!important;
+}
+
+/* Bottom bar: 5–8px lower and smooth indicator. */
+.navbar{
+  bottom:calc(5px + env(safe-area-inset-bottom,0px))!important;
+  padding:5px!important;
+  border-radius:20px!important;
+  background:rgba(10,12,16,.9)!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  box-shadow:0 12px 40px rgba(0,0,0,.5)!important;
+  backdrop-filter:blur(22px)!important;
+}
+.navbar:before{
+  content:"";
+  position:absolute;
+  left:5px;top:5px;bottom:5px;
+  width:calc(50% - 5px);
+  border-radius:15px;
+  background:rgba(255,255,255,.075);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+  transform:translateX(var(--nav-shift,0%));
+  transition:transform .38s cubic-bezier(.2,.85,.2,1);
+  pointer-events:none;
+}
+.nav-btn{
+  position:relative!important;
+  z-index:2!important;
+  flex:1!important;
+  height:46px!important;
+  border-radius:15px!important;
+  color:rgba(255,255,255,.45)!important;
+  text-shadow:none!important;
+  transition:color .3s ease,transform .18s ease!important;
+}
+.nav-btn.active{color:#fff!important}
+.nav-btn i{width:18px!important;height:18px!important;stroke-width:1.8!important}
+.nav-btn span{font-size:10px!important;margin-top:2px!important}
+
+/* Create slide */
+.create-card-slide{
+  width:min(88vw,440px)!important;
+  aspect-ratio:1.586/1!important;
+  border:1px dashed rgba(255,255,255,.24)!important;
+  border-radius:22px!important;
+  background:rgba(255,255,255,.018)!important;
+  display:grid!important;place-items:center!important;
+  color:rgba(255,255,255,.62)!important;
+  transition:background .25s ease,border-color .25s ease,transform .25s ease!important;
+}
+.create-card-slide:hover{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.5)!important;transform:scale(1.008)}
+.create-card-slide-icon{
+  width:48px;height:48px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.14);
+  display:grid;place-items:center;
+}
+.create-card-slide-icon svg{width:21px;height:21px}
+
+/* Mobile */
+@media(max-width:600px){
+  .card-carousel-shell{height:310px!important;min-height:250px!important}
+  .card-3d.card-cuboid{width:min(89vw,400px)!important}
+  .card-logo{left:17px!important;top:15px!important}
+  .cc-focus-card{top:5%;height:34dvh}
+  .cc-focus-content{max-height:62dvh}
+}
+@media(prefers-reduced-motion:reduce){
+  .card-3d.card-cuboid{animation:none!important}
+  .navbar:before{transition:none}
+}
