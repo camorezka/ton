@@ -313,7 +313,22 @@ export default async function handler(req, res) {
       const item = items?.[0];
       if (!item || String(item.owner_id) !== String(user.id)) return res.status(403).json({ok:false,error:"you do not own this card"});
       if (item.is_locked) return res.status(409).json({ok:false,error:"card is locked"});
-      if (!item.wallet_address) return res.status(400).json({ok:false,error:"Привяжите TON-кошелёк к карточке"});
+
+      // One TON wallet belongs to the whole user's collection.
+      // If this card has no wallet, inherit the wallet stored on any other owned card.
+      let sellerWallet = item.wallet_address || null;
+      if (!sellerWallet) {
+        const walletRows = await sb(`collectibles?owner_id=eq.${encodeURIComponent(user.id)}&wallet_address=not.is.null&select=wallet_address&order=created_at.asc&limit=1`);
+        sellerWallet = walletRows?.[0]?.wallet_address || null;
+        if (sellerWallet) {
+          await sb(`collectibles?owner_id=eq.${encodeURIComponent(user.id)}&wallet_address=is.null`, {
+            method:"PATCH",
+            prefer:"return=minimal",
+            body:JSON.stringify({wallet_address:sellerWallet})
+          });
+        }
+      }
+      if (!sellerWallet) return res.status(400).json({ok:false,error:"Привяжите TON-кошелёк один раз в профиле"});
       const active = await sb(`auctions?item_id=eq.${encodeURIComponent(itemId)}&status=eq.active&select=id&limit=1`);
       if (active?.[0]) return res.status(409).json({ok:false,error:"Карточка уже выставлена"});
       const rows = await sb("auctions", {method:"POST", body:JSON.stringify({item_id:itemId,seller_id:user.id,price_ton:price.toFixed(9),commission_ton:AUCTION_COMMISSION_TON,status:"active"})});
@@ -345,9 +360,14 @@ export default async function handler(req, res) {
         return res.status(404).json({ ok: false, error: "auction not active" });
       }
 
-      const itemCheck = await sb(`collectibles?id=eq.${auction.item_id}&select=is_locked,wallet_address`);
+      const itemCheck = await sb(`collectibles?id=eq.${auction.item_id}&select=is_locked,wallet_address,owner_id`);
       if (itemCheck?.[0]?.is_locked) {
         return res.status(409).json({ ok: false, error: "item already locked in another pending order" });
+      }
+      let sellerWallet = itemCheck?.[0]?.wallet_address || null;
+      if (!sellerWallet) {
+        const sellerWalletRows = await sb(`collectibles?owner_id=eq.${encodeURIComponent(auction.seller_id)}&wallet_address=not.is.null&select=wallet_address&limit=1`);
+        sellerWallet = sellerWalletRows?.[0]?.wallet_address || null;
       }
 
       const buyers = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=*`);
@@ -358,7 +378,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ ok: false, error: "cannot buy your own listing" });
       }
 
-      if (!itemCheck?.[0]?.wallet_address) return res.status(400).json({ok:false,error:"seller wallet is not connected"});
+      if (!sellerWallet) return res.status(400).json({ok:false,error:"У продавца не привязан TON-кошелёк"});
       const listingPrice = Number(auction.price_ton);
       const commission = Number(auction.commission_ton ?? AUCTION_COMMISSION_TON);
       const totalAmount = listingPrice + commission;
@@ -398,7 +418,7 @@ export default async function handler(req, res) {
         ok: true,
         order: orderRows[0],
         pay_to: SERVICE_WALLET,
-        seller_wallet: itemCheck[0].wallet_address,
+        seller_wallet: sellerWallet,
         memo,
         amount_ton: totalAmount,
         listing_price_ton: listingPrice,
@@ -606,11 +626,22 @@ export default async function handler(req, res) {
 
       if (item_id) {
         // Updating a specific owned collectible
-        const itemCheck = await sb(`collectibles?id=eq.${item_id}&select=owner_id`);
+        const itemCheck = await sb(`collectibles?id=eq.${item_id}&select=owner_id,is_locked`);
         if (!itemCheck?.[0] || itemCheck[0].owner_id !== user.id) {
           return res.status(403).json({ ok: false, error: "you do not own this item" });
         }
+        if (itemCheck[0].is_locked) {
+          return res.status(409).json({ ok:false, error:"Карточка временно заблокирована до завершения покупки" });
+        }
         await sb(`collectibles?id=eq.${item_id}`, { method: "PATCH", body: JSON.stringify(patch) });
+
+        // A wallet is global for the user: keep every owned card synchronized.
+        if (wallet_address) {
+          await sb(`collectibles?owner_id=eq.${encodeURIComponent(user.id)}`, {
+            method:"PATCH", prefer:"return=minimal",
+            body:JSON.stringify({wallet_address:String(wallet_address)})
+          });
+        }
       } else {
         // No item_id supplied (e.g. demo/local card) — just acknowledge,
         // nothing to persist server-side.
