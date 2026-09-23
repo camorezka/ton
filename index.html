@@ -1496,7 +1496,7 @@ async function saveCardSettings(){
 
 updateProfile();
 requestAppFullscreen();
-loadMyCard().finally(()=>{ try{ lucide.createIcons(); }catch(e){} });
+try{ lucide.createIcons(); }catch(e){}
 // =====================================================================
 // TON CONNECT
 // =====================================================================
@@ -2272,7 +2272,8 @@ async function initCvCards(){
     const d=await apiPost('get_my_cards');
     if(d.ok&&Array.isArray(d.cards)){
       state.lastLoginAt=d.last_login_at||state.lastLoginAt;
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
+      state.cardsServerLoaded=true;
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),wallet:x.wallet_address||null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
       cvWriteCards(cards);
       if(cards.length){cvCarouselIndex=Math.min(cvCarouselIndex,cards.length-1);cvSyncState(cards[cvCarouselIndex]);ensureCardState();renderCardCarousel();updateProfile();}
       else{ensureCardState();setTimeout(()=>openCreateCardModal(),220);}
