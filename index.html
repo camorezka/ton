@@ -571,8 +571,6 @@ body{background:#000!important;background-image:none!important;}
 .collection-description{color:#f2f4f7!important;font-size:13px!important;line-height:1.45!important;text-align:center!important;max-width:360px!important;margin:5px auto 0!important;}
 .card-3d,.card-3d.card-cuboid{animation:none!important;}
 .card-3d.card-cuboid{transition:transform .16s ease-out,filter .25s ease,box-shadow .25s ease!important;}
-</style>
-<style>
 /* Final layout: collection hero + public search */
 .collection-hero-copy{
   width:min(100%,520px)!important;
@@ -720,6 +718,46 @@ body{background:#000!important;background-image:none!important;}
   .search-submit{flex-basis:auto!important;width:100%!important;}
 }
 </style>
+<style>
+/* TON UI polish */
+.card-logo{background:#fff!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 4px 18px rgba(0,0,0,.3)!important}
+.card-logo img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
+.card-editor-panel{position:relative;z-index:3;background:#090b0f;border:1px solid #252b35;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:48dvh;overflow:auto;box-shadow:0 -18px 60px rgba(0,0,0,.45)}
+.card-editor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-editor-head b{display:block;font-size:17px;font-weight:600;color:#fff}
+.card-editor-head small{display:block;margin-top:3px;color:#7e8794;font-size:11px}
+.card-editor-head>button{width:34px;height:34px;border:1px solid #252b35;background:#11151c;color:#dce2ea;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.card-editor-head svg{width:16px;height:16px}
+.card-editor-field{display:block;margin-top:12px}
+.card-editor-field>span{display:block;margin-bottom:7px;color:#8d96a3;font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.card-editor-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}
+.card-editor-save,.card-editor-delete{height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;border:1px solid #2a313c}
+.card-editor-save{background:#fff;color:#090b0f}
+.card-editor-delete{background:#15181e;color:#ff7777;border-color:#43262a}
+.card-editor-save svg,.card-editor-delete svg{width:16px;height:16px}
+.card-editor-status{min-height:17px;margin-top:9px;text-align:center;color:#8d96a3;font-size:11px}
+.create-design-note{margin:10px 0 14px;color:#737d8b;font-size:11px;line-height:1.45}
+.profile-info-list{margin-top:22px;border-top:1px solid rgba(255,255,255,.07)}
+.profile-info-row{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px}
+.profile-info-row span{color:#727b88}.profile-info-row strong{color:#f4f6f8;font-weight:500;text-align:right;max-width:65%;overflow:hidden;text-overflow:ellipsis}
+.profile-settings-title{text-align:left;margin:22px 0 8px;color:#fff;font-size:13px;font-weight:600}
+.profile-settings-list{border:1px solid #252b35;border-radius:16px;overflow:hidden;background:#0f1217}
+.profile-setting-row{width:100%;min-height:58px;border:0;border-bottom:1px solid #252b35;background:transparent;color:#fff;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:10px 12px}
+.profile-setting-row:last-child{border-bottom:0}
+.profile-setting-row>span{display:flex;align-items:center;gap:10px;min-width:0}
+.profile-setting-row>span>svg{width:17px;height:17px;color:#9ba4b0;flex:0 0 auto}
+.profile-setting-row>span>span{display:flex;flex-direction:column;gap:2px}
+.profile-setting-row b{font-size:12px;font-weight:500}.profile-setting-row small{font-size:10px;color:#707986}
+.profile-setting-row em{font-style:normal;font-size:10px;color:#aeb7c3}
+.profile-setting-row>i{width:15px;color:#737c88}
+.navbar{background:rgba(10,12,16,.94)!important;border:1px solid #252b35!important;border-radius:18px!important;box-shadow:0 14px 38px rgba(0,0,0,.45)!important;padding:5px!important}
+.nav-btn{height:48px!important;flex:1;border-radius:13px!important;color:#707884!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;font-size:10px!important}
+.nav-btn svg{width:17px!important;height:17px!important}.nav-btn.active{background:#181c23!important;color:#fff!important;text-shadow:none!important}.nav-btn.active svg{color:#fff!important}
+.nav-indicator{display:none!important}
+.search-panel{background:#090c11!important;border-color:#252b35!important;box-shadow:0 18px 60px rgba(0,0,0,.35)!important}
+.search-title{font-weight:600!important}.search-subtitle{color:#fff!important;opacity:.62!important}
+.search-result-logo{overflow:hidden!important;background:#fff!important}.search-result-logo img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+</style>
 </head>
 <body class="pb-20">
 
@@ -756,7 +794,7 @@ body{background:#000!important;background-image:none!important;}
   <div class="card-create-sheet card-create-v2">
     <div class="create-sheet-title"><div><div class="text-base font-semibold">Создать карточку</div><div class="text-xs text-white/40 mt-1">До 3 карточек</div></div><button class="sheet-close-icon" onclick="closeCreateCardModal()" aria-label="Закрыть"><i data-lucide="x"></i></button></div>
     <div id="createCardPreview" class="create-card-preview-3d"></div>
-    <label class="create-username-label"><span>Ник карточки</span><input id="createCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" placeholder="collector"></label><label class="create-username-label"><span>Пароль карточки · 6 цифр</span><input id="createCardPasswordInput" class="card-field" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••"></label>
+    <label class="create-username-label"><span>Юзернейм карточки</span><input id="createCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" spellcheck="false" placeholder="username"></label><div class="create-design-note">После создания дизайн можно изменить в редакторе карточки.</div>
     <button id="createCardSubmitBtn" class="primary-btn" onclick="submitCreateCard()"><i data-lucide="check"></i><span>Создать</span></button>
   </div>
 </div>
@@ -771,7 +809,7 @@ body{background:#000!important;background-image:none!important;}
   <button class="card-carousel-arrow card-carousel-prev" aria-label="Предыдущая карточка" onclick="cycleCard(-1)"><i data-lucide="chevron-left"></i></button>
   <div class="card-stage" id="cardStageMain">
     <div id="card3d" class="card-3d card-cuboid" onclick="openFocusModal()">
-      <div class="card-face card-front" id="cardFront"><div class="card-surface"></div><div class="card-logo"></div><div class="card-username" id="cardUsernameMain">@collector</div></div>
+      <div class="card-face card-front" id="cardFront"><div class="card-surface"></div><div class="card-logo"><img src="https://i.ibb.co/1tTDt6fP/9a3b3de4-ee4b-4282-b5b5-f39682d7f1db.jpg" alt="Cards logo"></div><div class="card-username" id="cardUsernameMain">@collector</div></div>
       <div class="card-face card-back" id="cardBack"><div class="card-surface"></div></div>
       <div class="card-edge card-left"></div><div class="card-edge card-right"></div><div class="card-edge card-top"></div><div class="card-edge card-bottom"></div>
     </div>
@@ -826,7 +864,17 @@ body{background:#000!important;background-image:none!important;}
     </div>
     <div class="profile-name" id="profName">Пользователь</div>
     <div class="profile-username" id="profUsername">@guest</div>
-    <div class="profile-stats"><div><strong id="profCards">0</strong><span>карточки</span></div></div>
+    <div class="profile-info-list">
+      <div class="profile-info-row"><span>Telegram ID</span><strong id="profTgId">—</strong></div>
+      <div class="profile-info-row"><span>Последний вход</span><strong id="profLastLogin">—</strong></div>
+      <div class="profile-info-row"><span>Карточек</span><strong id="profCards">0</strong></div>
+    </div>
+    <div class="profile-settings-title">Настройки</div>
+    <div class="profile-settings-list">
+      <button class="profile-setting-row" onclick="toggleProfileSetting('tilt')"><span><i data-lucide="scan"></i><span><b>3D-эффект</b><small>Наклон карточки курсором</small></span></span><em id="settingTiltState">Вкл.</em></button>
+      <button class="profile-setting-row" onclick="toggleProfileSetting('haptics')"><span><i data-lucide="vibrate"></i><span><b>Вибрация</b><small>Отклик Telegram</small></span></span><em id="settingHapticsState">Вкл.</em></button>
+      <button class="profile-setting-row" onclick="resetPin()"><span><i data-lucide="lock-keyhole"></i><span><b>Изменить PIN</b><small>Потребуется создать новый PIN</small></span></span><i data-lucide="chevron-right"></i></button>
+    </div>
   </section>
 </main>
 
@@ -843,11 +891,21 @@ body{background:#000!important;background-image:none!important;}
   <div class="focus-backdrop" onclick="closeFocusModal()"></div>
   <div class="focus-card-wrap"><div class="card-stage">
     <div id="focusCard3d" class="card-3d card-cuboid">
-      <div class="card-face card-front"><div class="card-surface"></div><div class="card-logo"></div><div class="card-username" id="focusHolderName">@collector</div></div>
+      <div class="card-face card-front"><div class="card-surface"></div><div class="card-logo"><img src="https://i.ibb.co/1tTDt6fP/9a3b3de4-ee4b-4282-b5b5-f39682d7f1db.jpg" alt="Cards logo"></div><div class="card-username" id="focusHolderName">@collector</div></div>
       <div class="card-face card-back"><div class="card-surface"></div></div>
       <div class="card-edge card-left"></div><div class="card-edge card-right"></div><div class="card-edge card-top"></div><div class="card-edge card-bottom"></div>
     </div>
   </div></div>
+  <section class="card-editor-panel">
+    <div class="card-editor-head"><div><b>Карточка</b><small>Юзернейм и дизайн</small></div><button onclick="closeFocusModal()" aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+    <label class="card-editor-field"><span>Юзернейм</span><input id="editCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" spellcheck="false" placeholder="username"></label>
+    <div class="card-editor-field"><span>Дизайн</span><div id="skinScroller" class="skin-grid"></div></div>
+    <div class="card-editor-actions">
+      <button class="card-editor-save" onclick="saveCardEditor()"><i data-lucide="check"></i><span>Сохранить</span></button>
+      <button class="card-editor-delete" onclick="requestDeleteCurrentCard()"><i data-lucide="trash-2"></i><span>Удалить</span></button>
+    </div>
+    <div id="cardEditorStatus" class="card-editor-status"></div>
+  </section>
 </div>
 
 </div><!-- /appRoot -->
@@ -886,10 +944,11 @@ const state = {
   tgUser: tg?.initDataUnsafe?.user || {id: 0, first_name:"Guest", username:"guest"},
   initData: tg?.initData || "",
   currentOrderMemo:null,
-  hapticsEnabled:true, tiltEnabled:true,
+  hapticsEnabled:localStorage.getItem('cv_haptics')!=='0',
+  tiltEnabled:localStorage.getItem('cv_tilt')!=='0',
+  lastLoginAt:null,
   currentSkin: null,
   cardId: null,
-  cardPassword: null,
   itemId: null,
 };
 
@@ -1172,7 +1231,8 @@ async function refreshCardsFromServer(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),card_password:String(x.card_password||''),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
+      state.lastLoginAt=d.last_login_at||state.lastLoginAt;
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
       const previous=cvReadCards();
       const activeId=state.activeCardId;
       const merged=cards.map(serverCard=>{
@@ -1209,7 +1269,11 @@ function openFocusModal(){
   try{ tg?.BackButton?.show?.(); tg?.BackButton?.offClick?.(closeFocusModal); tg?.BackButton?.onClick?.(closeFocusModal); }catch(e){}
   haptic('medium');
   syncFocusFromMain();
+  const current=cvCurrent();
+  const input=document.getElementById('editCardUsernameInput');
+  if(input) input.value=String(current?.card_username||'').slice(0,8);
   rebuildPhotoGallery();
+  try{lucide.createIcons();}catch(e){}
 }
 function closeFocusModal(){
   document.getElementById('focusModal').classList.remove('open');
@@ -1250,7 +1314,7 @@ async function loadMyCard(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards) && d.cards.length){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),card_password:String(x.card_password||''),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
       cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
     }
     const serial=cvGen4();
@@ -1346,6 +1410,52 @@ function applySkin(skin){
 // =====================================================================
 // Save design (Card ID + skin) to backend
 // =====================================================================
+async function saveCardEditor(){
+  const c=cvCurrent();
+  const input=document.getElementById('editCardUsernameInput');
+  const status=document.getElementById('cardEditorStatus');
+  if(!c||!input)return;
+  const username=String(input.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
+  if(!/^[a-z0-9_]{1,8}$/.test(username)){
+    if(status)status.textContent='Юзернейм: 1–8 символов (латиница, цифры, _)';
+    haptic('heavy'); return;
+  }
+  const btn=document.querySelector('.card-editor-save');
+  if(btn){btn.disabled=true;btn.querySelector('span').textContent='Сохраняем…';}
+  try{
+    if(c.backendId){
+      const d=await apiPost('update_card_settings',{item_id:c.backendId,card_username:username,skin_id:c.skin_id});
+      if(!d.ok)throw new Error(d.error||'Не удалось сохранить');
+    }
+    c.card_username=username;
+    const cards=cvReadCards(),ix=cards.findIndex(x=>x.id===c.id);
+    if(ix>=0)cards[ix]=c;
+    cvWriteCards(cards); cvSyncState(c); renderCardCarousel(); updateProfile();
+    if(status)status.textContent='Сохранено';
+    haptic('medium');
+    setTimeout(()=>{if(status)status.textContent='';},1200);
+  }catch(e){
+    if(status)status.textContent=e.message||'Ошибка сохранения';
+    haptic('heavy');
+  }finally{
+    if(btn){btn.disabled=false;btn.querySelector('span').textContent='Сохранить';}
+  }
+}
+function requestDeleteCurrentCard(){
+  const c=cvCurrent();
+  if(!c)return;
+  state.deleteTargetCardId=c.id;
+  pinState.mode='delete';
+  pinState.deleteCardId=c.id;
+  pinState.buffer='';
+  setText('pinTitle','Введите PIN-код');
+  setText('pinSubtitle','Подтвердите удаление карточки');
+  renderPinDots();
+  closeFocusModal();
+  document.getElementById('pinScreen').classList.remove('hidden');
+  haptic('medium');
+}
+
 async function saveCardSettings(){
   const btn = document.getElementById('saveDesignBtn');
   const statusEl = document.getElementById('saveDesignStatus');
@@ -1621,11 +1731,6 @@ function cvGen4(){
   let s=''; for(let i=0;i<4;i++) s+=String(a[i]%10);
   return s;
 }
-function cvGen6(){
-  const a=new Uint32Array(6); crypto.getRandomValues(a);
-  let s=''; for(let i=0;i<6;i++) s+=String(a[i]%10);
-  return s;
-}
 function cvMasked(n){ return String(n||'').replace(/\D/g,'').padStart(4,'0').slice(-4); }
 function cvCardStyle(card){
   const id=String(card?.skin_id||'photo_1');
@@ -1641,7 +1746,6 @@ function cvSyncState(card){
   state.activeCardId=card.id;
   state.itemId=card.backendId || null;
   state.cardId=card.serial_code;
-  state.cardPassword=null;
   state.currentSkin=card.skin_id;
   state.wallet=state.tonConnectUI?.wallet?.account?.address || card.wallet || cvReadCards().find(x=>x.wallet)?.wallet || null;
   state.cardTitle=card.title||'Без названия'; state.cardDescription=card.description||''; state.cardVisibility=card.visibility||'public';
@@ -1766,17 +1870,15 @@ function openCreateCardModal(){
 }
 function closeCreateCardModal(){document.getElementById('cardCreateModal')?.classList.add('hidden');}
 async function submitCreateCard(){
-  const cardUsername=(document.getElementById('createCardUsernameInput')?.value||'').trim().replace(/^@/,'').slice(0,8);
-  const cardPassword=(document.getElementById('createCardPasswordInput')?.value||'').replace(/\D/g,'').slice(0,6);
-  if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Ник: 1–8 символов.');return;}
-  if(!/^\d{6}$/.test(cardPassword)){alert('Пароль: ровно 6 цифр.');return;}
+  const cardUsername=(document.getElementById('createCardUsernameInput')?.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
+  if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Юзернейм: 1–8 символов.');return;}
   const cards=cvReadCards();if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
   const skinId=state.pendingCreateSkin||CV_SKINS[0].id,btn=document.getElementById('createCardSubmitBtn');
   if(btn){btn.disabled=true;btn.querySelector('span').textContent='Создание…';}
   try{
-    const d=await apiPost('create_card',{skin_id:skinId,card_username:cardUsername,card_password:cardPassword});
+    const d=await apiPost('create_card',{skin_id:skinId,card_username:cardUsername});
     if(!d.ok)throw new Error(d.error||'Не удалось создать карточку');
-    const b=d.card,card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||skinId,card_username:String(b.card_username||cardUsername).slice(0,8),card_password:String(b.card_password||cardPassword),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:'created'};
+    const b=d.card,card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||skinId,card_username:String(b.card_username||cardUsername).slice(0,8),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:'created'};
     cards.push(card);cvWriteCards(cards);cvCarouselIndex=cards.length-1;cvSyncState(card);ensureCardState();renderCardCarousel();closeCreateCardModal();switchTab('collection');haptic('medium');
   }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy')}
   finally{if(btn){btn.disabled=false;btn.querySelector('span').textContent='Создать';}}
@@ -2031,12 +2133,30 @@ function openHistoryDetails(id){
   document.getElementById('historyDetailSheet').classList.add('open');
 }
 function closeHistoryDetails(){document.getElementById('historyDetailSheet').classList.remove('open');}
+function formatLoginTime(value){
+  if(!value)return '—';
+  try{return new Date(value).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return '—';}
+}
+function toggleProfileSetting(kind){
+  if(kind==='tilt') state.tiltEnabled=!state.tiltEnabled;
+  if(kind==='haptics') state.hapticsEnabled=!state.hapticsEnabled;
+  setText('settingTiltState',state.tiltEnabled?'Вкл.':'Выкл.');
+  setText('settingHapticsState',state.hapticsEnabled?'Вкл.':'Выкл.');
+  localStorage.setItem('cv_tilt',state.tiltEnabled?'1':'0');
+  localStorage.setItem('cv_haptics',state.hapticsEnabled?'1':'0');
+  haptic('light');
+}
 function updateProfile(){
-  const u=state.tgUser||{}; const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
-  setText('profName',name); setText('profUsername',u.username?'@'+u.username:'@guest'); setText('profTgId',u.id||'—');
-  setText('profRegion',((navigator.language||u.language_code||'—').includes('-')?(navigator.language||u.language_code).split('-')[1].toUpperCase():(navigator.language||u.language_code||'—').toUpperCase()));
-  setText('profTimezone',Intl.DateTimeFormat().resolvedOptions().timeZone||'—'); setText('profWallet',state.wallet||'не подключен');
-  const cards=cvReadCards(); setText('profCards',cards.length); setText('profStreak',localStorage.getItem('cv_daily_streak')||'0');
+  const u=state.tgUser||{};
+  const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
+  setText('profName',name);
+  setText('profUsername',u.username?'@'+u.username:'@guest');
+  setText('profTgId',u.id||'—');
+  setText('profLastLogin',formatLoginTime(state.lastLoginAt));
+  const cards=cvReadCards();
+  setText('profCards',cards.length);
+  setText('settingTiltState',state.tiltEnabled?'Вкл.':'Выкл.');
+  setText('settingHapticsState',state.hapticsEnabled?'Вкл.':'Выкл.');
   const img=document.getElementById('profAvatar'),icon=document.getElementById('profAvatarIcon');
   if(u.photo_url&&img&&icon){img.src=u.photo_url;img.classList.remove('hidden');icon.classList.add('hidden');}
 }
@@ -2113,7 +2233,7 @@ async function searchCard(){
   try{
     const d=await apiPost('search_card',{card_username:username});
     if(req!==searchRequestId)return;
-    if(!d.ok) throw new Error(d.error||'Не удалось выполнить поиск');
+    if(!d.ok) throw new Error(d.error||('HTTP '+(d.status||'ошибка')));
     if(!d.card){
       result.innerHTML='<div class="search-empty"><i data-lucide="search-x"></i><strong>Карточка не найдена</strong><span>Проверь юзернейм и попробуй ещё раз.</span></div>';
     }else{
@@ -2121,7 +2241,7 @@ async function searchCard(){
       result.innerHTML='<div class="search-found-label">Найдена карточка</div>'+
         '<div class="search-result-card" style="--search-bg:url(&quot;'+skin.url+'&quot;)">'+
           '<div class="search-result-shine"></div>'+
-          '<div class="search-result-logo">C</div>'+
+          '<div class="search-result-logo"><img src="https://i.ibb.co/1tTDt6fP/9a3b3de4-ee4b-4282-b5b5-f39682d7f1db.jpg" alt="Cards logo"></div>'+
           '<div class="search-result-username">@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</div>'+
         '</div>'+
         '<div class="search-result-meta"><strong>@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</strong><span>Коллекционная карта</span></div>';
@@ -2150,7 +2270,8 @@ async function initCvCards(){
     await new Promise(r=>setTimeout(r,120));
     const d=await apiPost('get_my_cards');
     if(d.ok&&Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),card_password:String(x.card_password||''),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
+      state.lastLoginAt=d.last_login_at||state.lastLoginAt;
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
       cvWriteCards(cards);
       if(cards.length){cvCarouselIndex=Math.min(cvCarouselIndex,cards.length-1);cvSyncState(cards[cvCarouselIndex]);ensureCardState();renderCardCarousel();updateProfile();}
       else{ensureCardState();setTimeout(()=>openCreateCardModal(),220);}
