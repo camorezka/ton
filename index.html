@@ -867,6 +867,45 @@ body{background:#000!important;background-image:none!important;}
   .card-carousel-shell{min-height:360px!important}
 }
 </style>
+<style>
+/* ===== FINAL APP VIEWPORT / PROFILE / SEARCH PASS ===== */
+html,body{width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;overscroll-behavior:none!important}
+body{position:fixed!important;inset:0!important;padding:0!important;touch-action:manipulation!important}
+#appRoot{position:fixed!important;inset:0!important;width:100%!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow:hidden!important;padding-bottom:78px!important;box-sizing:border-box!important}
+#screen-collection,#screen-search,#screen-profile{box-sizing:border-box!important;min-height:0!important;overscroll-behavior:none!important}
+#screen-collection{overflow:hidden!important}
+#screen-search{height:calc(100dvh - 78px)!important;overflow:hidden!important;padding:18px 16px 10px!important}
+#screen-profile{height:calc(100dvh - 78px)!important;overflow:hidden!important;padding:10px 16px 6px!important;display:flex!important;align-items:flex-start!important;justify-content:center!important}
+#screen-profile .profile-card{width:min(100%,430px)!important;margin:0!important;padding:12px 8px 4px!important}
+#screen-profile .profile-avatar-large{width:68px!important;height:68px!important;margin:0 auto 8px!important}
+#screen-profile .profile-name{font-size:19px!important}
+#screen-profile .profile-username{font-size:12px!important;margin-top:3px!important}
+#screen-profile .profile-info-list{margin-top:12px!important}
+#screen-profile .profile-info-row{padding:7px 2px!important;font-size:11px!important;min-height:31px!important}
+#screen-profile .profile-settings-title{margin:11px 0 6px!important;font-size:12px!important}
+#screen-profile .profile-settings-list{border-radius:13px!important}
+#screen-profile .profile-setting-row{min-height:46px!important;padding:6px 9px!important}
+#screen-profile .profile-setting-row>span{gap:8px!important}
+#screen-profile .profile-setting-row b{font-size:11px!important}
+#screen-profile .profile-setting-row small{font-size:9px!important}
+#screen-profile .profile-setting-row em{font-size:9px!important}
+.navbar{bottom:5px!important}
+.search-form{margin-top:16px!important}.search-result{margin-top:14px!important}.search-submit:disabled{opacity:.7!important}
+.search-loading{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-height:44px!important;color:#9aa3af!important;font-size:12px!important}
+.search-loading svg{width:16px!important;height:16px!important;animation:searchSpin .7s linear infinite!important}
+.search-empty{min-height:44px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;color:#858e9b!important;text-align:center!important;font-size:12px!important}
+.search-empty strong{color:#dfe4eb!important;font-size:12px!important}
+@keyframes searchSpin{to{transform:rotate(360deg)}}
+@media(max-height:700px){
+#screen-profile{padding-top:4px!important}
+#screen-profile .profile-avatar-large{width:58px!important;height:58px!important;margin-bottom:5px!important}
+#screen-profile .profile-info-list{margin-top:8px!important}
+#screen-profile .profile-info-row{padding:5px 2px!important;min-height:27px!important}
+#screen-profile .profile-settings-title{margin:8px 0 5px!important}
+#screen-profile .profile-setting-row{min-height:41px!important;padding:5px 9px!important}
+#screen-profile .profile-setting-row small{display:none!important}
+}
+</style>
 </head>
 <body class="pb-20">
 
@@ -981,6 +1020,7 @@ body{background:#000!important;background-image:none!important;}
     </div>
     <div class="profile-settings-title">Настройки</div>
     <div class="profile-settings-list">
+      <button id="profileWalletAction" class="profile-setting-row" onclick="connectWalletFromProfile()"><span><i data-lucide="wallet"></i><span><b>TON-кошелёк</b><small id="profileWalletState">Подключить кошелёк</small></span></span><i data-lucide="chevron-right"></i></button>
       <button class="profile-setting-row" onclick="toggleProfileSetting('tilt')"><span><i data-lucide="scan"></i><span><b>3D-эффект</b><small>Наклон карточки курсором</small></span></span><em id="settingTiltState">Вкл.</em></button>
       <button class="profile-setting-row" onclick="toggleProfileSetting('haptics')"><span><i data-lucide="vibrate"></i><span><b>Вибрация</b><small>Отклик Telegram</small></span></span><em id="settingHapticsState">Вкл.</em></button>
       <button class="profile-setting-row" onclick="resetPin()"><span><i data-lucide="lock-keyhole"></i><span><b>Изменить PIN</b><small>Потребуется создать новый PIN</small></span></span><i data-lucide="chevron-right"></i></button>
@@ -2125,6 +2165,8 @@ function updateProfile(){
   setText('profCards',cards.length);
   setText('settingTiltState',state.tiltEnabled?'Вкл.':'Выкл.');
   setText('settingHapticsState',state.hapticsEnabled?'Вкл.':'Выкл.');
+  const walletState=document.getElementById('profileWalletState');
+  if(walletState)walletState.textContent=state.wallet?(state.wallet.slice(0,4)+'…'+state.wallet.slice(-4)):'Подключить кошелёк';
   const img=document.getElementById('profAvatar'),icon=document.getElementById('profAvatarIcon');
   if(u.photo_url&&img&&icon){img.src=u.photo_url;img.classList.remove('hidden');icon.classList.add('hidden');}
 }
@@ -2185,60 +2227,40 @@ handlePinComplete=async function(){
 // =====================================================================
 // PUBLIC CARD SEARCH — username only, never returns/exposes password.
 // =====================================================================
-let searchRequestId=0;
+const searchCache=new Map();
+let searchRequestId=0,searchAbortController=null,searchTimer=null;
+function renderSearchResult(data,username){
+ const result=document.getElementById('searchResult');if(!result)return;
+ if(!data?.card)result.innerHTML='<div class="search-empty"><i data-lucide="search-x"></i><strong>Карточка не найдена</strong><span>Проверь юзернейм и попробуй ещё раз.</span></div>';
+ else{const c=data.card,skin=cvCardStyle(c);result.innerHTML='<div class="search-found-label">Найдена карточка</div><div class="search-result-card" style="--search-bg:url(&quot;'+skin.url+'&quot;)"><div class="search-result-shine"></div><div class="search-result-logo"><img src="https://i.ibb.co/1tTDt6fP/9a3b3de4-ee4b-4282-b5b5-f39682d7f1db.jpg" alt="Cards logo"></div><div class="search-result-username">@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</div></div><div class="search-result-meta"><strong>@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</strong><span>Коллекционная карта</span></div>'}
+ try{lucide.createIcons()}catch(e){}
+}
 async function searchCard(){
-  const input=document.getElementById('cardSearchInput');
-  const result=document.getElementById('searchResult');
-  const btn=document.getElementById('cardSearchBtn');
-  const username=String(input?.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
-  if(!/^[a-z0-9_]{1,8}$/.test(username)){
-    if(result) result.innerHTML='<div class="search-empty">Введите юзернейм от 1 до 8 символов.</div>';
-    return;
-  }
-  const req=++searchRequestId;
-  if(btn){btn.disabled=true;btn.querySelector('span').textContent='Поиск…';}
-  if(result) result.innerHTML='<div class="search-loading"><i data-lucide="loader-circle"></i><span>Ищем карточку…</span></div>';
-  try{
-    const res=await fetch(API+'?action=search_card&username='+encodeURIComponent(username),{
-      method:'GET',
-      cache:'no-store',
-      headers:{'Accept':'application/json'}
-    });
-    let d;
-    try{d=await res.json();}catch(e){throw new Error('Сервер вернул некорректный ответ');}
-    if(req!==searchRequestId)return;
-    if(!res.ok || !d.ok) throw new Error(d.error||('HTTP '+res.status));
-    if(!d.card){
-      result.innerHTML='<div class="search-empty"><i data-lucide="search-x"></i><strong>Карточка не найдена</strong><span>Проверь юзернейм и попробуй ещё раз.</span></div>';
-    }else{
-      const c=d.card, skin=cvCardStyle(c);
-      result.innerHTML='<div class="search-found-label">Найдена карточка</div>'+
-        '<div class="search-result-card" style="--search-bg:url(&quot;'+skin.url+'&quot;)">'+
-          '<div class="search-result-shine"></div>'+
-          '<div class="search-result-logo"><img src="https://i.ibb.co/1tTDt6fP/9a3b3de4-ee4b-4282-b5b5-f39682d7f1db.jpg" alt="Cards logo"></div>'+
-          '<div class="search-result-username">@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</div>'+
-        '</div>'+
-        '<div class="search-result-meta"><strong>@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</strong><span>Коллекционная карта</span></div>';
-    }
-    try{lucide.createIcons();}catch(e){}
-  }catch(e){
-    if(req===searchRequestId && result) result.innerHTML='<div class="search-empty"><strong>Ошибка поиска</strong><span>'+escapeHtml(e?.message||'Попробуй ещё раз.')+'</span></div>';
-    try{lucide.createIcons();}catch(e){}
-  }finally{
-    if(req===searchRequestId && btn){btn.disabled=false;btn.querySelector('span').textContent='Найти';}
-  }
+ const input=document.getElementById('cardSearchInput'),result=document.getElementById('searchResult'),btn=document.getElementById('cardSearchBtn');
+ const username=String(input?.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
+ if(!/^[a-z0-9_]{1,8}$/.test(username)){if(result)result.innerHTML='<div class="search-empty">Введите юзернейм от 1 до 8 символов.</div>';return}
+ const req=++searchRequestId;searchAbortController?.abort();
+ if(searchCache.has(username)){renderSearchResult(searchCache.get(username),username);return}
+ const controller=new AbortController();searchAbortController=controller;const timeout=setTimeout(()=>controller.abort(),5000);
+ if(btn){btn.disabled=true;const span=btn.querySelector('span');if(span)span.textContent='Поиск…'}
+ if(result)result.innerHTML='<div class="search-loading"><i data-lucide="loader-circle"></i><span>Ищем карточку…</span></div>';
+ try{
+  const res=await fetch(API+'?action=search_card&username='+encodeURIComponent(username),{method:'GET',cache:'default',headers:{Accept:'application/json'},signal:controller.signal});
+  let d;try{d=await res.json()}catch(e){throw new Error('Сервер вернул некорректный ответ')}
+  if(req!==searchRequestId)return;if(!res.ok||!d.ok)throw new Error(d.error||('HTTP '+res.status));
+  searchCache.set(username,d);if(searchCache.size>50)searchCache.delete(searchCache.keys().next().value);renderSearchResult(d,username);
+ }catch(e){
+  if(req===searchRequestId&&result){const message=e?.name==='AbortError'?'Поиск занял слишком много времени':'Ошибка поиска';const detail=e?.name==='AbortError'?'Попробуй ещё раз.':' '+(e?.message||'Попробуй ещё раз.');result.innerHTML='<div class="search-empty"><strong>'+message+'</strong><span>'+escapeHtml(detail)+'</span></div>';try{lucide.createIcons()}catch(e){}}
+ }finally{clearTimeout(timeout);if(req===searchRequestId&&btn){btn.disabled=false;const span=btn.querySelector('span');if(span)span.textContent='Найти'}}
+}
+function scheduleSearch(){
+ clearTimeout(searchTimer);const input=document.getElementById('cardSearchInput');const raw=String(input?.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
+ if(raw.length<3||!/^[a-z0-9_]{1,8}$/.test(raw))return;searchTimer=setTimeout(()=>searchCard(),180);
 }
 function clearCardSearch(){
-  const input=document.getElementById('cardSearchInput'), result=document.getElementById('searchResult');
-  if(input) input.value='';
-  if(result) result.innerHTML='';
-  document.getElementById('cardSearchClear')?.classList.add('hidden');
-  input?.focus();
+ const input=document.getElementById('cardSearchInput'),result=document.getElementById('searchResult');clearTimeout(searchTimer);searchAbortController?.abort();if(input)input.value='';if(result)result.innerHTML='';document.getElementById('cardSearchClear')?.classList.add('hidden');input?.focus();
 }
-document.addEventListener('input',e=>{
-  if(e.target?.id==='cardSearchInput') document.getElementById('cardSearchClear')?.classList.toggle('hidden',!e.target.value);
-});
-
+document.addEventListener('input',e=>{if(e.target?.id==='cardSearchInput'){document.getElementById('cardSearchClear')?.classList.toggle('hidden',!e.target.value);scheduleSearch()}});
 async function initCvCards(){
   try{
     await new Promise(r=>setTimeout(r,120));
