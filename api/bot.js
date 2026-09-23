@@ -30,8 +30,9 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const APP_URL = process.env.APP_URL || "https://your-app.vercel.app";
 const SERVICE_WALLET = process.env.SERVICE_WALLET || "";
 const TONAPI_KEY = process.env.TONAPI_KEY || "";
-const AUCTION_COMMISSION_TON = 0.2;
+const AUCTION_COMMISSION_TON = 0.06;
 const MIN_AUCTION_PRICE_TON = 3;
+const AUCTION_DURATION_HOURS = 24;
 const ADMIN_TELEGRAM_ID = 1693493298;
 
 // ---------------------------------------------------------------------
@@ -331,7 +332,7 @@ export default async function handler(req, res) {
       if (!sellerWallet) return res.status(400).json({ok:false,error:"Привяжите TON-кошелёк один раз в профиле"});
       const active = await sb(`auctions?item_id=eq.${encodeURIComponent(itemId)}&status=eq.active&select=id&limit=1`);
       if (active?.[0]) return res.status(409).json({ok:false,error:"Карточка уже выставлена"});
-      const rows = await sb("auctions", {method:"POST", body:JSON.stringify({item_id:itemId,seller_id:user.id,price_ton:price.toFixed(9),commission_ton:AUCTION_COMMISSION_TON,status:"active"})});
+      const rows = await sb("auctions", {method:"POST", body:JSON.stringify({item_id:itemId,seller_id:user.id,price_ton:price.toFixed(9),commission_ton:AUCTION_COMMISSION_TON,status:"active", end_time:endTime})});
       return res.status(200).json({ok:true,auction:rows?.[0]||null,commission_ton:AUCTION_COMMISSION_TON,min_price_ton:MIN_AUCTION_PRICE_TON});
     }
 
