@@ -815,7 +815,7 @@ body{background:#000!important;background-image:none!important;}
   background:#e8edf5!important;
   opacity:1!important;
 }
-.card-create-dot{margin-left:5px!important}
+.card-create-dot{margin-left:5px!important}.card-create-plus{width:18px!important;height:18px!important;margin-left:4px!important;border:0!important;background:transparent!important;color:#707784!important;display:flex!important;align-items:center!important;justify-content:center!important}.card-create-plus svg{width:14px!important;height:14px!important}
 .search-panel,
 .profile-card{
   background:transparent!important;
@@ -1826,11 +1826,14 @@ function renderCardCarousel(){
   const cards=getCarouselItems();
   const dots=document.getElementById('cardCarouselDots');
   if(!dots)return;
-  if(!cards.length){dots.innerHTML='<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';try{lucide.createIcons();}catch(e){};return;}
-  if(cvCarouselIndex>cards.length)cvCarouselIndex=cards.length;
+  if(!cards.length){
+    dots.innerHTML='<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';
+    try{lucide.createIcons();}catch(e){};return;
+  }
+  if(cvCarouselIndex>=cards.length)cvCarouselIndex=0;
   if(cvCarouselIndex<0)cvCarouselIndex=0;
-  dots.innerHTML=cards.map((x,i)=>'<button class="card-carousel-dot '+(i===cvCarouselIndex?'active':'')+'" onclick="cycleCardTo('+i+')" aria-label="Карточка '+(i+1)+'"></button>').join('')+
-    '<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';
+  dots.innerHTML=cards.map((x,i)=>'<button class="card-carousel-dot '+(i===cvCarouselIndex?'active':'')+'" onclick="cycleCardTo('+i+')" aria-label="Карточка '+(i+1)+'"></button>').join('');
+  dots.insertAdjacentHTML('beforeend','<button class="card-create-plus" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>');
   try{lucide.createIcons();}catch(e){}
 }
 function animateCardSwitch(){}
@@ -1861,25 +1864,11 @@ function restoreCardSlide(){
   try{lucide.createIcons();}catch(e){}const c=cvCurrent();if(c)applyCvCardVisual(c);
 }
 function cycleCard(dir){
-  
   const cards=getCarouselItems();
   if(!cards.length){renderCreateCardSlide();cvCarouselIndex=0;haptic('light');return;}
-  if(dir>0 && cvCarouselIndex===cards.length-1){
-    cvCarouselIndex=cards.length;
-    renderCreateCardSlide();
-    renderCardCarousel();
-    haptic('light');
-    return;
-  }
-  if(dir<0 && cvCarouselIndex===cards.length){
-    cvCarouselIndex=cards.length-1;
-    restoreCardSlide();
-    cycleCardTo(cvCarouselIndex);
-    return;
-  }
-  const next=cvCarouselIndex+dir;
-  if(next>=cards.length){cvCarouselIndex=cards.length;renderCreateCardSlide();renderCardCarousel();return;}
-  if(next<0)return;
+  let next=cvCarouselIndex+dir;
+  if(next>=cards.length) next=0;
+  if(next<0) next=cards.length-1;
   cycleCardTo(next);
 }
 function handleCardWheel(e){ e.preventDefault(); }
