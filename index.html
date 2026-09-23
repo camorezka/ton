@@ -1162,7 +1162,6 @@ function unlockApp(){
 function resetPin(){
   if(!confirm('Сбросить PIN-код? Потребуется задать новый при следующем входе.')) return;
   cloudRemove('cv_pin_hash').then(()=>{
-    closeSheet('settings');
     document.getElementById('appRoot').classList.add('hidden');
     pinState.buffer=''; pinState.mode='create'; pinState.firstEntry=null;
     initPinScreen();
