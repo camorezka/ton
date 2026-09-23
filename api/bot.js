@@ -628,7 +628,7 @@ export default async function handler(req, res) {
           last_login_at: loginAt
         })
       });
-      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,skin_id,card_username,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,skin_id,card_username,wallet_address,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
       return res.status(200).json({ ok: true, cards: cards || [], card: cards?.[0] || null, last_login_at: loginAt });
     }
 
