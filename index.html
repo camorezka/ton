@@ -461,13 +461,13 @@ body{display:flex;justify-content:center;align-items:stretch}
 
 <div id="auctionCreateModal" class="card-create-backdrop hidden">
   <div class="card-create-sheet">
-    <div class="flex items-center justify-between mb-3"><div><div class="text-base font-semibold">Выставить на аукцион</div><div class="text-xs text-white/40 mt-1">Минимальная цена 3 TON · комиссия 0.2 TON</div></div><button class="sheet-close-icon" onclick="closeAuctionCreateModal()"><i data-lucide="x"></i></button></div>
+    <div class="flex items-center justify-between mb-3"><div><div class="text-base font-semibold">Выставить на аукцион</div><div class="text-xs text-white/40 mt-1">Минимальная цена 3 TON</div></div><button class="sheet-close-icon" onclick="closeAuctionCreateModal()"><i data-lucide="x"></i></button></div>
     <div id="auctionCreatePreview" class="card-create-preview"></div>
     <div class="auction-create-grid mb-3">
       <div><div class="text-xs text-white/45 mb-1.5">Цена карточки</div><input id="auctionPriceInput" class="auction-field" inputmode="decimal" type="number" min="3" step="0.1" value="3" placeholder="3.0"></div>
-      <div><div class="text-xs text-white/45 mb-1.5">Комиссия</div><div class="auction-field flex items-center">0.2 TON</div></div>
+      
     </div>
-    <div class="card-create-hint mb-3">Покупатель отправит цену продавцу и 0.2 TON комиссии сервису одним подтверждением в кошельке. Карточка блокируется до завершения сделки.</div>
+    <div class="card-create-hint mb-3">Покупатель подтверждает оплату одним действием в кошельке. Карточка блокируется до завершения сделки.</div>
     <div id="auctionCreateStatus" class="text-xs text-white/45 mb-3"></div>
     <button id="auctionCreateBtn" class="primary-btn" onclick="submitCreateAuction()"><i data-lucide="gavel"></i><span>Выставить карточку</span></button>
   </div>
@@ -761,7 +761,7 @@ body{display:flex;justify-content:center;align-items:stretch}
   <div class="sheet-panel glass p-4">
     <div class="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4"></div>
     <h3 class="text-base font-semibold mb-2">Оплата через Tonkeeper</h3>
-    <p class="text-xs text-white/50 mb-4">Кошелёк отправит цену карточки продавцу и 0.2 TON комиссии сервису одной транзакцией. Memo прикрепляется к сервисной части автоматически.</p>
+    <p class="text-xs text-white/50 mb-4">Кошелёк отправит оплату продавцу одной транзакцией. Memo прикрепляется к сервисной части автоматически.</p>
     <div class="glass rounded-xl p-3 space-y-2 text-sm mb-4">
       <div class="flex justify-between"><span class="text-white/50">Сумма</span><span id="buyAmount">—</span></div>
       <div class="flex justify-between"><span class="text-white/50">Memo</span><span id="buyMemo" class="font-mono">—</span></div>
