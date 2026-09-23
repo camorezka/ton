@@ -927,7 +927,7 @@ async function refreshCardsFromServer(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),card_password:String(x.card_password||''),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
       const previous=cvReadCards();
       const activeId=state.activeCardId;
       const merged=cards.map(serverCard=>{
@@ -1004,7 +1004,7 @@ async function loadMyCard(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards) && d.cards.length){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),card_password:String(x.card_password||''),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
       cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
     }
     const serial=cvGen4();
@@ -1866,7 +1866,7 @@ async function initCvCards(){
     await new Promise(r=>setTimeout(r,120));
     const d=await apiPost('get_my_cards');
     if(d.ok&&Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),card_password:String(x.card_password||''),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
       cvWriteCards(cards);
       if(cards.length){cvCarouselIndex=Math.min(cvCarouselIndex,cards.length-1);cvSyncState(cards[cvCarouselIndex]);ensureCardState();renderCardCarousel();updateProfile();}
       else{ensureCardState();setTimeout(()=>openCreateCardModal(),220);}
