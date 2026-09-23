@@ -592,6 +592,25 @@ export default async function handler(req, res) {
       return res.status(200).json({ok:true,orders});
     }
 
+    // ---- PUBLIC CARD SEARCH ----------------------------------------
+    if (action === "search_card" && req.method === "POST") {
+      const username = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8);
+      if (!/^[A-Za-z0-9_]{1,8}$/.test(username)) {
+        return res.status(400).json({ok:false,error:"Некорректный юзернейм"});
+      }
+      const rows = await sb(
+        `collectibles?card_username=ilike.${encodeURIComponent(username)}&visibility=eq.public&select=id,skin_id,card_username,title,description,visibility&limit=1`
+      );
+      const card = rows?.[0] ? {
+        id: rows[0].id,
+        skin_id: rows[0].skin_id || "photo_1",
+        card_username: rows[0].card_username,
+        title: rows[0].title || "Коллекционная карточка",
+        description: rows[0].description || ""
+      } : null;
+      return res.status(200).json({ok:true,card});
+    }
+
     // ---- 3b) LOAD CURRENT CARD -------------------------------------
     if ((action === "get_my_cards" || action === "get_my_card") && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
