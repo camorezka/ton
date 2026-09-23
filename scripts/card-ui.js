@@ -37,7 +37,7 @@
       s.style.backgroundSize='cover';
       s.style.backgroundPosition='center';
     });
-    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML=logoSvg());
+    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<img src="/assets/card-logo.jpg?v=20260923-1" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">');
     const name='@'+String(card.card_username||'collector').replace(/^@/,'').slice(0,8);
     el.querySelectorAll('.card-username').forEach(x=>x.textContent=name);
   }
@@ -58,7 +58,7 @@
     content=document.createElement('div');
     content.id='ccFocusContent';
     content.className='cc-focus-content';
-    content.innerHTML='<div class="cc-focus-title">Дизайн карточки</div><div id="ccSkinScroller" class="cc-skin-scroller"></div><div id="ccSaveState" class="cc-save-state"></div>';
+    content.innerHTML='<div class="cc-focus-title">Карточка</div><div class="cc-edit-grid"><label>Юзернейм<input id="ccUsernameInput" maxlength="8" value=""></label><label>Пароль · 6 цифр<input id="ccPasswordInput" inputmode="numeric" maxlength="6" value=""></label></div><div class="cc-actions"><button id="ccSaveMeta">Сохранить</button><button id="ccDeleteCard" class="danger">Удалить карточку</button></div><div id="ccSaveState" class="cc-save-state"></div><div class="cc-focus-title">Дизайны · 60 фото</div><div id="ccSkinScroller" class="cc-skin-scroller"></div>';
     modal.appendChild(content);
     let cardWrap=q('.focus-card-wrap');
     if(cardWrap){
@@ -70,8 +70,12 @@
   function rebuildGallery(){
     addSvgSkins();
     focusMarkup();
-    const box=q('#ccSkinScroller');if(!box)return;
     const c=currentCard();
+    const ui=q('#ccUsernameInput'); if(ui) ui.value=String(c?.card_username||'').replace(/^@/,'').slice(0,8);
+    const pi=q('#ccPasswordInput'); if(pi) pi.value=String(c?.card_password||'');
+    const save=q('#ccSaveMeta'); if(save) save.onclick=saveCardMeta;
+    const del=q('#ccDeleteCard'); if(del) del.onclick=deleteCurrentCard;
+    const box=q('#ccSkinScroller');if(!box)return;
     box.innerHTML='';
     (window.CV_SKINS||[]).forEach((skin,index)=>{
       const b=document.createElement('button');
@@ -91,6 +95,29 @@
   }
 
   let saveTimer=0;
+  async function saveCardMeta(){
+    const c=currentCard(); if(!c||!window.apiPost)return;
+    const n=String(q('#ccUsernameInput')?.value||'').trim().replace(/^@/,'').slice(0,8);
+    const p=String(q('#ccPasswordInput')?.value||'').replace(/\\D/g,'').slice(0,6);
+    const st=q('#ccSaveState');
+    if(!/^[A-Za-z0-9_]{1,8}$/.test(n)){if(st)st.textContent='Юзернейм: 1–8 символов';return;}
+    if(!/^\\d{6}$/.test(p)){if(st)st.textContent='Пароль: ровно 6 цифр';return;}
+    if(st)st.textContent='Сохранение…';
+    try{
+      const d=await window.apiPost('update_card_settings',{item_id:c.backendId,card_username:n,card_password:p});
+      if(!d.ok)throw new Error(d.error||'Не удалось сохранить');
+      c.card_username=n;c.card_password=p;saveCards(cards());window.state.cardPassword=p;
+      window.applyCvCardVisual(c);if(st)st.textContent='Сохранено';setTimeout(()=>{if(st)st.textContent=''},1000);
+    }catch(e){if(st)st.textContent=e.message||'Ошибка сохранения'}
+  }
+  async function deleteCurrentCard(){
+    const c=currentCard();if(!c)return;
+    if(!confirm('Удалить эту карточку? Действие нельзя отменить.'))return;
+    if(c.backendId){const d=await window.apiPost('delete_card',{item_id:c.backendId});if(!d.ok){alert(d.error||'Не удалось удалить карточку');return;}}
+    const next=cards().filter(x=>x.id!==c.id);saveCards(next);window.state.activeCardId=next[0]?.id||null;window.closeFocusModal?.();
+    if(window.ensureCardState)window.ensureCardState();if(window.renderCardCarousel)window.renderCardCarousel();if(window.updateProfile)window.updateProfile();
+  }
+
   function chooseSkin(skin){
     const c=currentCard();if(!c||!skin)return;
     c.skin_id=skin.id;
