@@ -758,6 +758,115 @@ body{background:#000!important;background-image:none!important;}
 .search-panel{background:#090c11!important;border-color:#252b35!important;box-shadow:0 18px 60px rgba(0,0,0,.35)!important}
 .search-title{font-weight:600!important}.search-subtitle{color:#fff!important;opacity:.62!important}
 .search-result-logo{overflow:hidden!important;background:#fff!important}.search-result-logo img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+
+/* ===== FINAL UI PASS ===== */
+.collection-description{
+  color:#f2f4f7!important;
+  font-size:14.5px!important;
+  line-height:1.55!important;
+  max-width:420px!important;
+  margin-top:3px!important;
+}
+.card-carousel-shell{
+  min-height:390px!important;
+}
+.card-3d.card-cuboid{
+  width:min(92vw,470px)!important;
+  transition:transform .28s cubic-bezier(.2,.85,.2,1),filter .28s ease,box-shadow .28s ease!important;
+}
+@media (hover:hover) and (pointer:fine){
+  .card-3d.card-cuboid:hover{
+    filter:brightness(1.045);
+    box-shadow:0 34px 90px rgba(0,0,0,.66);
+  }
+}
+.card-swipe-next{animation:cardSwipeNext .34s cubic-bezier(.2,.8,.2,1) both!important}
+.card-swipe-prev{animation:cardSwipePrev .34s cubic-bezier(.2,.8,.2,1) both!important}
+@keyframes cardSwipeNext{
+  from{opacity:.25;transform:translate3d(34px,0,0) scale(.955)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes cardSwipePrev{
+  from{opacity:.25;transform:translate3d(-34px,0,0) scale(.955)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+.card-carousel-dots{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  min-height:16px!important;
+  margin-top:2px!important;
+}
+.card-carousel-dot{
+  width:6px!important;
+  height:6px!important;
+  min-width:6px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:#5f6875!important;
+  opacity:.75!important;
+}
+.card-carousel-dot.active{
+  width:22px!important;
+  height:5px!important;
+  min-width:22px!important;
+  background:#e8edf5!important;
+  opacity:1!important;
+}
+.card-create-dot{margin-left:5px!important}
+.search-panel,
+.profile-card{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+}
+.search-panel{
+  padding:8px 0 20px!important;
+}
+.profile-card{
+  width:min(100%,430px)!important;
+  padding:12px 4px 24px!important;
+}
+.search-screen{
+  padding-top:26px!important;
+}
+.skin-grid{
+  display:grid!important;
+  grid-template-columns:repeat(9,minmax(0,1fr))!important;
+  gap:5px!important;
+  width:100%!important;
+  overflow:visible!important;
+  padding:4px 0 10px!important;
+}
+.skin-tile{
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  aspect-ratio:1.586/1!important;
+  padding:0!important;
+  border-radius:9px!important;
+}
+.skin-tile .skin-name{display:none!important}
+.skin-tile img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+}
+.card-editor-actions{
+  display:flex!important;
+  margin-top:12px!important;
+}
+.card-editor-actions .card-editor-delete{
+  flex:1 1 100%!important;
+}
+@media(max-width:420px){
+  .skin-grid{gap:3px!important}
+  .skin-tile{border-radius:7px!important}
+  .card-carousel-shell{min-height:360px!important}
+}
 </style>
 </head>
 <body class="pb-20">
@@ -900,10 +1009,9 @@ body{background:#000!important;background-image:none!important;}
   </div></div>
   <section class="card-editor-panel">
     <div class="card-editor-head"><div><b>Карточка</b><small>Юзернейм и дизайн</small></div><button onclick="closeFocusModal()" aria-label="Закрыть"><i data-lucide="x"></i></button></div>
-    <label class="card-editor-field"><span>Юзернейм</span><input id="editCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" spellcheck="false" placeholder="username"></label>
+    <label class="card-editor-field"><span>Юзернейм</span><input id="editCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" spellcheck="false" placeholder="username" onchange="saveCardEditor()" onblur="saveCardEditor()"></label>
     <div class="card-editor-field"><span>Дизайн</span><div id="skinScroller" class="skin-grid"></div></div>
     <div class="card-editor-actions">
-      <button class="card-editor-save" onclick="saveCardEditor()"><i data-lucide="check"></i><span>Сохранить</span></button>
       <button class="card-editor-delete" onclick="requestDeleteCurrentCard()"><i data-lucide="trash-2"></i><span>Удалить</span></button>
     </div>
     <div id="cardEditorStatus" class="card-editor-status"></div>
@@ -1215,7 +1323,7 @@ function bindLiveCardTilt(stage){
     const r=card.getBoundingClientRect();
     const px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5;
     const ry=px*16, rx=-py*12;
-    card.style.transform='perspective(1200px) rotateX('+rx+'deg) rotateY('+ry+'deg) translateZ(8px)';
+    card.style.transform='perspective(1200px) rotateX('+rx+'deg) rotateY('+ry+'deg) translateZ(8px) scale(1.035)';
   });
   stage.addEventListener('pointerleave',()=>stage.querySelectorAll('.card-3d').forEach(card=>card.style.transform=''));
 }
@@ -1641,58 +1749,7 @@ const CV_SKINS = [
   {id:'photo_6',name:'Фото 06',url:'/assets/designs/design06.svg'},
   {id:'photo_7',name:'Фото 07',url:'/assets/designs/design07.svg'},
   {id:'photo_8',name:'Фото 08',url:'/assets/designs/design08.svg'},
-  {id:'photo_9',name:'Фото 09',url:'/assets/designs/design09.svg'},
-  {id:'photo_10',name:'Фото 10',url:'/assets/designs/design10.svg'},
-  {id:'photo_11',name:'Фото 11',url:'/assets/designs/design11.svg'},
-  {id:'photo_12',name:'Фото 12',url:'/assets/designs/design12.svg'},
-  {id:'photo_13',name:'Фото 13',url:'/assets/designs/design01.svg'},
-  {id:'photo_14',name:'Фото 14',url:'/assets/designs/design02.svg'},
-  {id:'photo_15',name:'Фото 15',url:'/assets/designs/design03.svg'},
-  {id:'photo_16',name:'Фото 16',url:'/assets/designs/design04.svg'},
-  {id:'photo_17',name:'Фото 17',url:'/assets/designs/design05.svg'},
-  {id:'photo_18',name:'Фото 18',url:'/assets/designs/design06.svg'},
-  {id:'photo_19',name:'Фото 19',url:'/assets/designs/design07.svg'},
-  {id:'photo_20',name:'Фото 20',url:'/assets/designs/design08.svg'},
-  {id:'photo_21',name:'Фото 21',url:'/assets/designs/design09.svg'},
-  {id:'photo_22',name:'Фото 22',url:'/assets/designs/design10.svg'},
-  {id:'photo_23',name:'Фото 23',url:'/assets/designs/design11.svg'},
-  {id:'photo_24',name:'Фото 24',url:'/assets/designs/design12.svg'},
-  {id:'photo_25',name:'Фото 25',url:'/assets/designs/design01.svg'},
-  {id:'photo_26',name:'Фото 26',url:'/assets/designs/design02.svg'},
-  {id:'photo_27',name:'Фото 27',url:'/assets/designs/design03.svg'},
-  {id:'photo_28',name:'Фото 28',url:'/assets/designs/design04.svg'},
-  {id:'photo_29',name:'Фото 29',url:'/assets/designs/design05.svg'},
-  {id:'photo_30',name:'Фото 30',url:'/assets/designs/design06.svg'},
-  {id:'photo_31',name:'Фото 31',url:'/assets/designs/design07.svg'},
-  {id:'photo_32',name:'Фото 32',url:'/assets/designs/design08.svg'},
-  {id:'photo_33',name:'Фото 33',url:'/assets/designs/design09.svg'},
-  {id:'photo_34',name:'Фото 34',url:'/assets/designs/design10.svg'},
-  {id:'photo_35',name:'Фото 35',url:'/assets/designs/design11.svg'},
-  {id:'photo_36',name:'Фото 36',url:'/assets/designs/design12.svg'},
-  {id:'photo_37',name:'Фото 37',url:'/assets/designs/design01.svg'},
-  {id:'photo_38',name:'Фото 38',url:'/assets/designs/design02.svg'},
-  {id:'photo_39',name:'Фото 39',url:'/assets/designs/design03.svg'},
-  {id:'photo_40',name:'Фото 40',url:'/assets/designs/design04.svg'},
-  {id:'photo_41',name:'Фото 41',url:'/assets/designs/design05.svg'},
-  {id:'photo_42',name:'Фото 42',url:'/assets/designs/design06.svg'},
-  {id:'photo_43',name:'Фото 43',url:'/assets/designs/design07.svg'},
-  {id:'photo_44',name:'Фото 44',url:'/assets/designs/design08.svg'},
-  {id:'photo_45',name:'Фото 45',url:'/assets/designs/design09.svg'},
-  {id:'photo_46',name:'Фото 46',url:'/assets/designs/design10.svg'},
-  {id:'photo_47',name:'Фото 47',url:'/assets/designs/design11.svg'},
-  {id:'photo_48',name:'Фото 48',url:'/assets/designs/design12.svg'},
-  {id:'photo_49',name:'Фото 49',url:'/assets/designs/design01.svg'},
-  {id:'photo_50',name:'Фото 50',url:'/assets/designs/design02.svg'},
-  {id:'photo_51',name:'Фото 51',url:'/assets/designs/design03.svg'},
-  {id:'photo_52',name:'Фото 52',url:'/assets/designs/design04.svg'},
-  {id:'photo_53',name:'Фото 53',url:'/assets/designs/design05.svg'},
-  {id:'photo_54',name:'Фото 54',url:'/assets/designs/design06.svg'},
-  {id:'photo_55',name:'Фото 55',url:'/assets/designs/design07.svg'},
-  {id:'photo_56',name:'Фото 56',url:'/assets/designs/design08.svg'},
-  {id:'photo_57',name:'Фото 57',url:'/assets/designs/design09.svg'},
-  {id:'photo_58',name:'Фото 58',url:'/assets/designs/design10.svg'},
-  {id:'photo_59',name:'Фото 59',url:'/assets/designs/design11.svg'},
-  {id:'photo_60',name:'Фото 60',url:'/assets/designs/design12.svg'}
+  {id:'photo_9',name:'Фото 09',url:'/assets/designs/design09.svg'}
 ];
 
 function cvGen4(){
@@ -1779,6 +1836,10 @@ function renderCardCarousel(){
 function animateCardSwitch(){}
 function cycleCardTo(index){
   const cards=getCarouselItems();
+  const previous=cvCarouselIndex;
+  const direction=index>previous?1:-1;
+  const stage=document.getElementById('cardStageMain');
+  if(stage){stage.classList.remove('card-swipe-next','card-swipe-prev');void stage.offsetWidth;stage.classList.add(direction>0?'card-swipe-next':'card-swipe-prev');setTimeout(()=>stage.classList.remove('card-swipe-next','card-swipe-prev'),360);}
   if(!cards.length){renderCreateCardSlide();return;}
   if(index>=cards.length){cvCarouselIndex=cards.length;renderCreateCardSlide();renderCardCarousel();return;}
   
@@ -2191,8 +2252,8 @@ async function searchCard(){
   const input=document.getElementById('cardSearchInput');
   const result=document.getElementById('searchResult');
   const btn=document.getElementById('cardSearchBtn');
-  const username=String(input?.value||'').trim().replace(/^@/,'').slice(0,8);
-  if(!/^[A-Za-z0-9_]{1,8}$/.test(username)){
+  const username=String(input?.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
+  if(!/^[a-z0-9_]{1,8}$/.test(username)){
     if(result) result.innerHTML='<div class="search-empty">Введите юзернейм от 1 до 8 символов.</div>';
     return;
   }
@@ -2200,9 +2261,15 @@ async function searchCard(){
   if(btn){btn.disabled=true;btn.querySelector('span').textContent='Поиск…';}
   if(result) result.innerHTML='<div class="search-loading"><i data-lucide="loader-circle"></i><span>Ищем карточку…</span></div>';
   try{
-    const d=await apiPost('search_card',{card_username:username});
+    const res=await fetch(API+'?action=search_card&username='+encodeURIComponent(username),{
+      method:'GET',
+      cache:'no-store',
+      headers:{'Accept':'application/json'}
+    });
+    let d;
+    try{d=await res.json();}catch(e){throw new Error('Сервер вернул некорректный ответ');}
     if(req!==searchRequestId)return;
-    if(!d.ok) throw new Error(d.error||('HTTP '+(d.status||'ошибка')));
+    if(!res.ok || !d.ok) throw new Error(d.error||('HTTP '+res.status));
     if(!d.card){
       result.innerHTML='<div class="search-empty"><i data-lucide="search-x"></i><strong>Карточка не найдена</strong><span>Проверь юзернейм и попробуй ещё раз.</span></div>';
     }else{
@@ -2217,7 +2284,7 @@ async function searchCard(){
     }
     try{lucide.createIcons();}catch(e){}
   }catch(e){
-    if(req===searchRequestId && result) result.innerHTML='<div class="search-empty"><strong>Не удалось выполнить поиск</strong><span>Попробуй ещё раз.</span></div>';
+    if(req===searchRequestId && result) result.innerHTML='<div class="search-empty"><strong>Ошибка поиска</strong><span>'+escapeHtml(e?.message||'Попробуй ещё раз.')+'</span></div>';
     try{lucide.createIcons();}catch(e){}
   }finally{
     if(req===searchRequestId && btn){btn.disabled=false;btn.querySelector('span').textContent='Найти';}
