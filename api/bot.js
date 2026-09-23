@@ -599,7 +599,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ok:false,error:"Некорректный юзернейм"});
       }
       const rows = await sb(
-        `collectibles?card_username=ilike.${encodeURIComponent(username)}&visibility=eq.public&select=id,skin_id,card_username,title,description,visibility&limit=1`
+        `collectibles?card_username=eq.${encodeURIComponent(username)}&visibility=eq.public&select=id,skin_id,card_username,title,description,visibility&limit=1`
       );
       const card = rows?.[0] ? {
         id: rows[0].id,
