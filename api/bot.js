@@ -351,7 +351,7 @@ export default async function handler(req, res) {
 
       await cleanupExpiredOrders(); // free up any stale locks first
 
-      const { auction_id } = req.body || {};
+      const { auction_id, buyer_wallet } = req.body || {};
       if (!auction_id) {
         return res.status(400).json({ ok: false, error: "auction_id required" });
       }
@@ -378,6 +378,9 @@ export default async function handler(req, res) {
 
       if (buyer.id === auction.seller_id) {
         return res.status(400).json({ ok: false, error: "cannot buy your own listing" });
+      }
+      if (!buyer_wallet || typeof buyer_wallet !== "string" || buyer_wallet.length < 20) {
+        return res.status(400).json({ ok:false, error:"Для покупки необходимо подключить TON-кошелёк" });
       }
 
       if (!sellerWallet) return res.status(400).json({ok:false,error:"У продавца не привязан TON-кошелёк"});
