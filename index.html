@@ -22,7 +22,7 @@
 
 :root{
   --cyan:#00F2FE; --violet:#4FACFE; --gold:#FFD700;
-  --bg:#0A0B0E;
+  --bg:#000;
 }
 *{ -webkit-tap-highlight-color: transparent; }
 html,body{ background:var(--bg); color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overscroll-behavior:none; }
@@ -157,7 +157,7 @@ body{
 /* ---------- PIN SCREEN ---------- */
 .pin-screen{
   position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background: radial-gradient(circle at 50% 20%, rgba(0,242,254,.12), transparent 50%), var(--bg);
+  background:#000;
   padding: 24px; gap:28px;
 }
 .pin-dots{ display:flex; gap:16px; }
@@ -173,7 +173,7 @@ body{
 .editor-backdrop{ position:fixed; inset:0; z-index:90; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:24px; }
 
 /* ---------- HUMAN-MADE BANK UI: no glassmorphism / no hover on touch ---------- */
-body{background:var(--bg); background-image:none;}
+body{background:#000!important;background-image:none!important;} #pinScreen{background:#000!important;} #appRoot{background:#000;}
 .glass,.frosted{background:#11151c;border:1px solid #252b35;box-shadow:0 8px 24px rgba(0,0,0,.22);backdrop-filter:none;-webkit-backdrop-filter:none;}
 .glass:active,.frosted:active{background:#151a22;}
 @media (hover:none),(pointer:coarse){.active\\:press:hover{transform:none !important;}.nav-btn:hover,.setting-action:hover,.primary-btn:hover{background:inherit;}}
@@ -799,7 +799,9 @@ body{display:flex;justify-content:center;align-items:stretch}
 <script>
 try{ lucide.createIcons(); }catch(e){ console.warn('lucide not loaded (offline CDN?)', e); }
 const tg = window.Telegram?.WebApp;
-try{ tg?.ready(); tg?.expand(); }catch(e){}
+try{ tg?.ready(); tg?.expand(); tg?.viewport?.expand?.(); tg?.requestFullscreen?.(); }catch(e){}
+setTimeout(()=>requestAppFullscreen(),80);
+setTimeout(()=>{try{tg?.expand?.();tg?.viewport?.expand?.();tg?.requestFullscreen?.();}catch(e){}},450);
 async function requestAppFullscreen(){
   try{
     if(document.fullscreenElement) return true;
@@ -926,6 +928,9 @@ function cloudRemove(key){
 }
 
 async function initPinScreen(){
+  document.documentElement.style.background='#000';
+  document.body.style.background='#000';
+
   const storedHash = await cloudGet('cv_pin_hash');
   document.getElementById('pinScreen').classList.remove('hidden');
   if(storedHash){
@@ -1011,6 +1016,8 @@ async function pinFail(message){
 }
 
 function unlockApp(){
+  document.documentElement.style.background='#000';
+  document.body.style.background='#000';
   document.getElementById('pinScreen').classList.add('hidden');
   requestAppFullscreen();
   document.getElementById('appRoot').classList.remove('hidden');
