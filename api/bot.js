@@ -224,6 +224,8 @@ export default async function handler(req, res) {
       res.setHeader("Cache-Control", "public, max-age=86400, immutable");
       return res.end(png);
     }
+    const retiredAuctionActions = new Set(["list_auctions","create_auction","create_order","verify_order","confirm_order"]);
+    if (retiredAuctionActions.has(String(action || ""))) return res.status(410).json({ok:false,error:"Функция торговли временно отключена"});
 
     // ---- 0) MANUAL / CRON CLEANUP ----------------------------------
     // POST /api/bot?action=cleanup_expired
@@ -526,6 +528,10 @@ export default async function handler(req, res) {
       if (!/^photo_([1-9]|[1-5][0-9]|60)$/.test(skinId)) return res.status(400).json({ok:false,error:"Недопустимый дизайн"});
       const cardUsername = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8);
       if (!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов"});
+      const cardPassword = String(req.body?.card_password || "").replace(/\D/g,"").slice(0,6);
+      if (!/^\d{6}$/.test(cardPassword)) return res.status(400).json({ok:false,error:"Пароль карточки должен содержать ровно 6 цифр"});
+      const duplicateNick = await sb(`collectibles?card_username=ilike.${encodeURIComponent(cardUsername)}&select=id&limit=1`);
+      if (duplicateNick?.[0]) return res.status(409).json({ok:false,error:"Этот юзернейм карточки уже занят"});
 
       const serial = String(crypto.randomInt(0,10000)).padStart(4,"0");
       const accessKey = crypto.randomUUID();
@@ -536,7 +542,7 @@ export default async function handler(req, res) {
           acquisition_type:"created",
           serial_code:serial,
           access_key:accessKey,
-          card_password:"000000",
+          card_password:cardPassword,
           skin_id:skinId,
           card_username:cardUsername,
           wallet_address:null,
@@ -570,7 +576,7 @@ export default async function handler(req, res) {
       const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
-      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_username,wallet_address,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_username,card_password,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
       return res.status(200).json({ ok: true, cards: cards || [], card: cards?.[0] || null });
     }
 
@@ -630,6 +636,8 @@ export default async function handler(req, res) {
       if (card_username !== undefined) {
         const cu=String(card_username).trim().replace(/^@/,"").slice(0,8);
         if (!/^[A-Za-z0-9_]{1,8}$/.test(cu)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов"});
+        const nickDup = await sb(`collectibles?card_username=ilike.${encodeURIComponent(cu)}&select=id&limit=1`);
+        if (nickDup?.[0] && String(nickDup[0].id) !== String(item_id || "")) return res.status(409).json({ok:false,error:"Этот юзернейм карточки уже занят"});
         patch.card_username=cu;
       }
       if (wallet_address !== undefined) patch.wallet_address = wallet_address ? String(wallet_address) : null;
@@ -725,7 +733,7 @@ async function adminStats(){
 
       if(msg && msg.text && msg.text.startsWith("/start")){
         await sb("users",{method:"POST",prefer:"resolution=merge-duplicates,return=representation",headers:{"Content-Type":"application/json"},body:JSON.stringify({telegram_id:msg.from.id,username:msg.from.username||null,first_name:msg.from.first_name||null})}).catch(()=>{});
-        await tg("sendMessage",{chat_id:msg.chat.id,text:"💳 *Card Auction* — collect, charge & trade rare cards on TON.\n\nTap below to open the vault.",parse_mode:"Markdown",reply_markup:{inline_keyboard:[[{text:"Открыть карточки",web_app:{url:APP_URL}}]]}});
+        await tg("sendMessage",{chat_id:msg.chat.id,text:"🎴 *Collectible Cards* — создавай и оформляй коллекционные карточки.\n\nОткрой приложение ниже.",parse_mode:"Markdown",reply_markup:{inline_keyboard:[[{text:"Открыть карточки",web_app:{url:APP_URL}}]]}});
       }
       return res.status(200).json({ok:true});
     }
