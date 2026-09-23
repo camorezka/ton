@@ -623,37 +623,6 @@ v>
 </div>
 
 
-<!-- ================= CARD MANAGER ================= -->
-<div id="cardManagerSheet" class="sheet hidden">
-  <div class="sheet-backdrop" onclick="closeCardManager()"></div>
-  <div class="sheet-panel glass p-4">
-    <div class="sheet-grabber"></div>
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <div class="text-base font-semibold">Мои карты</div>
-        <div class="text-xs text-white/40 mt-1">Карточки коллекции</div>
-      </div>
-      <button class="sheet-close-icon" onclick="closeCardManager()"><i data-lucide="x"></i></button>
-    </div>
-    <div id="managerCardPreview" class="manager-preview"></div>
-    <div class="manager-wallet-row">
-      <div class="manager-wallet-icon"><i data-lucide="wallet"></i></div>
-      <div class="min-w-0 flex-1">
-        <div class="text-xs text-white/40">Карточка</div>
-        <div id="managerWalletAddress" class="text-sm truncate mt-1">Не привязан</div>
-      </div>
-      <button class="manager-wallet-connect" onclick="attachWalletToCurrentCard()"><i data-lucide="link"></i><span>Привязать</span></button>
-    </div>
-    <div class="manager-actions">
-      <button class="manager-add-btn" onclick="createNewCard(); closeCardManager();"><i data-lucide="plus"></i><span>Добавить</span></button>
-      <button class="manager-add-btn" onclick="openAuctionForCard(); closeCardManager();"><i data-lucide="gavel"></i><span>Аукцион</span></button>
-      <button class="manager-delete-btn" onclick="beginDeleteCard()"><i data-lucide="trash-2"></i><span>Удалить</span></button>
-    </div>
-    <div id="managerDeleteHint" class="text-xs text-white/40 text-center mt-3 hidden">Нажмите на карту, которую хотите удалить.</div>
-    <div id="managerCardList" class="manager-card-list"></div>
-  </div>
-</div>
-
 </div><!-- /appRoot -->
 
 <script>
@@ -950,7 +919,7 @@ async function refreshCardsFromServer(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
       const previous=cvReadCards();
       const activeId=state.activeCardId;
       const merged=cards.map(serverCard=>{
@@ -960,7 +929,7 @@ async function refreshCardsFromServer(){
       cvWriteCards(merged);
       state.cardsServerLoaded=true;
       if(merged.length) cvSyncState(merged.find(x=>x.id===activeId)||merged[0]);
-      ensureCardState(); renderManagerCards(); updateProfile(); renderCardCarousel();
+      ensureCardState(); updateProfile(); renderCardCarousel();
     }
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
 }
@@ -1442,25 +1411,14 @@ function applyCvCardVisual(card){
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
   setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
-  const titleEl=document.getElementById('cardTitleMain'); if(titleEl) titleEl.textContent=card.title||'CARDS AUCTION';
-  const focusTitle=document.getElementById('focusHolderName'); if(focusTitle) focusTitle.textContent=card.title||'CARDS AUCTION';
+  const titleEl=document.getElementById('cardTitleMain'); if(titleEl) titleEl.textContent=card.title||'COLLECTIBLE CARD';
+  const focusTitle=document.getElementById('focusHolderName'); if(focusTitle) focusTitle.textContent=card.title||'COLLECTIBLE CARD';
   const back=document.getElementById('cardPassBack'); if(back) back.textContent=card.card_password;
   const f=document.getElementById('focusCardNumber'); if(f) f.textContent=formatCardNumber(card.serial_code);
   const fb=document.getElementById('focusCardIdBack'); if(fb) fb.textContent=cvMasked(card.serial_code);
   const fp=document.getElementById('focusCardPassBack'); if(fp) fp.textContent=card.card_password;
-  updateCvWalletBar();
 }
-function updateCvWalletBar(){
-  const c=cvCurrent();
-  const title=document.getElementById('cardWalletTitle');
-  const addr=document.getElementById('cardWalletAddress');
-  if(!c){ if(title)title.textContent='Кошелёк не привязан'; if(addr)addr.textContent='Добавить карту'; return; }
-  const w=c.wallet || null;
-  if(title)title.textContent=w ? 'Кошелёк карты' : 'Кошелёк не привязан';
-  if(addr)addr.textContent=w ? (w.slice(0,7)+'…'+w.slice(-7)) : 'Нажмите, чтобы настроить';
-  document.getElementById('managerWalletAddress')?.replaceChildren(document.createTextNode(w || 'Не привязан'));
-}
-function ensureCardState(){
+function updateCvWalletBar(){}\nfunction ensureCardState(){
   let cards=cvReadCards();
   if(!cards.length && state.itemId){
     cards=[{
@@ -1519,7 +1477,7 @@ function cycleCardTo(index){
   restoreCardSlide();
   cvCarouselIndex=Math.max(0,Math.min(index,cards.length-1));
   cvSyncState(cards[cvCarouselIndex]);
-  renderManagerCards();renderCardCarousel();haptic('light');
+  renderCardCarousel();haptic('light');
 }
 function renderCreateCardSlide(){
   const stage=document.getElementById('cardStageMain');
@@ -1532,7 +1490,7 @@ function restoreCardSlide(){
   const stage=document.getElementById('cardStageMain');
   if(!stage)return;
   if(stage.querySelector('.create-card-slide')){
-    stage.innerHTML='<div id="card3d" class="card-3d" onclick="openFocusModal()"><div class="card-face card-front" id="cardFront"><div class="specular" id="specularFront"></div><div class="absolute inset-0 p-4 flex flex-col justify-between text-white"><div class="card-topline"><div class="chip"></div><i data-lucide="contactless" class="card-contactless"></i></div><div class="card-center"><div id="cardTitleMain" class="card-brand">CARDS AUCTION</div><div id="cardNumber" class="emboss card-number">0000</div></div><div class="card-bottomline"><span><i data-lucide="shield-check"></i> SECURE</span></div></div></div><div class="card-face card-back" id="cardBack"><div class="specular" id="specularBack"></div><div class="mag-stripe"></div><div class="p-4 flex flex-col gap-4"><div class="hologram w-16 h-10 rounded-md opacity-90"></div><div class="card-back-label">CARDS AUCTION</div><div class="card-pass-box"><span>КОД КАРТЫ</span><strong id="cardPassBack">••••••</strong></div><div class="card-back-foot"><span>SECURE</span><i data-lucide="shield-check"></i></div></div></div></div>';
+    stage.innerHTML='<div id="card3d" class="card-3d" onclick="openFocusModal()"><div class="card-face card-front" id="cardFront"><div class="specular" id="specularFront"></div><div class="absolute inset-0 p-4 flex flex-col justify-between text-white"><div class="card-topline"><div class="chip"></div><i data-lucide="contactless" class="card-contactless"></i></div><div class="card-center"><div id="cardTitleMain" class="card-brand">COLLECTIBLE CARD</div><div id="cardNumber" class="emboss card-number">0000</div></div><div class="card-bottomline"><span><i data-lucide="shield-check"></i> SECURE</span></div></div></div><div class="card-face card-back" id="cardBack"><div class="specular" id="specularBack"></div><div class="mag-stripe"></div><div class="p-4 flex flex-col gap-4"><div class="hologram w-16 h-10 rounded-md opacity-90"></div><div class="card-back-label">COLLECTIBLE CARD</div><div class="card-pass-box"><span>КОД КАРТЫ</span><strong id="cardPassBack">••••••</strong></div><div class="card-back-foot"><span>SECURE</span><i data-lucide="shield-check"></i></div></div></div></div>';
     try{lucide.createIcons();}catch(e){}
   }
 }
@@ -1922,3 +1880,8 @@ setTimeout(initCvCards,450);
 
 </body>
 </html>
+
+<style>
+/* Legacy marketplace/wallet/history UI is intentionally disabled in card-only release. */
+#screen-market,#cardManagerSheet,#auctionPickerSheet,#auctionCreateModal,#sheet-buy,#sheet-settings,#historyDetailSheet,#historyBlock,.manager-wallet-row,.wallet-actions,#walletList{display:none!important}
+</style>
