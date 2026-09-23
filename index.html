@@ -1496,8 +1496,6 @@ async function saveCardEditor(){
     if(status)status.textContent='Юзернейм: 1–8 символов (латиница, цифры, _)';
     haptic('heavy'); return;
   }
-  const btn=document.querySelector('.card-editor-save');
-  if(btn){btn.disabled=true;btn.querySelector('span').textContent='Сохраняем…';}
   try{
     if(c.backendId){
       const d=await apiPost('update_card_settings',{item_id:c.backendId,card_username:username,skin_id:c.skin_id});
@@ -1514,7 +1512,7 @@ async function saveCardEditor(){
     if(status)status.textContent=e.message||'Ошибка сохранения';
     haptic('heavy');
   }finally{
-    if(btn){btn.disabled=false;btn.querySelector('span').textContent='Сохранить';}
+    // Username changes are autosaved; there is no separate save button.
   }
 }
 function requestDeleteCurrentCard(){
