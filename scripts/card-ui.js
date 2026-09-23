@@ -105,7 +105,7 @@
     try{
       const d=await window.apiPost('update_card_settings',{item_id:c.backendId,card_username:n,card_password:p});
       if(!d.ok)throw new Error(d.error||'Не удалось сохранить');
-      c.card_username=n;c.card_password=p;saveCards(cards());window.state.cardPassword=p;
+      c.card_username=n;c.card_password=p;saveCards(cards());state.cardPassword=p;
       window.applyCvCardVisual(c);if(st)st.textContent='Сохранено';setTimeout(()=>{if(st)st.textContent=''},1000);
     }catch(e){if(st)st.textContent=e.message||'Ошибка сохранения'}
   }
@@ -113,7 +113,7 @@
     const c=currentCard();if(!c)return;
     if(!confirm('Удалить эту карточку? Действие нельзя отменить.'))return;
     if(c.backendId){const d=await window.apiPost('delete_card',{item_id:c.backendId});if(!d.ok){alert(d.error||'Не удалось удалить карточку');return;}}
-    const next=cards().filter(x=>x.id!==c.id);saveCards(next);window.state.activeCardId=next[0]?.id||null;window.closeFocusModal?.();
+    const next=cards().filter(x=>x.id!==c.id);saveCards(next);state.activeCardId=next[0]?.id||null;window.closeFocusModal?.();
     if(window.ensureCardState)window.ensureCardState();if(window.renderCardCarousel)window.renderCardCarousel();if(window.updateProfile)window.updateProfile();
   }
 
@@ -121,7 +121,7 @@
     const c=currentCard();if(!c||!skin)return;
     c.skin_id=skin.id;
     saveCards(cards());
-    window.state&&(window.state.currentSkin=skin.id);
+    state&&(state.currentSkin=skin.id);
     paintCard(q('#card3d'),c);
     paintCard(q('#focusCard3d'),c);
     qa('.cc-skin').forEach(x=>x.classList.toggle('selected',x.dataset.skinId===skin.id));
@@ -155,7 +155,7 @@
 
   /* The profile should never render a card. */
   window.updateProfile=function(){
-    const u=window.state?.tgUser||{};
+    const u=state?.tgUser||{};
     const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
     const username=u.username?'@'+u.username:'@guest';
     const set=(id,v)=>{const e=q('#'+id);if(e)e.textContent=v};
