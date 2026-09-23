@@ -186,7 +186,9 @@ function getVerifiedUser(req) {
 // Ensures the verified Telegram user exists even when the Mini App was
 // opened from a direct Mini App link instead of the bot's /start command.
 async function ensureVerifiedUser(verifiedUser) {
-  await sb("users", {
+  // Upsert by the UNIQUE telegram_id key. Without on_conflict=telegram_id,
+  // PostgREST treats an existing user as a normal INSERT and returns 409.
+  await sb("users?on_conflict=telegram_id", {
     method: "POST",
     prefer: "resolution=merge-duplicates,return=minimal",
     body: JSON.stringify({
