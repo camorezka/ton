@@ -528,9 +528,8 @@ export default async function handler(req, res) {
       if (!/^photo_([1-9]|[1-5][0-9]|60)$/.test(skinId)) return res.status(400).json({ok:false,error:"Недопустимый дизайн"});
       const cardUsername = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8);
       if (!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов"});
-      const cardPassword = String(req.body?.card_password || "").replace(/\D/g,"").slice(0,6) || String(crypto.randomInt(0,1000000)).padStart(6,"0");
-      if (!/^\d{6}$/.test(cardPassword)) return res.status(400).json({ok:false,error:"Пароль карточки должен содержать ровно 6 цифр"});
-      const duplicateNick = await sb(`collectibles?card_username=ilike.${encodeURIComponent(cardUsername)}&select=id&limit=1`);
+      const normalizedUsername = cardUsername.toLowerCase();
+      const duplicateNick = await sb(`collectibles?card_username=eq.${encodeURIComponent(normalizedUsername)}&select=id&limit=1`);
       if (duplicateNick?.[0]) return res.status(409).json({ok:false,error:"Этот юзернейм карточки уже занят"});
 
       const serial = String(crypto.randomInt(0,10000)).padStart(4,"0");
@@ -542,16 +541,15 @@ export default async function handler(req, res) {
           acquisition_type:"created",
           serial_code:serial,
           access_key:accessKey,
-          card_password:cardPassword,
           skin_id:skinId,
-          card_username:cardUsername,
+          card_username:normalizedUsername,
           wallet_address:null,
           title:"Коллекционная карточка",
           description:null,
           visibility:"public"
         })
       });
-      return res.status(200).json({ok:true,card:rows?.[0]||null,card_password:cardPassword});
+      return res.status(200).json({ok:true,card:rows?.[0]||null});
     }
     // ---- DELETE OWN CARD -------------------------------------------
     if (action === "delete_card" && req.method === "POST") {
@@ -594,7 +592,7 @@ export default async function handler(req, res) {
 
     // ---- PUBLIC CARD SEARCH ----------------------------------------
     if (action === "search_card" && req.method === "POST") {
-      const username = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8);
+      const username = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8).toLowerCase();
       if (!/^[A-Za-z0-9_]{1,8}$/.test(username)) {
         return res.status(400).json({ok:false,error:"Некорректный юзернейм"});
       }
@@ -618,7 +616,19 @@ export default async function handler(req, res) {
       const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
-      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_username,card_password,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
+      const loginAt = new Date().toISOString();
+      await sb(`users?telegram_id=eq.${verifiedUser.id}`, {
+        method:"PATCH",
+        prefer:"return=minimal",
+        body:JSON.stringify({
+          username: verifiedUser.username || null,
+          first_name: verifiedUser.first_name || null,
+          last_name: verifiedUser.last_name || null,
+          avatar_url: verifiedUser.photo_url || null,
+          last_login_at: loginAt
+        })
+      });
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,skin_id,card_username,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
       return res.status(200).json({ ok: true, cards: cards || [], card: cards?.[0] || null });
     }
 
@@ -652,7 +662,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ ok: false, error: "invalid or missing initData" });
       }
 
-      const { item_id, serial_code, card_password, skin_id, card_username, wallet_address, title, description, visibility } = req.body || {};
+      const { item_id, serial_code, skin_id, card_username, wallet_address, title, description, visibility } = req.body || {};
       if (serial_code && !/^\d{4}$/.test(String(serial_code))) {
         return res.status(400).json({ ok: false, error: "serial_code must be exactly 4 digits" });
       }
@@ -669,16 +679,11 @@ export default async function handler(req, res) {
 
       const patch = {};
       if (serial_code) patch.serial_code = String(serial_code);
-      if (card_password !== undefined) {
-        const cp = String(card_password).replace(/\D/g, '').slice(0,6);
-        if (!/^\d{6}$/.test(cp)) return res.status(400).json({ ok:false, error:'Код карты должен содержать 6 цифр' });
-        patch.card_password = cp;
-      }
       if (skin_id) patch.skin_id = String(skin_id);
       if (card_username !== undefined) {
-        const cu=String(card_username).trim().replace(/^@/,"").slice(0,8);
-        if (!/^[A-Za-z0-9_]{1,8}$/.test(cu)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов"});
-        const nickDup = await sb(`collectibles?card_username=ilike.${encodeURIComponent(cu)}&select=id&limit=1`);
+        const cu=String(card_username).trim().replace(/^@/,"").slice(0,8).toLowerCase();
+        if (!/^[a-z0-9_]{1,8}$/.test(cu)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов (латиница, цифры, _)"});
+        const nickDup = await sb(`collectibles?card_username=eq.${encodeURIComponent(cu)}&select=id&limit=1`);
         if (nickDup?.[0] && String(nickDup[0].id) !== String(item_id || "")) return res.status(409).json({ok:false,error:"Этот юзернейм карточки уже занят"});
         patch.card_username=cu;
       }
