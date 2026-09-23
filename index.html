@@ -1388,12 +1388,10 @@ function applyConnectedWallet(wallet){
   if(address) saveWalletAddress(address);
   const cards=cvReadCards();
   const c=state.pendingWalletCardId ? cards.find(x=>x.id===state.pendingWalletCardId) : cvCurrent();
-  if(address && c){
-    c.wallet=address;
-    const ix=cards.findIndex(x=>x.id===c.id);
-    if(ix>=0) cards[ix]=c;
+  if(address){
+    cards.forEach(x=>{x.wallet=address;});
     cvWriteCards(cards);
-    if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:address}).catch(()=>{});
+    cards.forEach(x=>{if(x.backendId) apiPost('update_card_settings',{item_id:x.backendId,wallet_address:address}).catch(()=>{});});
     state.pendingWalletCardId=null;
   }
   try{ updateProfile(); updateCvWalletBar(); renderManagerCards(); renderWalletList(); }catch(e){}
@@ -1457,30 +1455,28 @@ async function buildCommentPayload(comment){
 }
 
 async function buyCard(auctionId, price){
-  if(!state.wallet){ state.tonConnectUI?.openModal(); return; }
+  const ui=await waitForTonConnect();
+  const connectedAddress=ui?.wallet?.account?.address || state.wallet || null;
+  if(!connectedAddress){
+    alert('Для покупки сначала привяжите TON-кошелёк.');
+    try{ui?.openModal();}catch(e){}
+    return;
+  }
+  state.wallet=connectedAddress;
   try{
-    const d = await apiPost('create_order', { auction_id: auctionId });
-    if(!d.ok){ alert('Ошибка: '+(d.error||'unknown')); return; }
-    state.currentOrderMemo = d.memo;
-    setText('buyAmount', d.amount_ton + ' TON');
-    setText('buyMemo', d.memo);
-    openSheet('buy');
-
-    const payload = await buildCommentPayload(d.memo);
-    const tx = {
-      validUntil: Math.floor(Date.now()/1000) + 600,
-      messages: [
-        { address: d.seller_wallet, amount: String(Math.round(Number(d.listing_price_ton) * 1e9)) },
-        { address: d.pay_to, amount: String(Math.round(Number(d.commission_ton) * 1e9)), ...(payload ? { payload } : {}) }
-      ]
-    };
-    if(!payload){
-      setText('buyStatus', 'Не удалось прикрепить memo автоматически. Укажите его вручную в Tonkeeper.');
-    }
-    state.tonConnectUI?.sendTransaction(tx).catch(()=>{});
-  }catch(e){ console.error(e); alert('Не удалось создать заказ'); }
+    const d=await apiPost('create_order',{auction_id:auctionId,buyer_wallet:connectedAddress});
+    if(!d.ok){alert('Ошибка: '+(d.error||'unknown'));return;}
+    state.currentOrderMemo=d.memo;
+    setText('buyAmount',d.amount_ton+' TON'); setText('buyMemo',d.memo); openSheet('buy');
+    const payload=await buildCommentPayload(d.memo);
+    const tx={validUntil:Math.floor(Date.now()/1000)+600,messages:[
+      {address:d.seller_wallet,amount:String(Math.round(Number(d.listing_price_ton)*1e9))},
+      {address:d.pay_to,amount:String(Math.round(Number(d.commission_ton)*1e9)),...(payload?{payload}:{})}
+    ]};
+    if(!payload)setText('buyStatus','Не удалось прикрепить memo автоматически.');
+    try{await ui.sendTransaction(tx);}catch(e){closeSheet('buy');state.currentOrderMemo=null;alert('Оплата отменена.');}
+  }catch(e){console.error(e);alert('Не удалось создать заказ');}
 }
-
 async function checkOrderStatus(){
   if(!state.currentOrderMemo) return;
   setText('buyStatus', 'Проверка блокчейна...');
@@ -1568,7 +1564,7 @@ function cvSyncState(card){
   state.cardId=card.serial_code;
   state.cardPassword=card.card_password;
   state.currentSkin=card.skin_id;
-  state.wallet=card.wallet || null;
+  state.wallet=state.tonConnectUI?.wallet?.account?.address || card.wallet || cvReadCards().find(x=>x.wallet)?.wallet || null;
   state.cardTitle=card.title||'Без названия'; state.cardDescription=card.description||''; state.cardVisibility=card.visibility||'public';
   applyCvCardVisual(card);
 }
@@ -1853,12 +1849,18 @@ function renderAuctionCards(){
   try{lucide.createIcons();}catch(e){}
 }
 function publishCvAuction(id){
-  const c=cvReadCards().find(x=>x.id===id); if(!c)return;
-  if(!c.wallet){ state.pendingWalletCardId=id; state.pendingAuction=true; closeAuctionPicker(); document.getElementById('auctionWalletNotice')?.classList.remove('hidden'); if(document.getElementById('auctionWalletNotice'))document.getElementById('auctionWalletNotice').textContent='Подключите кошелёк этой карты, затем снова откройте публикацию.'; openWalletModal(); return; }
-  if(!state.wallet || state.wallet!==c.wallet){ alert('Подключите кошелёк, который привязан к этой карте.'); return; }
-  closeAuctionPicker(); state.auctionCardId=id;
+  const cards=cvReadCards();
+  const c=cards.find(x=>x.id===id); if(!c)return;
+  const wallet=state.tonConnectUI?.wallet?.account?.address || state.wallet || cards.find(x=>x.wallet)?.wallet || null;
+  if(!wallet){ state.pendingWalletCardId=null; state.pendingAuction=true; closeAuctionPicker(); openWalletModal(); return; }
+  state.wallet=wallet;
+  cards.forEach(x=>{x.wallet=wallet;});
+  cvWriteCards(cards);
+  state.auctionCardId=id;
+  closeAuctionPicker();
   const preview=document.getElementById('auctionCreatePreview'); if(preview)preview.style.backgroundImage=`url("${cvCardStyle(c)}")`;
-  setText('auctionCreateStatus',''); document.getElementById('auctionPriceInput').value='3'; document.getElementById('auctionCreateModal').classList.remove('hidden'); try{lucide.createIcons()}catch(e){} haptic('medium');
+  setText('auctionCreateStatus',''); const input=document.getElementById('auctionPriceInput'); if(input)input.value='3';
+  document.getElementById('auctionCreateModal').classList.remove('hidden'); try{lucide.createIcons()}catch(e){} haptic('medium');
 }
 function closeAuctionCreateModal(){document.getElementById('auctionCreateModal')?.classList.add('hidden');}
 async function submitCreateAuction(){
