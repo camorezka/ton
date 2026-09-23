@@ -1238,7 +1238,7 @@ async function refreshCardsFromServer(){
       const activeId=state.activeCardId;
       const merged=cards.map(serverCard=>{
         const local=previous.find(x=>x.id===serverCard.id);
-        return local ? {...serverCard, ...local, backendId:serverCard.backendId, skin_id:serverCard.skin_id||local.skin_id||'photo_1'} : serverCard;
+        return local ? {...local, ...serverCard, backendId:serverCard.backendId, skin_id:serverCard.skin_id||local.skin_id||'photo_1'} : serverCard;
       });
       cvWriteCards(merged);
       state.cardsServerLoaded=true;
@@ -1286,44 +1286,12 @@ function syncFocusFromMain(){ const cc=cvCurrent(); applyCvCardVisual(cc); }
 // =====================================================================
 // CARD DATA
 // =====================================================================
-function genCardId(){
-  const arr = new Uint32Array(4);
-  crypto.getRandomValues(arr);
-  let out = '';
-  for(let i=0;i<4;i++) out += String(arr[i] % 10);
-  return out;
-}
-function genPassword(){
-  const arr = new Uint32Array(6);
-  crypto.getRandomValues(arr);
-  let out = '';
-  for(let i=0;i<6;i++) out += String(arr[i] % 10);
-  return out;
-}
-function formatCardNumber(id){ return String(id || '').replace(/\D/g,'').slice(-4).padStart(4,'0'); }
-function maskCardId(id){ return formatCardNumber(id) || '••••'; }
 
-async function loadMyCard(){
-  // Render the cached card immediately; network sync happens in the background.
-  const cached=cvReadCards();
-  if(cached.length){
-    cvSyncState(cached.find(x=>x.id===state.activeCardId)||cached[0]);
-    ensureCardState();
-    renderCardCarousel();
-    updateProfile();
-  }
-  try{
-    const d=await apiPost('get_my_cards');
-    if(d.ok && Array.isArray(d.cards) && d.cards.length){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
-      cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
-    }
-    const serial=cvGen4();
-    const created=await apiPost('create_card',{serial_code:serial,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Collectible Cards',visibility:'public'});
-    if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public',acquisition_type:b.acquisition_type||'created'};cvWriteCards([card]);cvSyncState(card);}
-  }catch(e){console.warn('loadMyCard failed',e)}
-  ensureCardState();
-}
+
+function formatCardNumber(id){ return String(id || '').replace(/\D/g,'').slice(-4).padStart(4,'0'); }
+
+
+
 
 // =====================================================================
 // (3) SKIN GALLERY — 60 presets, horizontal scroller inside focus modal
@@ -1759,7 +1727,7 @@ function applyCvCardVisual(card){
     if(!el)return;
     el.querySelectorAll('.card-surface').forEach(x=>x.style.backgroundImage=bg);
     el.querySelectorAll('.card-edge').forEach(x=>{x.style.backgroundImage=bg;x.style.backgroundSize='cover';x.style.backgroundPosition='center';});
-    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<img src="/assets/card-logo.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">');
+    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<img src="https://i.ibb.co/1tTDt6fP/9a3b3de4-ee4b-4282-b5b5-f39682d7f1db.jpg" alt="Cards logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">');
   });
   setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
@@ -1828,7 +1796,7 @@ function renderCreateCardSlide(){
 }
 function restoreCardSlide(){
   const stage=document.getElementById('cardStageMain');if(!stage)return;
-  stage.innerHTML='<div id="card3d" class="card-3d card-cuboid" onclick="openFocusModal()"><div class="card-face card-front" id="cardFront"><div class="card-surface"></div><div class="card-logo"></div><div class="card-username" id="cardUsernameMain">@collector</div></div><div class="card-face card-back" id="cardBack"><div class="card-surface"></div></div><div class="card-edge card-left"></div><div class="card-edge card-right"></div><div class="card-edge card-top"></div><div class="card-edge card-bottom"></div></div>';
+  stage.innerHTML='<div id="card3d" class="card-3d card-cuboid" onclick="openFocusModal()"><div class="card-face card-front" id="cardFront"><div class="card-surface"></div><div class="card-logo"><img src="https://i.ibb.co/1tTDt6fP/9a3b3de4-ee4b-4282-b5b5-f39682d7f1db.jpg" alt="Cards logo"></div><div class="card-username" id="cardUsernameMain">@collector</div></div><div class="card-face card-back" id="cardBack"><div class="card-surface"></div></div><div class="card-edge card-left"></div><div class="card-edge card-right"></div><div class="card-edge card-top"></div><div class="card-edge card-bottom"></div></div>';
   try{lucide.createIcons();}catch(e){}const c=cvCurrent();if(c)applyCvCardVisual(c);
 }
 function cycleCard(dir){
