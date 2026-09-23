@@ -2240,7 +2240,11 @@ async function searchCard(){
  const username=String(input?.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
  if(!/^[a-z0-9_]{1,8}$/.test(username)){if(result)result.innerHTML='<div class="search-empty">Введите юзернейм от 1 до 8 символов.</div>';return}
  const req=++searchRequestId;searchAbortController?.abort();
- if(searchCache.has(username)){renderSearchResult(searchCache.get(username),username);return}
+ if(searchCache.has(username)){
+  renderSearchResult(searchCache.get(username),username);
+  if(btn){btn.disabled=false;const span=btn.querySelector('span');if(span)span.textContent='Найти';}
+  return;
+ }
  const controller=new AbortController();searchAbortController=controller;const timeout=setTimeout(()=>controller.abort(),5000);
  if(btn){btn.disabled=true;const span=btn.querySelector('span');if(span)span.textContent='Поиск…'}
  if(result)result.innerHTML='<div class="search-loading"><i data-lucide="loader-circle"></i><span>Ищем карточку…</span></div>';
@@ -2260,25 +2264,3 @@ function scheduleSearch(){
 function clearCardSearch(){
  const input=document.getElementById('cardSearchInput'),result=document.getElementById('searchResult');clearTimeout(searchTimer);searchAbortController?.abort();if(input)input.value='';if(result)result.innerHTML='';document.getElementById('cardSearchClear')?.classList.add('hidden');input?.focus();
 }
-document.addEventListener('input',e=>{if(e.target?.id==='cardSearchInput'){document.getElementById('cardSearchClear')?.classList.toggle('hidden',!e.target.value);scheduleSearch()}});
-async function initCvCards(){
-  try{
-    await new Promise(r=>setTimeout(r,120));
-    const d=await apiPost('get_my_cards');
-    if(d.ok&&Array.isArray(d.cards)){
-      state.lastLoginAt=d.last_login_at||state.lastLoginAt;
-      state.cardsServerLoaded=true;
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),wallet:x.wallet_address||null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
-      cvWriteCards(cards);
-      if(cards.length){cvCarouselIndex=Math.min(cvCarouselIndex,cards.length-1);cvSyncState(cards[cvCarouselIndex]);ensureCardState();renderCardCarousel();updateProfile();}
-      else{ensureCardState();setTimeout(()=>openCreateCardModal(),220);}
-    }
-    try{lucide.createIcons();}catch(e){}
-  }catch(e){console.error('card bootstrap failed',e);if(!cvReadCards().length)setTimeout(()=>openCreateCardModal(),300);}
-}
-setTimeout(initCvCards,450);
-</script>
-
-
-</body>
-</html>
