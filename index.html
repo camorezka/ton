@@ -552,18 +552,11 @@ body{display:flex;justify-content:center;align-items:stretch}
 
 <!-- ================= APP ROOT ================= -->
 <div id="cardCreateModal" class="card-create-backdrop hidden">
-  <div class="card-create-sheet">
-    <div class="flex items-center justify-between mb-4">
-      <div><div class="text-base font-semibold">Новая карточка</div><div class="text-xs text-white/40 mt-1">До 3 карточек</div></div>
-      <button class="sheet-close-icon" onclick="closeCreateCardModal()"><i data-lucide="x"></i></button>
-    </div>
-    <div id="createCardPreview" class="card-create-preview"></div>
-    <div class="space-y-3">
-      <div><div class="text-xs text-white/45 mb-1.5">Юзернейм карточки</div>
-        <input id="createCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" placeholder="collector">
-      </div>
-      <button id="createCardSubmitBtn" class="primary-btn" onclick="submitCreateCard()"><i data-lucide="plus"></i><span>Создать карточку</span></button>
-    </div>
+  <div class="card-create-sheet card-create-v2">
+    <div class="create-sheet-title"><div><div class="text-base font-semibold">Создать карточку</div><div class="text-xs text-white/40 mt-1">До 3 карточек</div></div><button class="sheet-close-icon" onclick="closeCreateCardModal()" aria-label="Закрыть"><i data-lucide="x"></i></button></div>
+    <div id="createCardPreview" class="create-card-preview-3d"></div>
+    <label class="create-username-label"><span>Ник карточки</span><input id="createCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" placeholder="collector"></label>
+    <button id="createCardSubmitBtn" class="primary-btn" onclick="submitCreateCard()"><i data-lucide="check"></i><span>Создать</span></button>
   </div>
 </div>
 
@@ -585,16 +578,10 @@ body{display:flex;justify-content:center;align-items:stretch}
   <div class="card-carousel-shell">
   <button class="card-carousel-arrow card-carousel-prev" aria-label="Предыдущая карточка" onclick="cycleCard(-1)"><i data-lucide="chevron-left"></i></button>
   <div class="card-stage" id="cardStageMain">
-    <div id="card3d" class="card-3d" onclick="openFocusModal()">
-      <div class="card-face card-front" id="cardFront">
-        <div class="card-photo"></div>
-        <div class="card-logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="19" height="19"><path d="M24 8.5A10 10 0 1 0 24 23.5" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round"/><path d="M13 16h11" stroke="#111" stroke-width="3.2" stroke-linecap="round"/></svg></div>
-        <div class="card-username" id="cardUsernameMain">@collector</div>
-      </div>
-      <div class="card-face card-back" id="cardBack">
-        <div class="card-photo"></div>
-        <div class="card-logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="19" height="19"><path d="M24 8.5A10 10 0 1 0 24 23.5" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round"/><path d="M13 16h11" stroke="#111" stroke-width="3.2" stroke-linecap="round"/></svg></div>
-      </div>
+    <div id="card3d" class="card-3d card-cuboid" onclick="openFocusModal()">
+      <div class="card-face card-front" id="cardFront"><div class="card-surface"></div><div class="card-logo"></div><div class="card-username" id="cardUsernameMain">@collector</div></div>
+      <div class="card-face card-back" id="cardBack"><div class="card-surface"></div></div>
+      <div class="card-edge card-left"></div><div class="card-edge card-right"></div><div class="card-edge card-top"></div><div class="card-edge card-bottom"></div>
     </div>
   </div>
   <button class="card-carousel-arrow card-carousel-next" aria-label="Следующая карточка" onclick="cycleCard(1)"><i data-lucide="chevron-right"></i></button>
@@ -619,15 +606,16 @@ body{display:flex;justify-content:center;align-items:stretch}
 </main>
 
 <!-- ================= SCREEN: PROFILE ================= -->
-<main id="screen-profile" class="px-4 space-y-4 hidden">
-  <div class="flex items-center gap-3">
-    <div class="profile-avatar"><img id="profAvatar" alt="" class="w-full h-full object-cover hidden"><i id="profAvatarIcon" data-lucide="user" class="w-6 h-6"></i></div>
-    <div class="min-w-0">
-      <div id="profName" class="text-lg font-semibold truncate">Пользователь</div>
-      <div id="profUsername" class="text-xs text-white/40 truncate">@guest</div>
+<main id="screen-profile" class="profile-screen hidden">
+  <section class="profile-card">
+    <div class="profile-avatar profile-avatar-large">
+      <img id="profAvatar" alt="" class="hidden">
+      <i id="profAvatarIcon" data-lucide="user"></i>
     </div>
-  </div>
-v>
+    <div class="profile-name" id="profName">Пользователь</div>
+    <div class="profile-username" id="profUsername">@guest</div>
+    <div class="profile-stats"><div><strong id="profCards">0</strong><span>карточки</span></div></div>
+  </section>
 </main>
 
 <!-- ================= BOTTOM NAV ================= -->
@@ -640,44 +628,14 @@ v>
 <div id="focusModal" class="focus-modal">
   <button class="focus-back-top" onclick="closeFocusModal()" aria-label="Назад"><i data-lucide="chevron-left"></i></button>
   <div class="focus-backdrop" onclick="closeFocusModal()"></div>
-  <div class="focus-card-wrap">
-    <div class="card-stage">
-      <div id="focusCard3d" class="card-3d">
-        <div class="card-face card-front">
-          <div class="card-photo"></div>
-          <div class="card-logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="19" height="19"><path d="M24 8.5A10 10 0 1 0 24 23.5" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round"/><path d="M13 16h11" stroke="#111" stroke-width="3.2" stroke-linecap="round"/></svg></div>
-          <div class="card-username" id="focusHolderName">@collector</div>
-        </div>
-        <div class="card-face card-back">
-          <div class="card-photo"></div>
-          <div class="card-logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="19" height="19"><path d="M24 8.5A10 10 0 1 0 24 23.5" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round"/><path d="M13 16h11" stroke="#111" stroke-width="3.2" stroke-linecap="round"/></svg></div>
-        </div>
-      </div>
+  <div class="focus-card-wrap"><div class="card-stage">
+    <div id="focusCard3d" class="card-3d card-cuboid">
+      <div class="card-face card-front"><div class="card-surface"></div><div class="card-logo"></div><div class="card-username" id="focusHolderName">@collector</div></div>
+      <div class="card-face card-back"><div class="card-surface"></div></div>
+      <div class="card-edge card-left"></div><div class="card-edge card-right"></div><div class="card-edge card-top"></div><div class="card-edge card-bottom"></div>
     </div>
-  </div>
-  <div class="focus-settings frosted">
-    <div class="focus-password-label">Пароль карточки</div>
-    <div class="focus-password-value" id="focusSecretCode">••••••</div>
-    <button class="focus-edit-password" onclick="openCardDataEditor('password')"><i data-lucide="pencil"></i><span>Изменить пароль</span></button>
-    <div class="focus-design-title">Дизайны · 60 фото</div>
-    <div id="skinScroller" class="skin-grid"></div>
-  </div>
+  </div></div>
 </div>
-
-<!-- ================= CARD DATA EDITOR ================= -->
-<div id="cardDataEditor" class="editor-backdrop hidden">
-  <div class="glass rounded-2xl p-5 w-full max-w-xs">
-    <div class="text-sm font-semibold mb-1" id="cardDataEditorTitle">Изменить пароль</div>
-    <div class="text-xs text-white/40 mb-3" id="cardDataEditorHint"></div>
-    <input id="cardDataInput" class="card-editor-input" maxlength="6" inputmode="numeric" autocomplete="off" pattern="[0-9]*" placeholder="••••••" oninput="this.value=this.value.replace(/\D/g,'').slice(0,this.maxLength)">
-    <div id="cardDataError" class="text-xs text-red-300 mt-2 hidden"></div>
-    <div class="flex gap-2 mt-3">
-      <button class="glass active:press flex-1 py-2.5 rounded-xl text-sm" onclick="closeCardDataEditor()">Отмена</button>
-      <button class="frosted active:press flex-1 py-2.5 rounded-xl text-sm font-medium" onclick="confirmCardData()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
 
 </div><!-- /appRoot -->
 
@@ -969,7 +927,7 @@ async function refreshCardsFromServer(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
       const previous=cvReadCards();
       const activeId=state.activeCardId;
       const merged=cards.map(serverCard=>{
@@ -1012,11 +970,7 @@ function closeFocusModal(){
   try{ tg?.BackButton?.hide?.(); tg?.BackButton?.offClick?.(closeFocusModal); }catch(e){}
   haptic('light');
 }
-function syncFocusFromMain(){
-  const cc=cvCurrent();
-  { const e=document.getElementById('focusSecretCode'); if(e) e.textContent = String(cc?.card_password||state.cardPassword||'000000').slice(0,6); }
-  applyCvCardVisual(cc);
-}
+function syncFocusFromMain(){ const cc=cvCurrent(); applyCvCardVisual(cc); }
 
 // =====================================================================
 // CARD DATA
@@ -1050,12 +1004,12 @@ async function loadMyCard(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards) && d.cards.length){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
       cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
     }
     const serial=cvGen4(), pass=cvGen6();
     const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Collectible Cards',visibility:'public'});
-    if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password||pass,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public',acquisition_type:b.acquisition_type||'created'};cvWriteCards([card]);cvSyncState(card);}
+    if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public',acquisition_type:b.acquisition_type||'created'};cvWriteCards([card]);cvSyncState(card);}
   }catch(e){console.warn('loadMyCard failed',e)}
   ensureCardState();
 }
@@ -1305,7 +1259,7 @@ async function loadMarket(){
   try{
     const d=await apiPost('list_auctions'); const rows=d.auctions||[];
     if(!rows.length){list.innerHTML='<div class="empty-market"><i data-lucide="gavel"></i><div class="text-sm font-medium mt-3">Пока нет активных лотов</div><div class="text-xs mt-1">Выставляйте карточки от 3 TON.</div></div>';try{lucide.createIcons()}catch(e){};return}
-    list.innerHTML=rows.map(a=>{const c=a.collectibles||{}; const total=(Number(a.price_ton)+Number(a.commission_ton??0.06)).toFixed(2); return `<div class="market-auction-row"><div class="market-auction-thumb" style="background-image:url("${cvCardStyle(c)}")"></div><div class="market-auction-meta"><strong>${String(c.title||'Без названия').replace(/[<>]/g,'')}</strong><span>${cvMasked(c.serial_code)} · цена ${Number(a.price_ton).toFixed(2)} TON</span><span class="ton-price">К оплате: ${total} TON</span></div><button class="card-action-btn primary-card-action" style="flex:0 0 auto;padding:0 12px" onclick="buyCard('${a.id}',${Number(a.price_ton)})"><i data-lucide="shopping-bag"></i>Купить</button></div>`}).join('');
+    list.innerHTML=rows.map(a=>{const c=a.collectibles||{}; const total=(Number(a.price_ton)+Number(a.commission_ton??0.06)).toFixed(2); return `<div class="market-auction-row"><div class="market-auction-thumb" style="background-image:url("${cvCardStyle(c).url}")"></div><div class="market-auction-meta"><strong>${String(c.title||'Без названия').replace(/[<>]/g,'')}</strong><span>${cvMasked(c.serial_code)} · цена ${Number(a.price_ton).toFixed(2)} TON</span><span class="ton-price">К оплате: ${total} TON</span></div><button class="card-action-btn primary-card-action" style="flex:0 0 auto;padding:0 12px" onclick="buyCard('${a.id}',${Number(a.price_ton)})"><i data-lucide="shopping-bag"></i>Купить</button></div>`}).join('');
     try{lucide.createIcons()}catch(e){}
   }catch(e){list.innerHTML='<div class="empty-market"><i data-lucide="wifi-off"></i><div class="text-sm font-medium mt-3">Не удалось загрузить аукцион</div><div class="text-xs mt-1">Проверьте Supabase и API.</div></div>';try{lucide.createIcons()}catch(e){}}
 }
@@ -1488,7 +1442,7 @@ function cvSyncState(card){
   state.activeCardId=card.id;
   state.itemId=card.backendId || null;
   state.cardId=card.serial_code;
-  state.cardPassword=card.card_password;
+  state.cardPassword=null;
   state.currentSkin=card.skin_id;
   state.wallet=state.tonConnectUI?.wallet?.account?.address || card.wallet || cvReadCards().find(x=>x.wallet)?.wallet || null;
   state.cardTitle=card.title||'Без названия'; state.cardDescription=card.description||''; state.cardVisibility=card.visibility||'public';
@@ -1496,22 +1450,15 @@ function cvSyncState(card){
 }
 function applyCvCardVisual(card){
   if(!card)return;
-  const skin=cvCardStyle(card);
-  const bg='url("'+skin.url+'")';
-  const main=document.getElementById('card3d');
-  const focus=document.getElementById('focusCard3d');
-  [main,focus].forEach(el=>{
+  const skin=cvCardStyle(card), bg='url("'+skin.url+'")';
+  [document.getElementById('card3d'),document.getElementById('focusCard3d')].forEach(el=>{
     if(!el)return;
-    el.querySelectorAll('.card-face').forEach(face=>{
-      face.style.backgroundImage=bg;
-      face.style.backgroundSize='cover';
-      face.style.backgroundPosition='center';
-    });
+    el.querySelectorAll('.card-surface').forEach(x=>x.style.backgroundImage=bg);
+    el.querySelectorAll('.card-edge').forEach(x=>{x.style.backgroundImage=bg;x.style.backgroundSize='cover';x.style.backgroundPosition='center';});
+    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<svg viewBox="0 0 32 32" width="18" height="18"><circle cx="16" cy="16" r="15" fill="#fff"/><path d="M22 9.5A9 9 0 1 0 22 22.5" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/><path d="M12 16h10" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg>');
   });
   setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
-  const back=document.getElementById('cardPassBack');
-  if(back)back.textContent=String(card.card_password||'').slice(0,6);
 }
 function updateCvWalletBar(){}
 function ensureCardState(){
@@ -1521,7 +1468,7 @@ function ensureCardState(){
       id:'db_'+state.itemId,
       backendId:state.itemId,
       serial_code:/^\d{4}$/.test(state.cardId||'')?state.cardId:cvGen4(),
-      card_password:/^\d{6}$/.test(state.cardPassword||'')?state.cardPassword:cvGen6(),
+      
       skin_id:state.currentSkin||'photo_1',
       wallet:null
     }];
@@ -1583,20 +1530,9 @@ function renderCreateCardSlide(){
   try{lucide.createIcons();}catch(e){}
 }
 function restoreCardSlide(){
-  const stage=document.getElementById('cardStageMain');
-  if(!stage)return;
-  stage.innerHTML=`
-    <div id="card3d" class="card-3d" onclick="openFocusModal()">
-      <div class="card-face card-front" id="cardFront">
-        <div class="card-logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="19" height="19"><path d="M24 8.5A10 10 0 1 0 24 23.5" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round"/><path d="M13 16h11" stroke="#111" stroke-width="3.2" stroke-linecap="round"/></svg></div>
-        <div class="card-username" id="cardUsernameMain">@collector</div>
-      </div>
-      <div class="card-face card-back" id="cardBack">
-        <div class="card-logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="19" height="19"><path d="M24 8.5A10 10 0 1 0 24 23.5" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round"/><path d="M13 16h11" stroke="#111" stroke-width="3.2" stroke-linecap="round"/></svg></div>
-      </div>
-    </div>`;
-  try{lucide.createIcons();}catch(e){}
-  const c=cvCurrent(); if(c)applyCvCardVisual(c);
+  const stage=document.getElementById('cardStageMain');if(!stage)return;
+  stage.innerHTML='<div id="card3d" class="card-3d card-cuboid" onclick="openFocusModal()"><div class="card-face card-front" id="cardFront"><div class="card-surface"></div><div class="card-logo"></div><div class="card-username" id="cardUsernameMain">@collector</div></div><div class="card-face card-back" id="cardBack"><div class="card-surface"></div></div><div class="card-edge card-left"></div><div class="card-edge card-right"></div><div class="card-edge card-top"></div><div class="card-edge card-bottom"></div></div>';
+  try{lucide.createIcons();}catch(e){}const c=cvCurrent();if(c)applyCvCardVisual(c);
 }
 function cycleCard(dir){
   animateCardSwitch(dir);
@@ -1632,49 +1568,28 @@ function setCreateVisibility(v){
   haptic('light');
 }
 function openCreateCardModal(){
-  const modal=document.getElementById('cardCreateModal');
-  const input=document.getElementById('createCardNumberInput');
-  let serial=cvGen4();
-  const used=new Set(cvReadCards().map(x=>String(x.serial_code)));
-  for(let i=0;i<20&&used.has(serial);i++) serial=cvGen4();
-  input.value=serial;
-  setText('createCardNumber',serial);
-  const un=document.getElementById('createCardUsernameInput'); if(un) un.value='collector';
-  state.createVisibility='public';
-  setCreateVisibility('public');
-  modal.classList.remove('hidden');
-  try{lucide.createIcons();}catch(e){}
-  setTimeout(()=>input.focus(),180);
-  haptic('medium');
+  const modal=document.getElementById('cardCreateModal');if(!modal)return;
+  const cards=cvReadCards();if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
+  const skin=CV_SKINS[Math.floor(Math.random()*CV_SKINS.length)];state.pendingCreateSkin=skin.id;
+  const preview=document.getElementById('createCardPreview');
+  if(preview)preview.innerHTML='<div class="create-preview-card" style="--create-bg:url(\''+skin.url+'\')"><div class="create-preview-face"></div><div class="create-preview-edge"></div></div>';
+  const un=document.getElementById('createCardUsernameInput');if(un){un.value='';setTimeout(()=>un.focus(),180);}
+  modal.classList.remove('hidden');try{lucide.createIcons();}catch(e){}haptic('medium');
 }
-function closeCreateCardModal(){document.getElementById('cardCreateModal').classList.add('hidden');}
+function closeCreateCardModal(){document.getElementById('cardCreateModal')?.classList.add('hidden');}
 async function submitCreateCard(){
-  const modal=document.getElementById('cardCreateModal');
-  const cardUsername=(document.getElementById('createCardUsernameInput')?.value||'collector').trim().replace(/^@/,'').slice(0,8);
-  if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Юзернейм: 1–8 символов.');return;}
-  const cards=cvReadCards();
-  if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
-  let serial=cvGen4();
-  const used=new Set(cards.map(x=>String(x.serial_code)));
-  for(let i=0;i<30&&used.has(serial);i++)serial=cvGen4();
-  const submitBtn=document.getElementById('createCardSubmitBtn');
-  if(submitBtn){submitBtn.disabled=true;submitBtn.querySelector('span').textContent='Создание…';}
+  const cardUsername=(document.getElementById('createCardUsernameInput')?.value||'').trim().replace(/^@/,'').slice(0,8);
+  if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Ник: 1–8 символов.');return;}
+  const cards=cvReadCards();if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
+  const skinId=state.pendingCreateSkin||CV_SKINS[0].id,btn=document.getElementById('createCardSubmitBtn');
+  if(btn){btn.disabled=true;btn.querySelector('span').textContent='Создание…';}
   try{
-    const d=await apiPost('create_card',{
-      serial_code:serial,
-      card_password:cvGen6(),
-      skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),
-      card_username:cardUsername
-    });
+    const d=await apiPost('create_card',{skin_id:skinId,card_username:cardUsername});
     if(!d.ok)throw new Error(d.error||'Не удалось создать карточку');
-    const b=d.card;
-    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',card_username:String(b.card_username||cardUsername).slice(0,8),title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:b.acquisition_type||'created'};
-    cards.push(card);
-    cvWriteCards(cards); cvSyncState(card); ensureCardState();
-    closeCreateCardModal(); switchTab('collection');
-    cvCarouselIndex=cards.length-1; cvSyncState(card); renderCardCarousel(); haptic('medium');
-  }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy');}
-  finally{if(submitBtn){submitBtn.disabled=false;submitBtn.querySelector('span').textContent='Создать карточку';}}
+    const b=d.card,card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||skinId,card_username:String(b.card_username||cardUsername).slice(0,8),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:'created'};
+    cards.push(card);cvWriteCards(cards);cvCarouselIndex=cards.length-1;cvSyncState(card);ensureCardState();renderCardCarousel();closeCreateCardModal();switchTab('collection');haptic('medium');
+  }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy')}
+  finally{if(btn){btn.disabled=false;btn.querySelector('span').textContent='Создать';}}
 }
 function createNewCard(){openCreateCardModal();}
 
@@ -1696,7 +1611,7 @@ function renderManagerCards(){
   cvReadCards().forEach(c=>{
     const b=document.createElement('button');
     b.className='manager-card-mini'+(c.id===state.activeCardId?' active':'');
-    b.style.backgroundImage='url("'+cvCardStyle(c)+'")';
+    b.style.backgroundImage='url("'+cvCardStyle(c).url+'")';
     b.innerHTML='<span>'+cvMasked(c.serial_code)+'</span>';
     b.onclick=()=>cvDeleteMode?confirmDeleteSelection(c.id):selectCvCard(c.id);
     list.appendChild(b);
@@ -1990,11 +1905,15 @@ handlePinComplete=async function(){
 async function initCvCards(){
   try{
     await new Promise(r=>setTimeout(r,120));
-    ensureCardState();
-    rebuildPhotoGallery();
-    updateProfile();
+    const d=await apiPost('get_my_cards');
+    if(d.ok&&Array.isArray(d.cards)){
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||'collector').slice(0,8),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:x.acquisition_type||'created'}));
+      cvWriteCards(cards);
+      if(cards.length){cvCarouselIndex=Math.min(cvCarouselIndex,cards.length-1);cvSyncState(cards[cvCarouselIndex]);ensureCardState();renderCardCarousel();updateProfile();}
+      else{ensureCardState();setTimeout(()=>openCreateCardModal(),220);}
+    }
     try{lucide.createIcons();}catch(e){}
-  }catch(e){console.error(e);}
+  }catch(e){console.error('card bootstrap failed',e);if(!cvReadCards().length)setTimeout(()=>openCreateCardModal(),300);}
 }
 setTimeout(initCvCards,450);
 </script>
@@ -2005,4 +1924,27 @@ setTimeout(initCvCards,450);
 <style>
 /* Legacy marketplace/wallet/history UI is intentionally disabled in card-only release. */
 #screen-market,#cardManagerSheet,#auctionPickerSheet,#auctionCreateModal,#sheet-buy,#sheet-settings,#historyDetailSheet,#historyBlock,.manager-wallet-row,.wallet-actions,#walletList{display:none!important}
+
+/* ===== FINAL CARD-ONLY RELEASE ===== */
+body{background:#000!important;color:#f5f7fa}
+.profile-screen{height:calc(100dvh - 132px);display:flex;align-items:flex-start;justify-content:center;padding:30px 18px}
+.profile-card{width:min(100%,390px);margin-top:22px;text-align:center;padding:28px 20px 24px;border:1px solid rgba(255,255,255,.08);border-radius:28px;background:#0a0b0e;box-shadow:0 22px 70px rgba(0,0,0,.45)}
+.profile-avatar-large{width:92px;height:92px;margin:0 auto 15px;border-radius:50%;overflow:hidden;border:1px solid rgba(255,255,255,.16);background:#171a20;display:flex;align-items:center;justify-content:center}
+.profile-avatar-large img{width:100%;height:100%;object-fit:cover}.profile-avatar-large svg{width:34px;height:34px;color:#7d8590}
+.profile-name{font-size:21px;font-weight:600;line-height:1.2}.profile-username{margin-top:5px;font-size:13px;color:#707782}
+.profile-stats{margin:24px auto 0;padding-top:17px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:center}.profile-stats div{display:flex;flex-direction:column;gap:3px}.profile-stats strong{font-size:20px}.profile-stats span{font-size:11px;color:#686f79}
+.card-carousel-shell{min-height:360px;display:flex;align-items:center;justify-content:center;gap:10px}.card-stage{width:100%;display:flex;align-items:center;justify-content:center;perspective:1200px}
+.card-3d.card-cuboid{width:min(88vw,430px);aspect-ratio:1.586/1;position:relative;transform-style:preserve-3d;animation:cardHorizontalSpin 13s linear infinite;transform-origin:center;will-change:transform;cursor:pointer}.card-3d.card-cuboid:hover{animation-play-state:paused}
+.card-face,.card-edge{position:absolute!important;backface-visibility:hidden;transform-style:preserve-3d;overflow:hidden;border-radius:21px}.card-face{inset:0;border:1px solid rgba(255,255,255,.18)!important}.card-surface{position:absolute;inset:0;background-position:center;background-size:cover}.card-surface:after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,rgba(255,255,255,.2),transparent 28%,rgba(0,0,0,.2))}
+.card-front{transform:translateZ(7px)}.card-back{transform:rotateY(180deg) translateZ(7px)}.card-edge{background-size:cover!important;background-position:center!important;filter:brightness(.52) saturate(.85);border:1px solid rgba(255,255,255,.12)}
+.card-left,.card-right{top:7px;bottom:7px;width:14px}.card-left{left:-7px;transform:rotateY(-90deg)}.card-right{right:-7px;transform:rotateY(90deg)}
+.card-top,.card-bottom{left:7px;right:7px;height:14px}.card-top{top:-7px;transform:rotateX(90deg)}.card-bottom{bottom:-7px;transform:rotateX(-90deg)}
+.card-logo{position:absolute!important;z-index:4;left:20px;top:18px;width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(0,0,0,.22)}.card-logo svg{display:block}
+.card-username{position:absolute!important;z-index:4;left:24px;right:24px;top:50%;transform:translateY(-50%);text-align:center;color:#fff;font-size:clamp(24px,5vw,40px);font-weight:550;text-shadow:0 3px 18px rgba(0,0,0,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes cardHorizontalSpin{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
+.create-card-preview-3d{height:185px;display:flex;align-items:center;justify-content:center;margin:4px 0 18px;perspective:900px}.create-preview-card{width:min(76vw,310px);aspect-ratio:1.586/1;position:relative;transform-style:preserve-3d;animation:createPreviewSpin 8s linear infinite}.create-preview-face{position:absolute;inset:0;border-radius:18px;background-image:var(--create-bg);background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.18);transform:translateZ(6px);box-shadow:0 20px 55px rgba(0,0,0,.45)}.create-preview-edge{position:absolute;inset:5px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:#171b21;transform:translateZ(0)}@keyframes createPreviewSpin{to{transform:rotateY(360deg)}}
+.create-username-label{display:block;font-size:11px;color:#737b86;margin-bottom:12px}.create-username-label span{display:block;margin-bottom:7px}.card-field{width:100%;height:46px;border-radius:13px;background:#11151c;border:1px solid #252b35;color:#fff;padding:0 13px;outline:none}.card-field:focus{border-color:#596575}.card-create-v2{padding:20px}
+.card-carousel-dots{display:flex;justify-content:center;align-items:center;gap:7px;min-height:28px}.card-carousel-dot{width:6px;height:6px;border-radius:50%;background:#3a4048;border:0;padding:0}.card-carousel-dot.active{width:18px;border-radius:5px;background:#e8ebef}.card-create-dot{width:26px;height:26px;border-radius:50%;border:1px dashed #606872;background:transparent;color:#b9c0c9;display:flex;align-items:center;justify-content:center}.card-create-dot svg{width:14px;height:14px}.collection-description{text-align:center;color:#737a84;font-size:12px;line-height:1.45;max-width:320px;margin:0 auto}
+.focus-card-wrap{display:flex;align-items:center;justify-content:center;width:100%;padding:0 16px}.focus-card-wrap .card-3d.card-cuboid{width:min(88vw,600px);animation-duration:11s}.focus-modal .card-stage{perspective:1400px}
+@media(max-width:700px){.card-carousel-shell{min-height:310px}.card-3d.card-cuboid{width:min(88vw,380px)}}
 </style>
