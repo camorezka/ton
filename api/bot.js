@@ -306,6 +306,39 @@ export default async function handler(req, res) {
     }
 
     // ---- PUBLIC CARD SEARCH / DETAILS -----------------------------
+    // ---- PUBLIC CARD SEARCH BY USERNAME ----------------------------
+    // GET /api/bot?action=search_card&username=...
+    // Keep this endpoint public: it only exposes cosmetic card data.
+    if (action === "search_card" && (req.method === "GET" || req.method === "POST")) {
+      const rawUsername = req.method === "GET" ? req.query?.username : req.body?.username;
+      const username = String(rawUsername || "")
+        .trim()
+        .replace(/^@/, "")
+        .slice(0, 8)
+        .toLowerCase();
+
+      if (!/^[a-z0-9_]{1,8}$/.test(username)) {
+        return res.status(400).json({ ok: false, error: "Некорректный юзернейм" });
+      }
+
+      const cards = await sb(
+        `collectibles?card_username=ilike.${encodeURIComponent(username)}&visibility=eq.public&select=id,serial_code,skin_id,card_username,title,description,transfer_count,created_at&order=created_at.desc&limit=1`
+      );
+
+      const card = cards?.[0] ? {
+        id: cards[0].id,
+        serial_code: cards[0].serial_code,
+        skin_id: cards[0].skin_id || "photo_1",
+        card_username: cards[0].card_username || username,
+        title: cards[0].title || "Коллекционная карточка",
+        description: cards[0].description || "",
+        transfer_count: cards[0].transfer_count || 0,
+        created_at: cards[0].created_at || null
+      } : null;
+
+      return res.status(200).json({ ok: true, card });
+    }
+
     if (action === "search_cards" && req.method === "POST") {
       const q = String(req.body?.query || "").replace(/\D/g, "").slice(0, 4);
       if (!q) return res.status(200).json({ ok: true, cards: [] });
