@@ -2255,6 +2255,146 @@ async function initCvCards(){
   }catch(e){console.error('card bootstrap failed',e);if(!cvReadCards().length)setTimeout(()=>openCreateCardModal(),300);}
 }
 setTimeout(initCvCards,450);
+<script>
+(function(){
+  'use strict';
+
+  // Keep the existing visual design. This layer only fixes interaction,
+  // persistence and mobile card navigation.
+  const touch = { x:0, y:0, active:false, locked:false };
+
+  function isMobile(){
+    return window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+  }
+
+  function lockViewport(){
+    document.documentElement.style.overflow='hidden';
+    document.body.style.overflow='hidden';
+    document.body.style.overscrollBehavior='none';
+    document.documentElement.style.overscrollBehavior='none';
+  }
+
+  function syncCardVisual(card){
+    try{
+      if(card && typeof window.applyCvCardVisual==='function') window.applyCvCardVisual(card);
+      else if(card && typeof applyCvCardVisual==='function') applyCvCardVisual(card);
+    }catch(e){}
+  }
+
+  function persistCardLocal(card){
+    try{
+      const all = typeof cvReadCards==='function' ? cvReadCards() : [];
+      const i = all.findIndex(x=>x.id===card.id);
+      if(i>=0) all[i]=card;
+      if(typeof cvWriteCards==='function') cvWriteCards(all);
+    }catch(e){}
+  }
+
+  // Immediate username persistence: update the card on every edit, render
+  // locally first, then send the same state to the server.
+  let usernameTimer=0;
+  let usernameRequest=0;
+  window.saveCardUsernameInstant = async function(input){
+    const card = typeof cvCurrent==='function' ? cvCurrent() : null;
+    if(!card || !input) return;
+
+    const value=String(input.value||'').trim().replace(/^@/,'').slice(0,8).toLowerCase();
+    card.card_username=value || 'collector';
+    persistCardLocal(card);
+    syncCardVisual(card);
+    if(typeof renderCardCarousel==='function') renderCardCarousel();
+
+    if(!/^[a-z0-9_]{1,8}$/.test(value) || !card.backendId) return;
+
+    const request=++usernameRequest;
+    clearTimeout(usernameTimer);
+    usernameTimer=setTimeout(async()=>{
+      try{
+        const d=await apiPost('update_card_settings',{
+          item_id:card.backendId,
+          card_username:value,
+          skin_id:card.skin_id
+        });
+        if(request!==usernameRequest || !d.ok) return;
+        const fresh=typeof cvCurrent==='function' ? cvCurrent() : null;
+        if(fresh && fresh.id===card.id){
+          fresh.card_username=value;
+          fresh.skin_id=card.skin_id;
+          persistCardLocal(fresh);
+          syncCardVisual(fresh);
+        }
+      }catch(e){}
+    },60);
+  };
+
+  // Override the old blur/change-only editor with instant local rendering.
+  const usernameInput=document.getElementById('editCardUsernameInput');
+  if(usernameInput){
+    usernameInput.oninput=function(){ window.saveCardUsernameInstant(this); };
+    usernameInput.onchange=function(){ window.saveCardUsernameInstant(this); };
+    usernameInput.onblur=function(){ window.saveCardUsernameInstant(this); };
+  }
+
+  // Mobile: horizontal swipe changes cards. Desktop keeps the existing arrows.
+  const shell=document.querySelector('.card-carousel-shell');
+  if(shell){
+    shell.addEventListener('touchstart',function(e){
+      if(!isMobile() || !e.touches[0]) return;
+      touch.x=e.touches[0].clientX;
+      touch.y=e.touches[0].clientY;
+      touch.active=true;
+      touch.locked=false;
+    },{passive:true});
+
+    shell.addEventListener('touchmove',function(e){
+      if(!touch.active || !e.touches[0]) return;
+      const dx=e.touches[0].clientX-touch.x;
+      const dy=e.touches[0].clientY-touch.y;
+      if(Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)*1.15){
+        touch.locked=true;
+        e.preventDefault();
+      }
+    },{passive:false});
+
+    shell.addEventListener('touchend',function(e){
+      if(!touch.active) return;
+      const end=e.changedTouches?.[0];
+      if(!end){touch.active=false;return;}
+      const dx=end.clientX-touch.x;
+      const dy=end.clientY-touch.y;
+      touch.active=false;
+      if(Math.abs(dx)<45 || Math.abs(dx)<=Math.abs(dy)*1.15) return;
+      if(typeof cycleCard==='function') cycleCard(dx<0 ? 1 : -1);
+    },{passive:true});
+  }
+
+  // Phone arrows are hidden; desktop arrows are untouched.
+  const style=document.createElement('style');
+  style.textContent=
+    '@media (pointer:coarse){.card-carousel-arrow{display:none!important}}' +
+    'html,body{overflow:hidden!important;overscroll-behavior:none!important}' +
+    '#appRoot{overflow:hidden!important;height:100dvh!important;max-height:100dvh!important}' +
+    '.card-carousel-shell{touch-action:pan-y}' +
+    '@media (pointer:coarse){.card-carousel-shell{touch-action:pan-y}}';
+  document.head.appendChild(style);
+
+  lockViewport();
+
+  // Keep the active card visually correct after the existing async bootstrap.
+  const oldEnsure=window.ensureCardState;
+  if(typeof oldEnsure==='function'){
+    window.ensureCardState=function(){
+      const r=oldEnsure.apply(this,arguments);
+      try{syncCardVisual(typeof cvCurrent==='function'?cvCurrent():null)}catch(e){}
+      return r;
+    };
+  }
+
+  // Avoid repeated full redraw loops from the legacy release layer.
+  const originalInterval=window.setInterval;
+  void originalInterval;
+})();
+</script>
 </script>
 
 
