@@ -528,7 +528,7 @@ export default async function handler(req, res) {
       if (!/^photo_([1-9]|[1-5][0-9]|60)$/.test(skinId)) return res.status(400).json({ok:false,error:"Недопустимый дизайн"});
       const cardUsername = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8);
       if (!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов"});
-      const cardPassword = String(req.body?.card_password || "").replace(/\D/g,"").slice(0,6);
+      const cardPassword = String(req.body?.card_password || "").replace(/\D/g,"").slice(0,6) || String(crypto.randomInt(0,1000000)).padStart(6,"0");
       if (!/^\d{6}$/.test(cardPassword)) return res.status(400).json({ok:false,error:"Пароль карточки должен содержать ровно 6 цифр"});
       const duplicateNick = await sb(`collectibles?card_username=ilike.${encodeURIComponent(cardUsername)}&select=id&limit=1`);
       if (duplicateNick?.[0]) return res.status(409).json({ok:false,error:"Этот юзернейм карточки уже занят"});
@@ -551,8 +551,24 @@ export default async function handler(req, res) {
           visibility:"public"
         })
       });
-      return res.status(200).json({ok:true,card:rows?.[0]||null});
+      return res.status(200).json({ok:true,card:rows?.[0]||null,card_password:cardPassword});
     }
+    // ---- DELETE OWN CARD -------------------------------------------
+    if (action === "delete_card" && req.method === "POST") {
+      const verifiedUser = getVerifiedUser(req);
+      if (!verifiedUser) return res.status(401).json({ok:false,error:"invalid or missing initData"});
+      const itemId = String(req.body?.item_id || "");
+      if (!itemId) return res.status(400).json({ok:false,error:"item_id required"});
+      const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
+      const user = users?.[0];
+      if (!user) return res.status(404).json({ok:false,error:"user not found"});
+      const rows = await sb(`collectibles?id=eq.${encodeURIComponent(itemId)}&owner_id=eq.${encodeURIComponent(user.id)}&select=id,is_locked`);
+      if (!rows?.[0]) return res.status(404).json({ok:false,error:"card not found"});
+      if (rows[0].is_locked) return res.status(409).json({ok:false,error:"Карточка временно заблокирована"});
+      await sb(`collectibles?id=eq.${encodeURIComponent(itemId)}&owner_id=eq.${encodeURIComponent(user.id)}`,{method:"DELETE"});
+      return res.status(200).json({ok:true,deleted:true});
+    }
+
     // ---- HISTORY ---------------------------------------------------
     if (action === "my_history" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
