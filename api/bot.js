@@ -495,6 +495,11 @@ export default async function handler(req, res) {
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
 
+      const createdCards = await sb(`collectibles?owner_id=eq.${user.id}&acquisition_type=eq.created&select=id&limit=2`);
+      if ((createdCards || []).length >= 2) {
+        return res.status(409).json({ ok: false, error: "Можно создать максимум 2 карточки. Остальные карточки можно получать покупкой." });
+      }
+
       const requested = String(req.body?.serial_code || "").replace(/\D/g, "").slice(0, 4);
       const skinId = String(req.body?.skin_id || "photo_1").slice(0, 80);
       const title = String(req.body?.title || "Без названия").trim().slice(0, 60) || "Без названия";
@@ -509,7 +514,7 @@ export default async function handler(req, res) {
       const accessKey = crypto.randomUUID();
       const rows = await sb("collectibles", {
         method: "POST",
-        body: JSON.stringify({ owner_id: user.id, serial_code: requested, access_key: accessKey, card_password: password, skin_id: skinId, wallet_address: null, title, description, visibility })
+        body: JSON.stringify({ owner_id: user.id, acquisition_type: "created", serial_code: requested, access_key: accessKey, card_password: password, skin_id: skinId, wallet_address: null, title, description, visibility })
       });
       return res.status(200).json({ ok: true, card: rows?.[0] || null });
     }
@@ -537,7 +542,7 @@ export default async function handler(req, res) {
       const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
       const user = users?.[0];
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
-      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_password,wallet_address,title,description,visibility,transfer_count,created_at&order=created_at.asc`);
+      const cards = await sb(`collectibles?owner_id=eq.${user.id}&select=id,serial_code,skin_id,card_password,wallet_address,title,description,visibility,transfer_count,acquisition_type,created_at&order=created_at.asc`);
       return res.status(200).json({ ok: true, cards: cards || [], card: cards?.[0] || null });
     }
 
