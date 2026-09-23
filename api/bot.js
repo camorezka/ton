@@ -183,6 +183,24 @@ function getVerifiedUser(req) {
   return verifyInitData(initData);
 }
 
+// Ensures the verified Telegram user exists even when the Mini App was
+// opened from a direct Mini App link instead of the bot's /start command.
+async function ensureVerifiedUser(verifiedUser) {
+  await sb("users", {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=minimal",
+    body: JSON.stringify({
+      telegram_id: verifiedUser.id,
+      username: verifiedUser.username || null,
+      first_name: verifiedUser.first_name || null,
+      last_name: verifiedUser.last_name || null,
+      avatar_url: verifiedUser.photo_url || null
+    })
+  });
+  const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
+  return users?.[0] || null;
+}
+
 // =====================================================================
 // (2) BUSINESS LOGIC: auto-expire stale pending orders & unlock cards
 // =====================================================================
@@ -517,9 +535,8 @@ export default async function handler(req, res) {
     if (action === "create_card" && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
       if (!verifiedUser) return res.status(401).json({ ok:false, error:"invalid or missing initData" });
-      const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
-      const user = users?.[0];
-      if (!user) return res.status(404).json({ok:false,error:"user not found"});
+      const user = await ensureVerifiedUser(verifiedUser);
+      if (!user) return res.status(500).json({ok:false,error:"user bootstrap failed"});
 
       const createdCards = await sb(`collectibles?owner_id=eq.${user.id}&acquisition_type=eq.created&select=id&limit=3`);
       if ((createdCards||[]).length >= 3) return res.status(409).json({ok:false,error:"Можно создать максимум 3 карточки."});
@@ -613,9 +630,8 @@ export default async function handler(req, res) {
     if ((action === "get_my_cards" || action === "get_my_card") && req.method === "POST") {
       const verifiedUser = getVerifiedUser(req);
       if (!verifiedUser) return res.status(401).json({ ok: false, error: "invalid or missing initData" });
-      const users = await sb(`users?telegram_id=eq.${verifiedUser.id}&select=id`);
-      const user = users?.[0];
-      if (!user) return res.status(404).json({ ok: false, error: "user not found" });
+      const user = await ensureVerifiedUser(verifiedUser);
+      if (!user) return res.status(500).json({ ok:false, error:"user bootstrap failed" });
       const loginAt = new Date().toISOString();
       await sb(`users?telegram_id=eq.${verifiedUser.id}`, {
         method:"PATCH",
