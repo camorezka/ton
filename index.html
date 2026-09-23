@@ -561,16 +561,7 @@ body{display:flex;justify-content:center;align-items:stretch}
 </div>
 
 <!-- ================= HEADER ================= -->
-<header class="px-4 pt-4 pb-2 flex items-center justify-between">
-  <div>
-    <div class="text-lg font-semibold" id="greetName">Коллекционные карточки</div>
-  </div>
-  <div class="flex items-center gap-2">
-    <button id="profileHeaderBtn" onclick="switchTab('profile')" class="glass active:press w-9 h-9 rounded-full flex items-center justify-center" aria-label="Профиль">
-      <i data-lucide="user"></i>
-    </button>
-  </div>
-</header>
+<div class="app-top-spacer" aria-hidden="true"></div>
 
 <!-- ================= SCREEN: COLLECTION ================= -->
 <main id="screen-collection" class="px-4 space-y-5">
@@ -593,7 +584,10 @@ body{display:flex;justify-content:center;align-items:stretch}
   </div>
 
 
-  <div class="collection-description">Коллекционная карточка. Ею можно будет скоро торговать.</div>
+  <div class="collection-hero-copy">
+  <div class="collection-brand-title">Cards</div>
+  <div class="collection-description">Коллекционная карта, которую в будущем можно будет продавать и обменивать за криптовалюту.</div>
+</div>
 
 
 
@@ -603,6 +597,23 @@ body{display:flex;justify-content:center;align-items:stretch}
   </div>
 
   <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-40"></canvas>
+</main>
+
+<!-- ================= SCREEN: SEARCH ================= -->
+<main id="screen-search" class="search-screen hidden">
+  <section class="search-panel">
+    <div class="search-title">Поиск карточки</div>
+    <div class="search-subtitle">Найди публичную карточку по юзернейму</div>
+    <form class="search-form" onsubmit="event.preventDefault();searchCard()">
+      <div class="search-input-wrap">
+        <i data-lucide="search"></i>
+        <input id="cardSearchInput" class="search-input" maxlength="8" autocomplete="off" spellcheck="false" placeholder="@username" aria-label="Юзернейм карточки">
+        <button type="button" class="search-clear hidden" id="cardSearchClear" onclick="clearCardSearch()" aria-label="Очистить"><i data-lucide="x"></i></button>
+      </div>
+      <button id="cardSearchBtn" class="search-submit" type="submit"><i data-lucide="search"></i><span>Найти</span></button>
+    </form>
+    <div id="searchResult" class="search-result" aria-live="polite"></div>
+  </section>
 </main>
 
 <!-- ================= SCREEN: PROFILE ================= -->
@@ -620,7 +631,8 @@ body{display:flex;justify-content:center;align-items:stretch}
 
 <!-- ================= BOTTOM NAV ================= -->
 <nav id="bottomNav" class="navbar glass px-1.5 py-2 flex justify-around">
-  <button class="nav-btn active" data-tab="collection" onclick="switchTab('collection')"><i data-lucide="credit-card"></i><span>Главная</span></button>
+  <button class="nav-btn active" data-tab="collection" onclick="switchTab('collection')"><i data-lucide="home"></i><span>Главная</span></button>
+  <button class="nav-btn" data-tab="search" onclick="switchTab('search')"><i data-lucide="search"></i><span>Поиск</span></button>
   <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')"><i data-lucide="user"></i><span>Профиль</span></button>
 </nav>
 
@@ -977,7 +989,7 @@ async function refreshCardsFromServer(){
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
 }
 function switchTab(tab){
-  ['collection','profile'].forEach(t=>{
+  ['collection','search','profile'].forEach(t=>{
     const el=document.getElementById('screen-'+t);
     if(el){ el.classList.toggle('hidden', t!==tab); if(t===tab){ el.classList.remove('screen-enter'); void el.offsetWidth; el.classList.add('screen-enter'); }}
   });
@@ -985,6 +997,7 @@ function switchTab(tab){
   haptic('light');
   if(tab==='profile') updateProfile();
   if(tab==='collection'){ if(!state.cardsServerLoaded) refreshCardsFromServer(); }
+  if(tab==='search'){ setTimeout(()=>document.getElementById('cardSearchInput')?.focus(),80); }
   try{ lucide.createIcons(); }catch(e){}
 }
 function openSheet(name){ document.getElementById('sheet-'+name).classList.remove('hidden'); haptic('light'); }
@@ -1888,6 +1901,58 @@ handlePinComplete=async function(){
   }
   return cvOriginalHandlePinComplete();
 };
+
+
+// =====================================================================
+// PUBLIC CARD SEARCH — username only, never returns/exposes password.
+// =====================================================================
+let searchRequestId=0;
+async function searchCard(){
+  const input=document.getElementById('cardSearchInput');
+  const result=document.getElementById('searchResult');
+  const btn=document.getElementById('cardSearchBtn');
+  const username=String(input?.value||'').trim().replace(/^@/,'').slice(0,8);
+  if(!/^[A-Za-z0-9_]{1,8}$/.test(username)){
+    if(result) result.innerHTML='<div class="search-empty">Введите юзернейм от 1 до 8 символов.</div>';
+    return;
+  }
+  const req=++searchRequestId;
+  if(btn){btn.disabled=true;btn.querySelector('span').textContent='Поиск…';}
+  if(result) result.innerHTML='<div class="search-loading"><i data-lucide="loader-circle"></i><span>Ищем карточку…</span></div>';
+  try{
+    const d=await apiPost('search_card',{card_username:username});
+    if(req!==searchRequestId)return;
+    if(!d.ok) throw new Error(d.error||'Не удалось выполнить поиск');
+    if(!d.card){
+      result.innerHTML='<div class="search-empty"><i data-lucide="search-x"></i><strong>Карточка не найдена</strong><span>Проверь юзернейм и попробуй ещё раз.</span></div>';
+    }else{
+      const c=d.card, skin=cvCardStyle(c);
+      result.innerHTML='<div class="search-found-label">Найдена карточка</div>'+
+        '<div class="search-result-card" style="--search-bg:url(&quot;'+skin.url+'&quot;)">'+
+          '<div class="search-result-shine"></div>'+
+          '<div class="search-result-logo">C</div>'+
+          '<div class="search-result-username">@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</div>'+
+        '</div>'+
+        '<div class="search-result-meta"><strong>@'+escapeHtml(String(c.card_username||username).slice(0,8))+'</strong><span>Коллекционная карта</span></div>';
+    }
+    try{lucide.createIcons();}catch(e){}
+  }catch(e){
+    if(req===searchRequestId && result) result.innerHTML='<div class="search-empty"><strong>Не удалось выполнить поиск</strong><span>Попробуй ещё раз.</span></div>';
+    try{lucide.createIcons();}catch(e){}
+  }finally{
+    if(req===searchRequestId && btn){btn.disabled=false;btn.querySelector('span').textContent='Найти';}
+  }
+}
+function clearCardSearch(){
+  const input=document.getElementById('cardSearchInput'), result=document.getElementById('searchResult');
+  if(input) input.value='';
+  if(result) result.innerHTML='';
+  document.getElementById('cardSearchClear')?.classList.add('hidden');
+  input?.focus();
+}
+document.addEventListener('input',e=>{
+  if(e.target?.id==='cardSearchInput') document.getElementById('cardSearchClear')?.classList.toggle('hidden',!e.target.value);
+});
 
 async function initCvCards(){
   try{
