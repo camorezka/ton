@@ -518,7 +518,8 @@ body{display:flex;justify-content:center;align-items:stretch}
 .auction-create-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.auction-field{width:100%;height:48px;border-radius:13px;background:#11151c;border:1px solid #282f39;color:#fff;padding:0 13px;outline:none}.auction-field:focus{border-color:#596575}
 .market-auction-row{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #252b35;background:#11151c;border-radius:16px}.market-auction-thumb{width:96px;height:61px;border-radius:11px;background-size:cover;background-position:center;flex:none}.market-auction-meta{min-width:0;flex:1}.market-auction-meta strong{display:block;font-size:13px}.market-auction-meta span{display:block;color:#7e8794;font-size:11px;margin-top:4px}.ton-price{font-variant-numeric:tabular-nums;font-weight:650}.ton-icon{width:16px;height:16px;display:inline-flex;vertical-align:-3px}
 @media(min-width:431px){body:before,body:after{content:'';flex:1;background:#000}}
-</style></head>
+</style><link rel="stylesheet" href="/styles/card-ui.css">
+</head>
 <body class="pb-20">
 
 <div id="flash" class="flash-overlay"></div>
@@ -1872,6 +1873,7 @@ async function initCvCards(){
 setTimeout(initCvCards,450);
 </script>
 
+<script src="/scripts/card-ui.js"></script>
 </body>
 </html>
 
