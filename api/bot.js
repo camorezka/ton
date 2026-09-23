@@ -565,7 +565,14 @@ export default async function handler(req, res) {
       const rows = await sb(`collectibles?id=eq.${encodeURIComponent(itemId)}&owner_id=eq.${encodeURIComponent(user.id)}&select=id,is_locked`);
       if (!rows?.[0]) return res.status(404).json({ok:false,error:"card not found"});
       if (rows[0].is_locked) return res.status(409).json({ok:false,error:"Карточка временно заблокирована"});
-      await sb(`collectibles?id=eq.${encodeURIComponent(itemId)}&owner_id=eq.${encodeURIComponent(user.id)}`,{method:"DELETE"});
+      const [activeAuctions, pendingOrders] = await Promise.all([
+        sb(`auctions?item_id=eq.${encodeURIComponent(itemId)}&status=eq.active&select=id&limit=1`),
+        sb(`orders?item_id=eq.${encodeURIComponent(itemId)}&status=eq.pending&select=id&limit=1`)
+      ]);
+      if (activeAuctions?.[0]) return res.status(409).json({ok:false,error:"Сначала снимите карточку с аукциона"});
+      if (pendingOrders?.[0]) return res.status(409).json({ok:false,error:"По карточке есть незавершённая сделка"});
+      const deleted = await sb(`collectibles?id=eq.${encodeURIComponent(itemId)}&owner_id=eq.${encodeURIComponent(user.id)}`,{method:"DELETE",prefer:"return=representation"});
+      if (deleted?.error) return res.status(500).json({ok:false,error:"Не удалось удалить карточку"});
       return res.status(200).json({ok:true,deleted:true});
     }
 
