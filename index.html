@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-<title>Card Auction — Web3 Card Auction</title>
+<title>Collectible Cards</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -75,7 +75,7 @@ body{
 
 
 /* ---------- 3D CARD ---------- */
-.card-stage{ perspective: 1200px; max-width: 380px; margin: 0 auto; }
+.card-stage{ perspective: 1200px; max-width: 430px; margin: 0 auto; }
 .card-3d{
   width:min(100%,350px); aspect-ratio:85.6/53.98; border-radius:20px; position:relative;
   transform-style:preserve-3d; transition: transform .15s ease-out;
@@ -212,6 +212,29 @@ body{background:#000!important;background-image:none!important;} #pinScreen{back
 .market-add-auction{width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.13);background:#151a21;color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .18s ease,background .18s ease}
 .market-add-auction svg{width:20px;height:20px;stroke-width:2.2}
 .market-add-auction:active{transform:scale(.92);background:#202631}
+/* ===== Collectible card redesign ===== */
+.collection-description{text-align:center;color:#737b86;font-size:12px;margin:-2px auto 0;max-width:330px;line-height:1.45}
+.card-3d{width:min(100%,390px);aspect-ratio:1.586/1;border-radius:24px;transform-style:preserve-3d;animation:cardSlowSpin 12s linear infinite;box-shadow:0 28px 70px rgba(0,0,0,.55);will-change:transform}
+.card-3d:hover{animation-play-state:paused}
+.card-face{background:transparent!important;border:0!important}
+.card-surface{position:absolute;inset:0;border-radius:24px;background:inherit;z-index:0}
+.card-logo{position:absolute;left:22px;top:20px;width:34px;height:34px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.9);z-index:3;display:flex;align-items:center;justify-content:center}
+.card-logo img{width:100%;height:100%;object-fit:cover}
+.card-username{position:absolute;left:0;right:0;top:45%;transform:translateY(-50%);text-align:center;font-size:clamp(22px,5vw,34px);font-weight:500;letter-spacing:.2px;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.35);z-index:3}
+.card-number-center{position:absolute;left:0;right:0;top:61%;transform:translateY(-50%);text-align:center;font-size:clamp(32px,8vw,52px);font-weight:500;letter-spacing:7px;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.4);z-index:3}
+.card-back-code{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;letter-spacing:7px;color:#fff;z-index:3}
+@keyframes cardSlowSpin{0%{transform:rotateY(-8deg) rotateX(2deg)}25%{transform:rotateY(5deg) rotateX(-1deg)}50%{transform:rotateY(8deg) rotateX(2deg)}75%{transform:rotateY(-5deg) rotateX(-1deg)}100%{transform:rotateY(-8deg) rotateX(2deg)}}
+.focus-card-wrap .card-3d{width:min(92vw,520px);animation-duration:10s}
+.focus-card-wrap .card-3d:hover{animation-play-state:paused}
+.focus-settings{max-height:38vh;padding:18px 18px calc(22px + env(safe-area-inset-bottom));}
+.focus-password-label,.focus-design-title{font-size:11px;color:#737b86;margin-bottom:7px}
+.focus-password-value{font-size:27px;letter-spacing:8px;margin-bottom:12px}
+.focus-edit-password{height:42px;width:100%;border:1px solid #252b35;background:#151a21;border-radius:12px;color:#e7ebf2;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px}
+.focus-edit-password svg{width:15px;height:15px}
+.focus-design-title{margin-top:18px}
+.skin-grid{display:flex;gap:9px;overflow-x:auto;padding:4px 2px 10px}
+.skin-tile{width:120px;border-radius:14px}
+@media(min-width:700px){.card-3d{width:520px!important}.card-stage{max-width:620px}.card-username{font-size:34px}.card-number-center{font-size:52px}.focus-card-wrap .card-3d{width:620px!important}}
 /* ===== Release polish ===== */
 .history-table-head,.history-table-row{display:grid;grid-template-columns:1.05fr .7fr .9fr .9fr 1fr;gap:10px;align-items:center}
 .history-table-head{padding:0 10px 7px;color:rgba(255,255,255,.32);font-size:9px;text-transform:uppercase;letter-spacing:.05em}
@@ -428,32 +451,18 @@ body{display:flex;justify-content:center;align-items:stretch}
 <!-- ================= APP ROOT ================= -->
 <div id="cardCreateModal" class="card-create-backdrop hidden">
   <div class="card-create-sheet">
-    <div class="flex items-center justify-between mb-3">
-      <div><div class="text-base font-semibold">Новая карточка</div><div class="text-xs text-white/40 mt-1">TON-кошелёк не требуется</div></div>
+    <div class="flex items-center justify-between mb-4">
+      <div><div class="text-base font-semibold">Новая карточка</div><div class="text-xs text-white/40 mt-1">До 3 карточек</div></div>
       <button class="sheet-close-icon" onclick="closeCreateCardModal()"><i data-lucide="x"></i></button>
     </div>
     <div id="createCardPreview" class="card-create-preview"><div id="createCardNumber" class="card-create-number">0000</div></div>
     <div class="space-y-3">
-      <div>
-        <div class="text-xs text-white/45 mb-1.5">4 цифры карточки</div>
+      <div><div class="text-xs text-white/45 mb-1.5">Юзернейм карточки</div>
+        <input id="createCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" placeholder="collector">
+      </div>
+      <div><div class="text-xs text-white/45 mb-1.5">4 цифры</div>
         <input id="createCardNumberInput" class="card-field text-center text-xl tracking-[.45em]" maxlength="4" inputmode="numeric" placeholder="0000">
       </div>
-      <div>
-        <div class="text-xs text-white/45 mb-1.5">Название</div>
-        <input id="createCardTitleInput" class="card-field" maxlength="60" placeholder="Например, Moon #4827">
-      </div>
-      <div>
-        <div class="text-xs text-white/45 mb-1.5">Описание</div>
-        <input id="createCardDescriptionInput" class="card-field" maxlength="300" placeholder="Что особенного в этой карточке">
-      </div>
-      <div>
-        <div class="text-xs text-white/45 mb-1.5">Доступность</div>
-        <div class="card-visibility">
-          <button id="createPublicBtn" class="active" onclick="setCreateVisibility('public')"><i data-lucide="globe-2"></i> Публичная</button>
-          <button id="createPrivateBtn" onclick="setCreateVisibility('private')"><i data-lucide="lock"></i> Приватная</button>
-        </div>
-      </div>
-      <div class="card-create-hint">Публичную карточку можно найти по номеру в поиске. Приватная остаётся видимой только владельцу.</div>
       <button id="createCardSubmitBtn" class="primary-btn" onclick="submitCreateCard()"><i data-lucide="plus"></i><span>Создать карточку</span></button>
     </div>
   </div>
@@ -481,11 +490,8 @@ body{display:flex;justify-content:center;align-items:stretch}
     <div class="text-lg font-semibold" id="greetName">Коллекционные карточки</div>
   </div>
   <div class="flex items-center gap-2">
-    <button id="settingsBtn" onclick="switchTab('settings')" class="glass active:press w-9 h-9 rounded-full flex items-center justify-center">
-      <i data-lucide="settings" class="w-4 h-4"></i>
-    </button>
-    <button id="tonConnectBtn" onclick="connectHeaderWallet()" class="glass active:press px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1" aria-label="Привязать кошелёк">
-      <i data-lucide="wallet" class="w-4 h-4"></i><span id="walletLabel">Привязать кошелёк</span>
+    <button id="profileHeaderBtn" onclick="switchTab('profile')" class="glass active:press w-9 h-9 rounded-full flex items-center justify-center" aria-label="Профиль">
+      <i data-lucide="user"></i>
     </button>
   </div>
 </header>
@@ -496,67 +502,30 @@ body{display:flex;justify-content:center;align-items:stretch}
   <div class="card-carousel-shell">
   <button class="card-carousel-arrow card-carousel-prev" aria-label="Предыдущая карточка" onclick="cycleCard(-1)"><i data-lucide="chevron-left"></i></button>
   <div class="card-stage select-none" id="cardStageMain">
-      <div id="card3d" class="card-3d" onclick="openFocusModal()">
-      <!-- FRONT -->
+    <div id="card3d" class="card-3d" onclick="openFocusModal()">
       <div class="card-face card-front" id="cardFront">
-        <div class="specular" id="specularFront"></div>
-        <div class="absolute inset-0 p-4 flex flex-col justify-between text-white">
-          <div class="card-topline">
-            <div class="chip"></div>
-            <i data-lucide="contactless" class="card-contactless"></i>
-          </div>
-          <div class="card-center">
-            <div id="cardTitleMain" class="card-brand">CARDS AUCTION</div>
-            <div id="cardNumber" class="emboss card-number">4827</div>
-          </div>
-          <div class="card-bottomline">
-            <span><i data-lucide="shield-check"></i> SECURE</span>
-          </div>
-        </div>
+        <div class="card-surface"></div>
+        <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt=""></div>
+        <div class="card-username" id="cardUsernameMain">@collector</div>
+        <div class="card-number-center" id="cardNumber">0000</div>
       </div>
-      <!-- BACK -->
       <div class="card-face card-back" id="cardBack">
-        <div class="specular" id="specularBack"></div>
-        <div class="mag-stripe"></div>
-        <div class="p-4 flex flex-col gap-4">
-          <div class="hologram w-16 h-10 rounded-md opacity-90"></div>
-          <div class="card-back-label">CARDS AUCTION</div>
-          <div class="card-pass-box">
-            <span>КОД КАРТЫ</span>
-            <strong id="cardPassBack" class="pw-key">••••••</strong>
-          </div>
-          <div class="card-back-foot"><span>KEEP PRIVATE</span><i data-lucide="shield"></i></div>
-        </div>
+        <div class="card-surface"></div>
+        <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt=""></div>
+        <div class="card-back-code">••••••</div>
       </div>
     </div>
   </div>
-
   <button class="card-carousel-arrow card-carousel-next" aria-label="Следующая карточка" onclick="cycleCard(1)"><i data-lucide="chevron-right"></i></button>
 </div>
 <div id="cardCarouselDots" class="card-carousel-dots" aria-hidden="true"></div>
-
-  <section id="historyBlock" class="history-block glass rounded-2xl p-4 mt-4">
-    <div class="flex items-center justify-between gap-3 mb-3">
-      <div class="text-sm font-medium">История</div>
-      <label class="history-sort">
-        <span>Сортировка</span>
-        <select id="historySort" onchange="renderHistory()">
-          <option value="newest">Сначала новые</option>
-          <option value="price_desc">Цена ↓</option>
-          <option value="price_asc">Цена ↑</option>
-          <option value="alpha">По алфавиту</option>
-          <option value="oldest">Сначала старые</option>
-        </select>
-      </label>
-    </div>
-    <div class="history-head history-table-head"><span>Операция</span><span>Карточка</span><span>Сумма</span><span>Статус</span><span>Время</span></div>
-    <div id="historyList" class="space-y-2"><div class="text-xs text-white/40 text-center py-4">Загрузка…</div></div>
-  </section>
 
   <div class="flex gap-3">
     
   </div>
 
+
+  <div class="collection-description">Коллекционная карточка. Ею можно будет скоро торговать.</div>
 
   <div id="emptyCardState" class="empty-card-state hidden" onclick="createNewCard()">
     <i data-lucide="plus"></i>
@@ -564,13 +533,6 @@ body{display:flex;justify-content:center;align-items:stretch}
   </div>
 
   <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-40"></canvas>
-</main>
-
-<!-- ================= SCREEN: MARKET ================= -->
-<main id="screen-market" class="px-4 space-y-4 hidden">
-  <div class="flex items-center justify-between mb-1"><div><h2 class="text-lg font-semibold">Аукцион</h2><div class="text-xs text-white/40 mt-1">Аукцион коллекционных карточек</div></div><button class="market-add-auction" onclick="openAuctionForCard()" aria-label="Выставить карточку на аукцион"><i data-lucide="plus"></i></button></div>
-  <div class="glass rounded-2xl p-3 flex items-center gap-2"><i data-lucide="search" class="w-4 h-4 text-white/40"></i><input id="cardSearchInput" oninput="searchPublicCards()" maxlength="4" inputmode="numeric" class="bg-transparent outline-none flex-1 text-sm" placeholder="Номер карточки"></div>
-  <div id="marketList" class="space-y-3"></div>
 </main>
 
 <!-- ================= SCREEN: PROFILE ================= -->
@@ -589,106 +551,44 @@ body{display:flex;justify-content:center;align-items:stretch}
     <div class="flex justify-between"><span class="text-white/50">Telegram ID</span><span id="profTgId">—</span></div>
     <div class="flex justify-between"><span class="text-white/50">Streak</span><span class="flex items-center gap-1"><span id="profStreak">0</span><i data-lucide="flame" class="w-3.5 h-3.5"></i></span></div>
   </div>
-  <div class="glass rounded-2xl p-4">
-    <div class="flex items-center justify-between mb-3">
-      <div class="text-sm font-medium">Кошелёк</div>
-      <i data-lucide="wallet-cards" class="w-4 h-4 text-white/35"></i>
-    </div>
-    <div id="walletList" class="space-y-2 mb-3"><div class="text-xs text-white/50">кошельки не подключены</div></div>
-    <div class="wallet-actions">
-      <button onclick="connectWalletFromProfile()" class="wallet-action wallet-action-add active:press"><i data-lucide="plus"></i><span>Добавить</span></button>
-      <button id="disconnectBtn" onclick="disconnectWallet()" class="wallet-action wallet-action-delete active:press"><i data-lucide="trash-2"></i><span>Удалить</span></button>
-    </div>
-  </div>
-</main>
-
-<!-- ================= SCREEN: SETTINGS ================= -->
-<main id="screen-settings" class="px-4 space-y-4 hidden">
-  <div class="flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5"></i><h2 class="text-lg font-semibold">Настройки</h2></div>
-  <div class="space-y-3">
-    <label class="setting-row"><span>Вибрация</span><input id="hapticsToggleScreen" type="checkbox" checked onchange="state.hapticsEnabled=this.checked"></label>
-    <label class="setting-row"><span>3D-эффект карты</span><input id="tiltToggleScreen" type="checkbox" checked onchange="state.tiltEnabled=this.checked;resetTilt();"></label>
-    <button class="setting-action" onclick="toggleFullscreen()"><i data-lucide="maximize-2"></i><span>Полный экран</span></button>
-    <button class="setting-action" onclick="openPrivacyPolicy()"><i data-lucide="shield-check"></i><span>Политика конфиденциальности</span></button>
-    <button class="setting-action danger" onclick="resetPin()"><i data-lucide="lock-keyhole"></i><span>Сбросить PIN-код</span></button>
-  </div>
 </main>
 
 <!-- ================= BOTTOM NAV ================= -->
-<nav id="bottomNav" class="navbar glass px-1.5 py-2 flex justify-around"><div id="navIndicator" class="nav-indicator"></div>
-  <button class="nav-btn active" data-tab="collection" onclick="switchTab('collection')"><i data-lucide="credit-card"></i><span>Коллекция</span></button>
-  <button class="nav-btn" data-tab="market" onclick="switchTab('market')"><i data-lucide="gavel"></i><span>Маркет</span></button>
+<nav id="bottomNav" class="navbar glass px-1.5 py-2 flex justify-around">
+  <div id="navIndicator" class="nav-indicator"></div>
+  <button class="nav-btn active" data-tab="collection" onclick="switchTab('collection')"><i data-lucide="credit-card"></i><span>Главная</span></button>
   <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')"><i data-lucide="user"></i><span>Профиль</span></button>
-  <button class="nav-btn" data-tab="settings" onclick="switchTab('settings')"><i data-lucide="settings"></i><span>Настройки</span></button>
-  
 </nav>
 
 <div id="historyDetailSheet" class="history-detail-sheet"><div class="history-detail-backdrop" onclick="closeHistoryDetails()"></div><div class="history-detail-panel"><button class="history-detail-close" onclick="closeHistoryDetails()" aria-label="Закрыть"><i data-lucide="x"></i></button><div id="historyDetailContent"></div></div></div>
 
-<!-- ================= FOCUS MODAL (click on card) ================= -->
-<div id="focusModal" class="focus-modal"><button class="focus-back-top" onclick="closeFocusModal()" aria-label="Назад"><i data-lucide="chevron-left"></i></button>
+<!-- ================= CARD FOCUS ================= -->
+<div id="focusModal" class="focus-modal">
+  <button class="focus-back-top" onclick="closeFocusModal()" aria-label="Назад"><i data-lucide="chevron-left"></i></button>
   <div class="focus-backdrop" onclick="closeFocusModal()"></div>
   <div class="focus-card-wrap">
     <div class="card-stage">
       <div id="focusCard3d" class="card-3d">
-        <div class="card-face card-front" id="focusCardFront">
-          <div class="specular" id="focusSpecularFront"></div>
-          <div class="absolute inset-0 p-4 flex flex-col justify-between text-white">
-            <div class="flex justify-between items-start">
-              <div class="chip"></div>
-              <div class="text-right">
-                
-                <i data-lucide="wifi" class="w-5 h-5 mt-2 opacity-80 rotate-90"></i>
-              </div>
-            </div>
-            <div>
-              <div class="emboss text-lg md:text-xl mb-2" id="focusCardNumber">4827</div>
-              <div class="flex justify-between text-xs emboss opacity-90">
-                <span id="focusHolderName">CARD HOLDER</span><span id="focusExpiry">12/29</span>
-              </div>
-            </div>
-          </div>
+        <div class="card-face card-front">
+          <div class="card-surface"></div>
+          <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt=""></div>
+          <div class="card-username" id="focusHolderName">@collector</div>
+          <div class="card-number-center" id="focusCardNumber">0000</div>
         </div>
-        <div class="card-face card-back" id="focusCardBack">
-          <div class="specular" id="focusSpecularBack"></div>
-          <div class="mag-stripe"></div>
-          <div class="p-4 flex flex-col gap-3">
-            <div class="hologram w-16 h-10 rounded-md opacity-90"></div>
-            <div class="glass rounded-md px-3 py-2 flex justify-between text-xs"><span class="opacity-60">Публичный код</span><span id="focusCardIdBack" class="emboss">4827</span></div>
-            <div class="glass rounded-md px-3 py-2 flex justify-between text-xs">
-              <span class="opacity-60">Access Key</span><span id="focusCardPassBack" class="pw-key">••••••••</span>
-            </div>
-          </div>
+        <div class="card-face card-back">
+          <div class="card-surface"></div>
+          <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt=""></div>
+          <div class="card-back-code">••••••</div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- DESIGN SETTINGS PANEL -->
   <div class="focus-settings frosted">
-    <div class="text-sm font-semibold mb-3">Карточка</div>
-
-    <div class="card-data-panel">
-      <div class="card-data-item"><div class="label">ПУБЛИЧНЫЙ КОД</div><div class="flex items-center justify-between"><strong id="focusPublicCode" class="value">4827</strong><button class="card-data-edit" onclick="openCardDataEditor('serial')"><i data-lucide="pencil"></i></button></div></div>
-      <div class="card-data-item secret"><div class="label">СЕКРЕТНЫЙ КОД</div><div class="flex items-center justify-between"><strong id="focusSecretCode" class="value">••••••</strong><button class="card-data-edit" onclick="openCardDataEditor('password')"><i data-lucide="pencil"></i></button></div></div>
-    </div>
-
-    <div class="flex gap-2 mb-3">
-      <button class="frosted active:press flex-1 py-2 rounded-xl text-xs flex items-center justify-center gap-1" onclick="flipCard(true)">
-        <i data-lucide="rotate-3d" class="w-3.5 h-3.5"></i> Перевернуть
-      </button>
-      <button class="frosted active:press flex-1 py-2 rounded-xl text-xs flex items-center justify-center gap-1" onclick="openCardDataEditor('serial')">
-        <i data-lucide="key-round" class="w-3.5 h-3.5"></i> Коды
-      </button>
-    </div>
-
-    <div class="flex items-center justify-between mb-2"><div class="text-xs text-white/50">Скины (<span id="skinCount">60</span>)</div></div>
-    <div id="skinGalleryWrap" class="skin-gallery-wrap">
-      <button id="skinToggle" class="skin-toggle" onclick="toggleSkinGallery()"><span>Показать дизайны</span><i data-lucide="chevron-down"></i></button>
-      <div id="skinScroller" class="skin-grid"></div>
-    </div>
-
-    <div id="saveDesignStatus" class="text-center text-xs text-white/30 mt-2 min-h-[16px]"></div>
+    <div class="focus-password-label">Пароль карточки</div>
+    <div class="focus-password-value" id="focusSecretCode">••••••</div>
+    <button class="focus-edit-password" onclick="openCardDataEditor('password')"><i data-lucide="pencil"></i><span>Изменить пароль</span></button>
+    <div class="focus-design-title">Дизайны</div>
+    <div id="skinScroller" class="skin-grid"></div>
   </div>
 </div>
 
@@ -735,62 +635,6 @@ body{display:flex;justify-content:center;align-items:stretch}
     </div>
     <div id="managerDeleteHint" class="text-xs text-white/40 text-center mt-3 hidden">Нажмите на карту, которую хотите удалить.</div>
     <div id="managerCardList" class="manager-card-list"></div>
-  </div>
-</div>
-
-<!-- ================= AUCTION CARD PICKER ================= -->
-<div id="auctionPickerSheet" class="sheet hidden">
-  <div class="sheet-backdrop" onclick="closeAuctionPicker()"></div>
-  <div class="sheet-panel glass p-4">
-    <div class="sheet-grabber"></div>
-    <div class="flex items-center justify-between mb-2">
-      <div>
-        <div class="text-base font-semibold">Опубликовать на аукционе</div>
-        <div class="text-xs text-white/40 mt-1">Выберите существующую карту</div>
-      </div>
-      <button class="sheet-close-icon" onclick="closeAuctionPicker()"><i data-lucide="x"></i></button>
-    </div>
-    <div id="auctionWalletNotice" class="auction-wallet-notice hidden"></div>
-    <div id="auctionCardList" class="auction-card-list"></div>
-  </div>
-</div>
-
-<!-- ================= BUY SHEET ================= -->
-<div id="sheet-buy" class="sheet hidden">
-  <div class="sheet-backdrop" onclick="closeSheet('buy')"></div>
-  <div class="sheet-panel glass p-4">
-    <div class="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4"></div>
-    <h3 class="text-base font-semibold mb-2">Оплата через Tonkeeper</h3>
-    <p class="text-xs text-white/50 mb-4">Кошелёк отправит оплату продавцу одной транзакцией. Memo прикрепляется к сервисной части автоматически.</p>
-    <div class="glass rounded-xl p-3 space-y-2 text-sm mb-4">
-      <div class="flex justify-between"><span class="text-white/50">Сумма</span><span id="buyAmount">—</span></div>
-      <div class="flex justify-between"><span class="text-white/50">Memo</span><span id="buyMemo" class="font-mono">—</span></div>
-    </div>
-    <button onclick="checkOrderStatus()" class="w-full glass active:press py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Проверить транзакцию</button>
-    <div id="buyStatus" class="text-center text-xs text-white/40 mt-2"></div>
-  </div>
-</div>
-
-<!-- ================= SETTINGS SHEET ================= -->
-<div id="sheet-settings" class="sheet hidden">
-  <div class="sheet-backdrop" onclick="closeSheet('settings')"></div>
-  <div class="sheet-panel glass p-4">
-    <div class="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4"></div>
-    <h3 class="text-base font-semibold mb-3">Настройки</h3>
-    <div class="space-y-3">
-      <label class="flex items-center justify-between glass rounded-xl p-3 text-sm">
-        <span>Вибрация (Haptics)</span>
-        <input id="hapticsToggle" type="checkbox" checked class="w-5 h-5 accent-cyan-400" onchange="state.hapticsEnabled = this.checked">
-      </label>
-      <label class="flex items-center justify-between glass rounded-xl p-3 text-sm">
-        <span>3D Tilt-эффект карты</span>
-        <input id="tiltToggle" type="checkbox" checked class="w-5 h-5 accent-cyan-400" onchange="state.tiltEnabled = this.checked; resetTilt();">
-      </label>
-      <button class="w-full glass active:press py-3 rounded-xl text-sm text-red-300" onclick="resetPin()">Сбросить PIN-код</button>
-      <div class="glass rounded-xl p-3 text-xs text-white/40">
-        Cards Auction v1.2 · Telegram ID: <span id="settingsTgId">—</span>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1063,9 +907,9 @@ function setupTilt(stageEl, cardEl, frontId, backId, flippedGetter){
 }
 const card3d = document.getElementById('card3d');
 const focusCard3d = document.getElementById('focusCard3d');
-const resetMainTilt = setupTilt(document.getElementById('cardStageMain'), card3d, 'specularFront','specularBack', ()=>state.cardFlipped);
-const resetFocusTilt = setupTilt(document.querySelector('.focus-card-wrap .card-stage'), focusCard3d, 'focusSpecularFront','focusSpecularBack', ()=>state.cardFlipped);
-function resetTilt(){ resetMainTilt(); resetFocusTilt(); }
+const resetMainTilt = ()=>{};
+const resetFocusTilt = ()=>{};
+function resetTilt(){}
 const mainCardStage=document.getElementById('cardStageMain');
 if(mainCardStage) mainCardStage.addEventListener('wheel',handleCardWheel,{passive:false});
 let cardTouchX=0,cardTouchY=0;
@@ -1090,7 +934,7 @@ async function refreshCardsFromServer(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
       const previous=cvReadCards();
       const activeId=state.activeCardId;
       const merged=cards.map(serverCard=>{
@@ -1105,15 +949,14 @@ async function refreshCardsFromServer(){
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
 }
 function switchTab(tab){
-  ['collection','market','profile','settings'].forEach(t=>{
+  ['collection','profile'].forEach(t=>{
     const el=document.getElementById('screen-'+t);
     if(el){ el.classList.toggle('hidden', t!==tab); if(t===tab){ el.classList.remove('screen-enter'); void el.offsetWidth; el.classList.add('screen-enter'); }}
   });
   document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
   haptic('light');
-  if(tab==='market') loadMarket();
   if(tab==='profile') updateProfile();
-  if(tab==='collection'){ loadHistory(); if(!state.cardsServerLoaded) refreshCardsFromServer(); }
+  if(tab==='collection'){ if(!state.cardsServerLoaded) refreshCardsFromServer(); }
   try{ lucide.createIcons(); }catch(e){}
 }
 function openSheet(name){ document.getElementById('sheet-'+name).classList.remove('hidden'); haptic('light'); }
@@ -1135,8 +978,7 @@ function closeFocusModal(){
 }
 function syncFocusFromMain(){
   const cc=cvCurrent();
-  { const e=document.getElementById('focusPublicCode'); if(e) e.textContent = cc?.serial_code || state.cardId || '0000'; }
-  { const e=document.getElementById('focusSecretCode'); if(e) e.textContent = cc?.card_password || state.cardPassword || '000000'; }
+  { const e=document.getElementById('focusSecretCode'); if(e) e.textContent = '••••••'; }
   { const e=document.getElementById('focusCardIdBack'); if(e) e.textContent = maskCardId(state.cardId); }
   { const e=document.getElementById('focusCardPassBack'); if(e) e.textContent = state.cardPassword || '••••••••'; }
   focusCard3d.style.background = card3d.style.background || getComputedStyle(card3d).background;
@@ -1176,7 +1018,7 @@ async function loadMyCard(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards) && d.cards.length){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
       cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
     }
     const serial=cvGen4(), pass=cvGen6();
@@ -1580,6 +1422,8 @@ function applyCvCardVisual(card){
     focusCard3d.style.backgroundPosition='center';
   }
   setText('cardNumber',formatCardNumber(card.serial_code));
+  setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
+  setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
   const titleEl=document.getElementById('cardTitleMain'); if(titleEl) titleEl.textContent=card.title||'CARDS AUCTION';
   const focusTitle=document.getElementById('focusHolderName'); if(focusTitle) focusTitle.textContent=card.title||'CARDS AUCTION';
   const back=document.getElementById('cardPassBack'); if(back) back.textContent=card.card_password;
@@ -1715,8 +1559,7 @@ function openCreateCardModal(){
   for(let i=0;i<20&&used.has(serial);i++) serial=cvGen4();
   input.value=serial;
   setText('createCardNumber',serial);
-  document.getElementById('createCardTitleInput').value='';
-  document.getElementById('createCardDescriptionInput').value='';
+  const un=document.getElementById('createCardUsernameInput'); if(un) un.value='collector';
   state.createVisibility='public';
   setCreateVisibility('public');
   modal.classList.remove('hidden');
@@ -1729,17 +1572,18 @@ async function submitCreateCard(){
   const modal=document.getElementById('cardCreateModal');
   const input=document.getElementById('createCardNumberInput');
   const serial=input.value.replace(/\\D/g,'').slice(0,4);
-  const title=(document.getElementById('createCardTitleInput').value||'Без названия').trim().slice(0,60);
-  const description=document.getElementById('createCardDescriptionInput').value.trim().slice(0,300);
+  const cardUsername=(document.getElementById('createCardUsernameInput')?.value||'collector').trim().replace(/^@/,'').slice(0,8);
+  if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Юзернейм: 1–8 символов.');return;}
   if(!/^\d{4}$/.test(serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
   const cards=cvReadCards();
+  if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
   if(cards.some(x=>String(x.serial_code)===serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
   const submitBtn=document.getElementById('createCardSubmitBtn'); if(submitBtn){submitBtn.disabled=true;submitBtn.querySelector('span').textContent='Создание…';}
   try{
-    const d=await apiPost('create_card',{serial_code:serial,card_password:cvGen6(),skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),title,description,visibility:state.createVisibility||'public'});
+    const d=await apiPost('create_card',{serial_code:serial,card_password:cvGen6(),skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),card_username:cardUsername});
     if(!d.ok) throw new Error(d.error||'Не удалось создать карточку');
     const b=d.card;
-    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||title,description:b.description||description,visibility:b.visibility||state.createVisibility||'public',acquisition_type:b.acquisition_type||'created'};
+    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,card_username:String(b.card_username||cardUsername).slice(0,8),title:b.title||'Коллекционная карточка',description:b.description||'',visibility:b.visibility||'public',acquisition_type:b.acquisition_type||'created'};
     cards.push(card);cvWriteCards(cards);cvSyncState(card);ensureCardState();renderManagerCards();
     closeCreateCardModal();switchTab('collection');cvCarouselIndex=cards.length-1;cvSyncState(card);renderCardCarousel();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
   }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy');} finally { if(submitBtn){submitBtn.disabled=false;submitBtn.querySelector('span').textContent='Создать карточку';} }
@@ -1908,7 +1752,7 @@ function applySkin(skin){
   }
   haptic('light');
 }
-function toggleSkinGallery(){ const wrap=document.getElementById('skinGalleryWrap'),btn=document.getElementById('skinToggle'); if(!wrap)return; const open=wrap.classList.toggle('open'); btn?.classList.toggle('open',open); if(btn)btn.querySelector('span').textContent=open?'Скрыть дизайны':'Показать дизайны'; haptic('light'); }
+function toggleSkinGallery(){ const wrap=document.getElementById('skinGalleryWrap'),btn=document.getElementById('skinToggle'); if(!wrap)return; const open=wrap.classList.toggle('open'); btn?.classList.toggle('open',open); if(btn)btn.querySelector('span').textContent=open?'Скрыть дизайны':'Дизайны'; haptic('light'); }
 function rebuildPhotoGallery(){
   const box=document.getElementById('skinScroller'); if(!box)return; box.innerHTML=''; setText('skinCount',CV_SKINS.length);
   CV_SKINS.forEach(s=>{ const b=document.createElement('button'); b.className='skin-tile active:press'; b.dataset.skinId=s.id; b.title=s.name; b.setAttribute('aria-label',s.name); b.innerHTML='<img loading="lazy" decoding="async" alt="" src="'+s.url+'"><span class="skin-name">'+s.name+'</span>'; b.onclick=()=>applySkin(s); box.appendChild(b); });
