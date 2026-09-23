@@ -235,6 +235,29 @@ body{background:#000!important;background-image:none!important;} #pinScreen{back
 .skin-grid{display:flex;gap:9px;overflow-x:auto;padding:4px 2px 10px}
 .skin-tile{width:120px;border-radius:14px}
 @media(min-width:700px){.card-3d{width:520px!important}.card-stage{max-width:620px}.card-username{font-size:34px}.card-number-center{font-size:52px}.focus-card-wrap .card-3d{width:620px!important}}
+/* ===== COLLECTIBLE CARDS REDESIGN ===== */
+.collection-description{text-align:center;color:#737b86;font-size:12px;margin:-2px auto 0;max-width:330px;line-height:1.45}
+.card-3d{width:min(100%,390px);aspect-ratio:1.586/1;border-radius:24px;transform-style:preserve-3d;animation:cardSlowSpin 12s linear infinite;box-shadow:0 28px 70px rgba(0,0,0,.55);will-change:transform}
+.card-3d:hover{animation-play-state:paused}
+.card-face{background:transparent!important;border:0!important}
+.card-surface{position:absolute;inset:0;border-radius:24px;background:inherit;z-index:0}
+.card-logo{position:absolute;left:22px;top:20px;width:34px;height:34px;border-radius:50%;overflow:hidden;background:#fff;z-index:3;display:flex;align-items:center;justify-content:center}
+.card-logo img{width:100%;height:100%;object-fit:cover}
+.card-username{position:absolute;left:0;right:0;top:45%;transform:translateY(-50%);text-align:center;font-size:clamp(22px,5vw,34px);font-weight:500;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.35);z-index:3}
+.card-number-center{position:absolute;left:0;right:0;top:62%;transform:translateY(-50%);text-align:center;font-size:clamp(34px,8vw,54px);font-weight:500;letter-spacing:7px;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.4);z-index:3}
+.card-back-code{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;letter-spacing:7px;color:#fff;z-index:3}
+@keyframes cardSlowSpin{0%{transform:rotateY(-9deg) rotateX(2deg)}25%{transform:rotateY(5deg) rotateX(-1deg)}50%{transform:rotateY(9deg) rotateX(2deg)}75%{transform:rotateY(-5deg) rotateX(-1deg)}100%{transform:rotateY(-9deg) rotateX(2deg)}}
+.focus-card-wrap .card-3d{width:min(92vw,520px);animation-duration:10s}
+.focus-card-wrap .card-3d:hover{animation-play-state:paused}
+.focus-settings{max-height:38vh;padding:18px 18px calc(22px + env(safe-area-inset-bottom))}
+.focus-password-label,.focus-design-title{font-size:11px;color:#737b86;margin-bottom:7px}
+.focus-password-value{font-size:27px;letter-spacing:8px;margin-bottom:12px}
+.focus-edit-password{height:42px;width:100%;border:1px solid #252b35;background:#151a21;border-radius:12px;color:#e7ebf2;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px}
+.focus-edit-password svg{width:15px;height:15px}
+.focus-design-title{margin-top:18px}
+.skin-grid{display:flex;gap:9px;overflow-x:auto;padding:4px 2px 10px}
+.skin-tile{width:120px!important;height:76px!important;border-radius:14px}
+@media(min-width:700px){.card-3d{width:520px!important}.card-stage{max-width:620px}.focus-card-wrap .card-3d{width:620px!important}}
 /* ===== Release polish ===== */
 .history-table-head,.history-table-row{display:grid;grid-template-columns:1.05fr .7fr .9fr .9fr 1fr;gap:10px;align-items:center}
 .history-table-head{padding:0 10px 7px;color:rgba(255,255,255,.32);font-size:9px;text-transform:uppercase;letter-spacing:.05em}
@@ -527,6 +550,8 @@ body{display:flex;justify-content:center;align-items:stretch}
 
   <div class="collection-description">Коллекционная карточка. Ею можно будет скоро торговать.</div>
 
+  <div class="collection-description">Коллекционная карточка. Ею можно будет скоро торговать.</div>
+
   <div id="emptyCardState" class="empty-card-state hidden" onclick="createNewCard()">
     <i data-lucide="plus"></i>
     <span>Создать карточку</span>
@@ -544,23 +569,14 @@ body{display:flex;justify-content:center;align-items:stretch}
       <div id="profUsername" class="text-xs text-white/40 truncate">@guest</div>
     </div>
   </div>
-  <div class="glass rounded-2xl p-4 space-y-3 text-sm">
-    <div class="flex justify-between"><span class="text-white/50">Карточки</span><span id="profCards">1</span></div>
-    <div class="flex justify-between"><span class="text-white/50">Регион</span><span id="profRegion">—</span></div>
-    <div class="flex justify-between"><span class="text-white/50">Часовой пояс</span><span id="profTimezone">—</span></div>
-    <div class="flex justify-between"><span class="text-white/50">Telegram ID</span><span id="profTgId">—</span></div>
-    <div class="flex justify-between"><span class="text-white/50">Streak</span><span class="flex items-center gap-1"><span id="profStreak">0</span><i data-lucide="flame" class="w-3.5 h-3.5"></i></span></div>
-  </div>
+v>
 </main>
 
 <!-- ================= BOTTOM NAV ================= -->
 <nav id="bottomNav" class="navbar glass px-1.5 py-2 flex justify-around">
-  <div id="navIndicator" class="nav-indicator"></div>
   <button class="nav-btn active" data-tab="collection" onclick="switchTab('collection')"><i data-lucide="credit-card"></i><span>Главная</span></button>
   <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')"><i data-lucide="user"></i><span>Профиль</span></button>
 </nav>
-
-<div id="historyDetailSheet" class="history-detail-sheet"><div class="history-detail-backdrop" onclick="closeHistoryDetails()"></div><div class="history-detail-panel"><button class="history-detail-close" onclick="closeHistoryDetails()" aria-label="Закрыть"><i data-lucide="x"></i></button><div id="historyDetailContent"></div></div></div>
 
 <!-- ================= CARD FOCUS ================= -->
 <div id="focusModal" class="focus-modal">
@@ -615,7 +631,7 @@ body{display:flex;justify-content:center;align-items:stretch}
     <div class="flex items-center justify-between mb-4">
       <div>
         <div class="text-base font-semibold">Мои карты</div>
-        <div class="text-xs text-white/40 mt-1">Каждая карта может иметь свой кошелёк</div>
+        <div class="text-xs text-white/40 mt-1">Карточки коллекции</div>
       </div>
       <button class="sheet-close-icon" onclick="closeCardManager()"><i data-lucide="x"></i></button>
     </div>
@@ -623,7 +639,7 @@ body{display:flex;justify-content:center;align-items:stretch}
     <div class="manager-wallet-row">
       <div class="manager-wallet-icon"><i data-lucide="wallet"></i></div>
       <div class="min-w-0 flex-1">
-        <div class="text-xs text-white/40">Кошелёк карты</div>
+        <div class="text-xs text-white/40">Карточка</div>
         <div id="managerWalletAddress" class="text-sm truncate mt-1">Не привязан</div>
       </div>
       <button class="manager-wallet-connect" onclick="attachWalletToCurrentCard()"><i data-lucide="link"></i><span>Привязать</span></button>
@@ -1424,6 +1440,8 @@ function applyCvCardVisual(card){
   setText('cardNumber',formatCardNumber(card.serial_code));
   setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
+  setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
+  setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
   const titleEl=document.getElementById('cardTitleMain'); if(titleEl) titleEl.textContent=card.title||'CARDS AUCTION';
   const focusTitle=document.getElementById('focusHolderName'); if(focusTitle) focusTitle.textContent=card.title||'CARDS AUCTION';
   const back=document.getElementById('cardPassBack'); if(back) back.textContent=card.card_password;
@@ -1574,8 +1592,10 @@ async function submitCreateCard(){
   const serial=input.value.replace(/\\D/g,'').slice(0,4);
   const cardUsername=(document.getElementById('createCardUsernameInput')?.value||'collector').trim().replace(/^@/,'').slice(0,8);
   if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Юзернейм: 1–8 символов.');return;}
+  if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Юзернейм: 1–8 символов.');return;}
   if(!/^\d{4}$/.test(serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
   const cards=cvReadCards();
+  if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
   if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
   if(cards.some(x=>String(x.serial_code)===serial)){input.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});haptic('heavy');return;}
   const submitBtn=document.getElementById('createCardSubmitBtn'); if(submitBtn){submitBtn.disabled=true;submitBtn.querySelector('span').textContent='Создание…';}
