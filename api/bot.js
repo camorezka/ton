@@ -611,10 +611,6 @@ export default async function handler(req, res) {
 
     // ---- PUBLIC CARD SEARCH ----------------------------------------
     if (action === "search_card" && (req.method === "GET" || req.method === "POST")) {
-      if (req.method === "GET") {
-        res.setHeader("Cache-Control", "public, s-maxage=15, stale-while-revalidate=60");
-        res.setHeader("CDN-Cache-Control", "public, s-maxage=15, stale-while-revalidate=60");
-      }
       const rawUsername = req.method === "GET" ? req.query?.username : req.body?.card_username;
       const username = String(rawUsername || "").trim().replace(/^@/,"").slice(0,8).toLowerCase();
       if (!/^[a-z0-9_]{1,8}$/.test(username)) {
