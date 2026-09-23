@@ -274,7 +274,7 @@ body{background:#000!important;background-image:none!important;} #pinScreen{back
   .focus-card-wrap .card-3d{width:520px!important}
 }
 @media(max-width:600px){.history-table-head,.history-table-row{grid-template-columns:1fr .6fr .9fr .9fr 1.1fr;font-size:9px}.history-table-row{padding:10px 7px}}
-/* ===== Cards Auction multi-card UI ===== */
+/* ===== Collectible Cards multi-card UI ===== */
 .card-wallet-bar{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #252b35;background:#0f1319;border-radius:15px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease}
 .card-wallet-bar:active{transform:scale(.985);background:#141922}
 .card-wallet-icon{width:34px;height:34px;border-radius:10px;background:#181e27;border:1px solid #2a313d;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
@@ -366,7 +366,87 @@ body{background:#000!important;background-image:none!important;} #pinScreen{back
 .card-create-hint{font-size:11px;line-height:1.5;color:#737e8d}
 @keyframes createSheetIn{from{opacity:0;transform:translateY(30px) scale(.985)}to{opacity:1;transform:none}}
 @media (min-width:700px){.card-create-backdrop{align-items:center}.card-create-sheet{max-height:88dvh}}
-.create-card-slide{width:min(100%,350px);aspect-ratio:85.6/53.98;border:1px dashed rgba(255,255,255,.72);border-radius:20px;background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease}.create-card-slide:hover{background:rgba(255,255,255,.07);border-color:#fff;transform:translateY(-2px)}.create-card-slide-icon{width:54px;height:54px;border-radius:50%;background:#fff;color:#08090b;display:flex;align-items:center;justify-content:center}.create-card-slide-icon svg{width:25px;height:25px}.skin-tile{flex:0 0 78px;width:78px;height:52px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background-size:cover;background-position:center;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.skin-tile.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.12);transform:translateY(-2px)}</style>
+.create-card-slide{width:min(100%,350px);aspect-ratio:85.6/53.98;border:1px dashed rgba(255,255,255,.72);border-radius:20px;background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease}.create-card-slide:hover{background:rgba(255,255,255,.07);border-color:#fff;transform:translateY(-2px)}.create-card-slide-icon{width:54px;height:54px;border-radius:50%;background:#fff;color:#08090b;display:flex;align-items:center;justify-content:center}.create-card-slide-icon svg{width:25px;height:25px}.skin-tile{flex:0 0 78px;width:78px;height:52px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background-size:cover;background-position:center;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.skin-tile.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.12);transform:translateY(-2px)}
+/* ===== FINAL COLLECTIBLE CARD STYLE ===== */
+.card-stage{perspective:1400px;max-width:620px;margin:0 auto}
+.card-3d{
+  width:min(92vw,520px)!important;
+  aspect-ratio:1.586/1;
+  position:relative;
+  border-radius:24px;
+  transform-style:preserve-3d;
+  animation:cardRotateX 14s linear infinite;
+  box-shadow:0 28px 75px rgba(0,0,0,.62);
+  will-change:transform;
+  cursor:pointer;
+}
+.card-3d:hover{animation-play-state:paused}
+.card-face{
+  position:absolute!important;
+  inset:0;
+  border-radius:24px;
+  overflow:hidden;
+  backface-visibility:hidden;
+  border:1px solid rgba(255,255,255,.16)!important;
+  background-color:#15181e!important;
+  background-size:cover!important;
+  background-position:center!important;
+}
+.card-face::before{content:"";position:absolute;inset:0;background:linear-gradient(125deg,rgba(255,255,255,.18),transparent 30%,rgba(0,0,0,.18) 100%);pointer-events:none}
+.card-back{transform:rotateY(180deg)}
+.card-logo{
+  position:absolute!important;
+  left:20px!important;
+  top:18px!important;
+  width:36px!important;
+  height:36px!important;
+  border-radius:50%!important;
+  z-index:5;
+  background:#fff!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden;
+}
+.card-logo-mark{font-size:16px;font-weight:700;color:#111;line-height:1}
+.card-username{
+  position:absolute!important;
+  left:20px!important;
+  right:20px!important;
+  top:50%!important;
+  transform:translateY(-50%);
+  text-align:center;
+  z-index:5;
+  color:#fff;
+  font-size:clamp(25px,5vw,42px)!important;
+  font-weight:500!important;
+  letter-spacing:.2px;
+  text-shadow:0 3px 20px rgba(0,0,0,.55);
+}
+.card-photo{position:absolute;inset:0;z-index:0}
+@keyframes cardRotateX{
+  from{transform:rotateX(0deg)}
+  to{transform:rotateX(360deg)}
+}
+.focus-card-wrap .card-3d{width:min(92vw,620px)!important;animation-duration:12s}
+.focus-card-wrap .card-3d:hover{animation-play-state:paused}
+.skin-grid{display:flex;gap:10px;overflow-x:auto;padding:5px 2px 12px}
+.skin-tile{
+  position:relative!important;
+  flex:0 0 132px!important;
+  width:132px!important;
+  height:84px!important;
+  aspect-ratio:auto!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  padding:0!important;
+  background:#15181e!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+}
+.skin-tile img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important}
+.skin-tile .skin-name{position:absolute;left:7px;right:7px;bottom:6px;padding:4px 6px;border-radius:7px;background:rgba(0,0,0,.52);font-size:9px;line-height:1.1;color:#fff}
+.skin-tile.selected{border-color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+</style>
 <style>
 .card-carousel-shell{position:relative;width:100%;max-width:390px;margin:0 auto;display:flex;align-items:center;justify-content:center;animation-duration:.26s;}
 .card-carousel-shell.card-swipe-next{animation:cardSwipeNext .26s cubic-bezier(.2,.8,.2,1);}
@@ -505,17 +585,17 @@ body{display:flex;justify-content:center;align-items:stretch}
 
   <div class="card-carousel-shell">
   <button class="card-carousel-arrow card-carousel-prev" aria-label="Предыдущая карточка" onclick="cycleCard(-1)"><i data-lucide="chevron-left"></i></button>
-  <div class="card-stage select-none" id="cardStageMain">
+  <div class="card-stage" id="cardStageMain">
     <div id="card3d" class="card-3d" onclick="openFocusModal()">
       <div class="card-face card-front" id="cardFront">
-        <div class="card-surface"></div>
-        <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt="" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=&quot;font-size:13px;font-weight:700;color:#111&quot;>C</span>'"></div>
+        <div class="card-photo"></div>
+        <div class="card-logo"><span class="card-logo-mark">C</span></div>
         <div class="card-username" id="cardUsernameMain">@collector</div>
-              </div>
+      </div>
       <div class="card-face card-back" id="cardBack">
-        <div class="card-surface"></div>
-        <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt=""></div>
-              </div>
+        <div class="card-photo"></div>
+        <div class="card-logo"><span class="card-logo-mark">C</span></div>
+      </div>
     </div>
   </div>
   <button class="card-carousel-arrow card-carousel-next" aria-label="Следующая карточка" onclick="cycleCard(1)"><i data-lucide="chevron-right"></i></button>
@@ -565,17 +645,15 @@ v>
     <div class="card-stage">
       <div id="focusCard3d" class="card-3d">
         <div class="card-face card-front">
-          <div class="card-surface"></div>
-          <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt=""></div>
+          <div class="card-photo"></div>
+          <div class="card-logo"><span class="card-logo-mark">C</span></div>
           <div class="card-username" id="focusHolderName">@collector</div>
-                  </div>
-        <div class="card-face card-back">
-          <div class="card-surface"></div>
-          <div class="card-logo"><img src="https://www.photo-pick.com/online/fAY2IN3s.link" alt=""></div>
-          <div class="card-back-code">••••••</div>
         </div>
-      </div>
-    </div>
+        <div class="card-face card-back">
+          <div class="card-photo"></div>
+          <div class="card-logo"><span class="card-logo-mark">C</span></div>
+        </div>
+      </div>   </div>
   </div>
   <div class="focus-settings frosted">
     <div class="focus-password-label">Пароль карточки</div>
@@ -891,7 +969,7 @@ async function refreshCardsFromServer(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'design_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',card_username:String(x.card_username||x.nickname||'collector').slice(0,8),title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
       const previous=cvReadCards();
       const activeId=state.activeCardId;
       const merged=cards.map(serverCard=>{
@@ -978,20 +1056,20 @@ async function loadMyCard(){
       cvWriteCards(cards); cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]); ensureCardState(); renderCardCarousel(); return;
     }
     const serial=cvGen4(), pass=cvGen6();
-    const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Cards Auction',visibility:'public'});
+    const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Collectible Cards',visibility:'public'});
     if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password||pass,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public',acquisition_type:b.acquisition_type||'created'};cvWriteCards([card]);cvSyncState(card);}
   }catch(e){console.warn('loadMyCard failed',e)}
   ensureCardState();
 }
-function openCardDataEditor(type){
+function openCardDataEditor(type){ type='password';
   state.editingCardField=type;
   const input=document.getElementById('cardDataInput');
   const title=document.getElementById('cardDataEditorTitle');
   const hint=document.getElementById('cardDataEditorHint');
   const c=cvCurrent();
   if(!c)return;
-  input.maxLength=type==='serial'?4:6;
-  input.value=type==='serial'?(c.serial_code||''):(c.card_password||'');
+  input.maxLength=6;
+  input.value=c.card_password||'';
   input.placeholder=type==='serial'?'0000':'000000';
   title.textContent=type==='serial'?'Изменить публичный код':'Изменить секретный код';
   hint.textContent=type==='serial'?'Ровно 4 цифры. Код должен быть свободным.':'Ровно 6 цифр. Этот код показывается только владельцу.';
@@ -1101,18 +1179,14 @@ function queueSkinSave(card){
 }
 function applySkin(skin){
   if(!skin)return;
-  state.currentSkin=skin.id;
   const cc=cvCurrent();
-  if(cc){
-    cc.skin_id=skin.id;
-    cvWriteCards(cvReadCards());
-  }
-  const bg=skin.url ? 'url("'+skin.url+'")' : (skin.full||'');
-  const main=document.getElementById('card3d'), focus=document.getElementById('focusCard3d');
-  if(main){main.style.backgroundImage=bg;main.style.backgroundSize='cover';main.style.backgroundPosition='center';}
-  if(focus){focus.style.backgroundImage=bg;focus.style.backgroundSize='cover';focus.style.backgroundPosition='center';}
+  if(!cc)return;
+  cc.skin_id=skin.id;
+  state.currentSkin=skin.id;
+  cvWriteCards(cvReadCards());
+  applyCvCardVisual(cc);
   document.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===skin.id));
-  if(cc) queueSkinSave(cc);
+  queueSkinSave(cc);
   haptic('light');
 }
 
@@ -1328,16 +1402,69 @@ function makeSkinSvg(i){
   const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='800' height='760' viewBox='0 0 800 760'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='${a}'/><stop offset='.52' stop-color='${b}'/><stop offset='1' stop-color='${c}'/></linearGradient><filter id='n'><feTurbulence baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .045 0'/></filter></defs><rect width='800' height='760' fill='url(#g)'/>${shapes}<rect width='800' height='760' filter='url(#n)' opacity='.55'/><path d='M0 110 Q360 40 800 120' stroke='white' stroke-opacity='.08' stroke-width='2' fill='none'/></svg>`;
   return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
 }
-const CV_SKINS = Array.from({length:80},(_,i)=>{
-  const h=(i*37)%360, h2=(h+55+(i%7)*11)%360, h3=(h+150)%360;
-  const a=18+(i%5)*9, b=42+(i%4)*8;
-  const grad=[
-    `radial-gradient(circle at ${18+(i*13)%70}% ${22+(i*17)%60}%, hsla(${h3},90%,72%,.38), transparent 34%)`,
-    `linear-gradient(${a*7}deg, hsl(${h},72%,${28+b/3}%), hsl(${h2},78%,${38+b/4}%) 48%, hsl(${h3},70%,${24+b/5}%))`,
-    `linear-gradient(${a*11}deg, transparent 0 46%, rgba(255,255,255,.10) 47% 49%, transparent 50% 100%)`
-  ].join(',');
-  return {id:'design_'+(i+1),name:'Design '+String(i+1).padStart(2,'0'),css:grad};
-});
+const CV_SKINS = [
+  {id:'photo_1',name:'Design 01',url:'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_2',name:'Design 02',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_3',name:'Design 03',url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_4',name:'Design 04',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_5',name:'Design 05',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_6',name:'Design 06',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_7',name:'Design 07',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_8',name:'Design 08',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_9',name:'Design 09',url:'https://images.unsplash.com/photo-1494783367193-149034c05e8f?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_10',name:'Design 10',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_11',name:'Design 11',url:'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_12',name:'Design 12',url:'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_13',name:'Design 13',url:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_14',name:'Design 14',url:'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_15',name:'Design 15',url:'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_16',name:'Design 16',url:'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_17',name:'Design 17',url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_18',name:'Design 18',url:'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_19',name:'Design 19',url:'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_20',name:'Design 20',url:'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_21',name:'Design 21',url:'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_22',name:'Design 22',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_23',name:'Design 23',url:'https://images.unsplash.com/photo-1519608487953-184967796964?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_24',name:'Design 24',url:'https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_25',name:'Design 25',url:'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_26',name:'Design 26',url:'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_27',name:'Design 27',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_28',name:'Design 28',url:'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_29',name:'Design 29',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_30',name:'Design 30',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_31',name:'Design 31',url:'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_32',name:'Design 32',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_33',name:'Design 33',url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_34',name:'Design 34',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_35',name:'Design 35',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_36',name:'Design 36',url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_37',name:'Design 37',url:'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_38',name:'Design 38',url:'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_39',name:'Design 39',url:'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_40',name:'Design 40',url:'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_41',name:'Design 41',url:'https://images.unsplash.com/photo-1519608487953-184967796964?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_42',name:'Design 42',url:'https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_43',name:'Design 43',url:'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_44',name:'Design 44',url:'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_45',name:'Design 45',url:'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_46',name:'Design 46',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_47',name:'Design 47',url:'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_48',name:'Design 48',url:'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_49',name:'Design 49',url:'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_50',name:'Design 50',url:'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_51',name:'Design 51',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_52',name:'Design 52',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_53',name:'Design 53',url:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_54',name:'Design 54',url:'https://images.unsplash.com/photo-1494783367193-149034c05e8f?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_55',name:'Design 55',url:'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_56',name:'Design 56',url:'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_57',name:'Design 57',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_58',name:'Design 58',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_59',name:'Design 59',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_60',name:'Design 60',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=86'},
+  {id:'photo_61',name:'Design 61',url:'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=86'}
+];
 
 function cvGen4(){
   const a=new Uint32Array(4); crypto.getRandomValues(a);
@@ -1373,22 +1500,22 @@ function cvSyncState(card){
 }
 function applyCvCardVisual(card){
   if(!card)return;
-  const bg=cvCardStyle(card);
+  const skin=cvCardStyle(card);
+  const bg='url("'+skin.url+'")';
   const main=document.getElementById('card3d');
   const focus=document.getElementById('focusCard3d');
   [main,focus].forEach(el=>{
     if(!el)return;
-    el.style.backgroundImage='none';
     el.querySelectorAll('.card-face').forEach(face=>{
       face.style.backgroundImage=bg;
       face.style.backgroundSize='cover';
       face.style.backgroundPosition='center';
-      face.style.backgroundColor='#111';
     });
   });
   setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
-  const back=document.getElementById('cardPassBack'); if(back) back.textContent=card.card_password||'••••••';
+  const back=document.getElementById('cardPassBack');
+  if(back)back.textContent=String(card.card_password||'').slice(0,6);
 }
 function updateCvWalletBar(){}
 function ensureCardState(){
@@ -1399,7 +1526,7 @@ function ensureCardState(){
       backendId:state.itemId,
       serial_code:/^\d{4}$/.test(state.cardId||'')?state.cardId:cvGen4(),
       card_password:/^\d{6}$/.test(state.cardPassword||'')?state.cardPassword:cvGen6(),
-      skin_id:state.currentSkin||'design_1',
+      skin_id:state.currentSkin||'photo_1',
       wallet:null
     }];
     cvWriteCards(cards);
@@ -1462,10 +1589,18 @@ function renderCreateCardSlide(){
 function restoreCardSlide(){
   const stage=document.getElementById('cardStageMain');
   if(!stage)return;
-  if(stage.querySelector('.create-card-slide')){
-    stage.innerHTML='<div id="card3d" class="card-3d" onclick="openFocusModal()"><div class="card-face card-front" id="cardFront"><div class="specular" id="specularFront"></div><div class="absolute inset-0 p-4 flex flex-col justify-between text-white"><div class="card-topline"><div class="chip"></div><i data-lucide="contactless" class="card-contactless"></i></div><div class="card-center"><div id="cardTitleMain" class="card-brand">COLLECTIBLE CARD</div><div id="cardNumber" class="emboss card-number">0000</div></div><div class="card-bottomline"><span><i data-lucide="shield-check"></i> SECURE</span></div></div></div><div class="card-face card-back" id="cardBack"><div class="specular" id="specularBack"></div><div class="mag-stripe"></div><div class="p-4 flex flex-col gap-4"><div class="hologram w-16 h-10 rounded-md opacity-90"></div><div class="card-back-label">COLLECTIBLE CARD</div><div class="card-pass-box"><span>ПАРОЛЬ</span><strong id="cardPassBack">••••••</strong></div><div class="card-back-foot"><span>SECURE</span><i data-lucide="shield-check"></i></div></div></div></div>';
-    try{lucide.createIcons();}catch(e){}
-  }
+  stage.innerHTML=`
+    <div id="card3d" class="card-3d" onclick="openFocusModal()">
+      <div class="card-face card-front" id="cardFront">
+        <div class="card-logo"><span class="card-logo-mark">C</span></div>
+        <div class="card-username" id="cardUsernameMain">@collector</div>
+      </div>
+      <div class="card-face card-back" id="cardBack">
+        <div class="card-logo"><span class="card-logo-mark">C</span></div>
+      </div>
+    </div>`;
+  try{lucide.createIcons();}catch(e){}
+  const c=cvCurrent(); if(c)applyCvCardVisual(c);
 }
 function cycleCard(dir){
   animateCardSwitch(dir);
@@ -1532,12 +1667,12 @@ async function submitCreateCard(){
     const d=await apiPost('create_card',{
       serial_code:serial,
       card_password:cvGen6(),
-      skin_id:'design_'+(1+Math.floor(Math.random()*CV_SKINS.length)),
+      skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),
       card_username:cardUsername
     });
     if(!d.ok)throw new Error(d.error||'Не удалось создать карточку');
     const b=d.card;
-    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'design_1',card_username:String(b.card_username||cardUsername).slice(0,8),title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:b.acquisition_type||'created'};
+    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',card_username:String(b.card_username||cardUsername).slice(0,8),title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:b.acquisition_type||'created'};
     cards.push(card);
     cvWriteCards(cards); cvSyncState(card); ensureCardState();
     closeCreateCardModal(); switchTab('collection');
@@ -1719,8 +1854,7 @@ function rebuildPhotoGallery(){
     b.dataset.skinId=skin.id;
     b.title=skin.name;
     b.setAttribute('aria-label',skin.name);
-    b.style.backgroundImage=skin.css;
-    b.innerHTML='<span class="skin-name">'+skin.name+'</span>';
+    b.innerHTML='<img loading="lazy" decoding="async" alt="" src="'+skin.url+'"><span class="skin-name">'+skin.name+'</span>';
     b.onclick=()=>applySkin(skin);
     box.appendChild(b);
   });
