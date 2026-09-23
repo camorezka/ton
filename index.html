@@ -942,10 +942,7 @@ function resetTilt(){}
 const mainCardStage=document.getElementById('cardStageMain');
 if(mainCardStage) mainCardStage.addEventListener('wheel',e=>e.preventDefault(),{passive:false});
 let cardTouchX=0,cardTouchY=0;
-if(mainCardStage){
- mainCardStage.addEventListener('touchstart',e=>{const t=e.touches[0];cardTouchX=t.clientX;cardTouchY=t.clientY},{passive:true});
- mainCardStage.addEventListener('touchend',e=>{const t=e.changedTouches[0];const dx=t.clientX-cardTouchX,dy=t.clientY-cardTouchY;if(Math.max(Math.abs(dx),Math.abs(dy))>45)cycleCard((Math.abs(dx)>Math.abs(dy)?dx<0:dy>0)?1:-1)},{passive:true});
-}
+
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')cycleCard(1);if(e.key==='ArrowLeft')cycleCard(-1);});
 // Live 3D card interaction: no automatic rotation.
 function bindLiveCardTilt(stage){
@@ -1246,7 +1243,7 @@ async function disconnectWallet(){
   const cards=cvReadCards();
   cards.forEach(c=>{ if(c.wallet===state.wallet)c.wallet=null; });
   const current=cvCurrent();
-  if(current?.backendId) apiPost('update_card_settings',{item_id:current.backendId,wallet_address:null}).catch(()=>{});
+  cards.forEach(c=>{if(c.backendId) apiPost('update_card_settings',{item_id:c.backendId,wallet_address:null}).catch(()=>{});});
   state.wallet=null;
   cvWriteCards(cards); updateProfile(); renderWalletList(); updateCvWalletBar(); renderManagerCards();
 }
@@ -1356,66 +1353,66 @@ function makeSkinSvg(i){
   return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
 }
 const CV_SKINS = [
-  {id:'photo_1',name:'Фото 01',url:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_2',name:'Фото 02',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_3',name:'Фото 03',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_4',name:'Фото 04',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_5',name:'Фото 05',url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_6',name:'Фото 06',url:'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_7',name:'Фото 07',url:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_8',name:'Фото 08',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_9',name:'Фото 09',url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_10',name:'Фото 10',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_11',name:'Фото 11',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_12',name:'Фото 12',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_13',name:'Фото 13',url:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_14',name:'Фото 14',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_15',name:'Фото 15',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_16',name:'Фото 16',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_17',name:'Фото 17',url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_18',name:'Фото 18',url:'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_19',name:'Фото 19',url:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_20',name:'Фото 20',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_21',name:'Фото 21',url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_22',name:'Фото 22',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_23',name:'Фото 23',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_24',name:'Фото 24',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_25',name:'Фото 25',url:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_26',name:'Фото 26',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_27',name:'Фото 27',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_28',name:'Фото 28',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_29',name:'Фото 29',url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_30',name:'Фото 30',url:'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_31',name:'Фото 31',url:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_32',name:'Фото 32',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_33',name:'Фото 33',url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_34',name:'Фото 34',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_35',name:'Фото 35',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_36',name:'Фото 36',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_37',name:'Фото 37',url:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_38',name:'Фото 38',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_39',name:'Фото 39',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_40',name:'Фото 40',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_41',name:'Фото 41',url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_42',name:'Фото 42',url:'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_43',name:'Фото 43',url:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_44',name:'Фото 44',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_45',name:'Фото 45',url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_46',name:'Фото 46',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_47',name:'Фото 47',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_48',name:'Фото 48',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_49',name:'Фото 49',url:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_50',name:'Фото 50',url:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_51',name:'Фото 51',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_52',name:'Фото 52',url:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_53',name:'Фото 53',url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_54',name:'Фото 54',url:'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_55',name:'Фото 55',url:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_56',name:'Фото 56',url:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_57',name:'Фото 57',url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_58',name:'Фото 58',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_59',name:'Фото 59',url:'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=85'},
-  {id:'photo_60',name:'Фото 60',url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85'}
+  {id:'photo_1',name:'Фото 01',url:'/assets/designs/design01.svg'},
+  {id:'photo_2',name:'Фото 02',url:'/assets/designs/design02.svg'},
+  {id:'photo_3',name:'Фото 03',url:'/assets/designs/design03.svg'},
+  {id:'photo_4',name:'Фото 04',url:'/assets/designs/design04.svg'},
+  {id:'photo_5',name:'Фото 05',url:'/assets/designs/design05.svg'},
+  {id:'photo_6',name:'Фото 06',url:'/assets/designs/design06.svg'},
+  {id:'photo_7',name:'Фото 07',url:'/assets/designs/design07.svg'},
+  {id:'photo_8',name:'Фото 08',url:'/assets/designs/design08.svg'},
+  {id:'photo_9',name:'Фото 09',url:'/assets/designs/design09.svg'},
+  {id:'photo_10',name:'Фото 10',url:'/assets/designs/design10.svg'},
+  {id:'photo_11',name:'Фото 11',url:'/assets/designs/design11.svg'},
+  {id:'photo_12',name:'Фото 12',url:'/assets/designs/design12.svg'},
+  {id:'photo_13',name:'Фото 13',url:'/assets/designs/design01.svg'},
+  {id:'photo_14',name:'Фото 14',url:'/assets/designs/design02.svg'},
+  {id:'photo_15',name:'Фото 15',url:'/assets/designs/design03.svg'},
+  {id:'photo_16',name:'Фото 16',url:'/assets/designs/design04.svg'},
+  {id:'photo_17',name:'Фото 17',url:'/assets/designs/design05.svg'},
+  {id:'photo_18',name:'Фото 18',url:'/assets/designs/design06.svg'},
+  {id:'photo_19',name:'Фото 19',url:'/assets/designs/design07.svg'},
+  {id:'photo_20',name:'Фото 20',url:'/assets/designs/design08.svg'},
+  {id:'photo_21',name:'Фото 21',url:'/assets/designs/design09.svg'},
+  {id:'photo_22',name:'Фото 22',url:'/assets/designs/design10.svg'},
+  {id:'photo_23',name:'Фото 23',url:'/assets/designs/design11.svg'},
+  {id:'photo_24',name:'Фото 24',url:'/assets/designs/design12.svg'},
+  {id:'photo_25',name:'Фото 25',url:'/assets/designs/design01.svg'},
+  {id:'photo_26',name:'Фото 26',url:'/assets/designs/design02.svg'},
+  {id:'photo_27',name:'Фото 27',url:'/assets/designs/design03.svg'},
+  {id:'photo_28',name:'Фото 28',url:'/assets/designs/design04.svg'},
+  {id:'photo_29',name:'Фото 29',url:'/assets/designs/design05.svg'},
+  {id:'photo_30',name:'Фото 30',url:'/assets/designs/design06.svg'},
+  {id:'photo_31',name:'Фото 31',url:'/assets/designs/design07.svg'},
+  {id:'photo_32',name:'Фото 32',url:'/assets/designs/design08.svg'},
+  {id:'photo_33',name:'Фото 33',url:'/assets/designs/design09.svg'},
+  {id:'photo_34',name:'Фото 34',url:'/assets/designs/design10.svg'},
+  {id:'photo_35',name:'Фото 35',url:'/assets/designs/design11.svg'},
+  {id:'photo_36',name:'Фото 36',url:'/assets/designs/design12.svg'},
+  {id:'photo_37',name:'Фото 37',url:'/assets/designs/design01.svg'},
+  {id:'photo_38',name:'Фото 38',url:'/assets/designs/design02.svg'},
+  {id:'photo_39',name:'Фото 39',url:'/assets/designs/design03.svg'},
+  {id:'photo_40',name:'Фото 40',url:'/assets/designs/design04.svg'},
+  {id:'photo_41',name:'Фото 41',url:'/assets/designs/design05.svg'},
+  {id:'photo_42',name:'Фото 42',url:'/assets/designs/design06.svg'},
+  {id:'photo_43',name:'Фото 43',url:'/assets/designs/design07.svg'},
+  {id:'photo_44',name:'Фото 44',url:'/assets/designs/design08.svg'},
+  {id:'photo_45',name:'Фото 45',url:'/assets/designs/design09.svg'},
+  {id:'photo_46',name:'Фото 46',url:'/assets/designs/design10.svg'},
+  {id:'photo_47',name:'Фото 47',url:'/assets/designs/design11.svg'},
+  {id:'photo_48',name:'Фото 48',url:'/assets/designs/design12.svg'},
+  {id:'photo_49',name:'Фото 49',url:'/assets/designs/design01.svg'},
+  {id:'photo_50',name:'Фото 50',url:'/assets/designs/design02.svg'},
+  {id:'photo_51',name:'Фото 51',url:'/assets/designs/design03.svg'},
+  {id:'photo_52',name:'Фото 52',url:'/assets/designs/design04.svg'},
+  {id:'photo_53',name:'Фото 53',url:'/assets/designs/design05.svg'},
+  {id:'photo_54',name:'Фото 54',url:'/assets/designs/design06.svg'},
+  {id:'photo_55',name:'Фото 55',url:'/assets/designs/design07.svg'},
+  {id:'photo_56',name:'Фото 56',url:'/assets/designs/design08.svg'},
+  {id:'photo_57',name:'Фото 57',url:'/assets/designs/design09.svg'},
+  {id:'photo_58',name:'Фото 58',url:'/assets/designs/design10.svg'},
+  {id:'photo_59',name:'Фото 59',url:'/assets/designs/design11.svg'},
+  {id:'photo_60',name:'Фото 60',url:'/assets/designs/design12.svg'}
 ];
 
 function cvGen4(){
@@ -1456,7 +1453,7 @@ function applyCvCardVisual(card){
     if(!el)return;
     el.querySelectorAll('.card-surface').forEach(x=>x.style.backgroundImage=bg);
     el.querySelectorAll('.card-edge').forEach(x=>{x.style.backgroundImage=bg;x.style.backgroundSize='cover';x.style.backgroundPosition='center';});
-    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<img src="/assets/card-logo.jpg?v=20260923-1" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">');
+    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<img src="/assets/card-logo.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">');
   });
   setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
@@ -1505,19 +1502,12 @@ function renderCardCarousel(){
     '<button class="card-create-dot" onclick="createNewCard()" aria-label="Создать карточку"><i data-lucide="plus"></i></button>';
   try{lucide.createIcons();}catch(e){}
 }
-function animateCardSwitch(direction){
-  const shell=document.querySelector('.card-carousel-shell');
-  if(!shell)return;
-  shell.classList.remove('card-swipe-next','card-swipe-prev');
-  void shell.offsetWidth;
-  shell.classList.add(direction>0?'card-swipe-next':'card-swipe-prev');
-  setTimeout(()=>shell.classList.remove('card-swipe-next','card-swipe-prev'),260);
-}
+function animateCardSwitch(){}
 function cycleCardTo(index){
   const cards=getCarouselItems();
   if(!cards.length){renderCreateCardSlide();return;}
   if(index>=cards.length){cvCarouselIndex=cards.length;renderCreateCardSlide();renderCardCarousel();return;}
-  animateCardSwitch(index>cvCarouselIndex?1:-1);
+  
   restoreCardSlide();
   cvCarouselIndex=Math.max(0,Math.min(index,cards.length-1));
   cvSyncState(cards[cvCarouselIndex]);
@@ -1536,7 +1526,7 @@ function restoreCardSlide(){
   try{lucide.createIcons();}catch(e){}const c=cvCurrent();if(c)applyCvCardVisual(c);
 }
 function cycleCard(dir){
-  animateCardSwitch(dir);
+  
   const cards=getCarouselItems();
   if(!cards.length){renderCreateCardSlide();cvCarouselIndex=0;haptic('light');return;}
   if(dir>0 && cvCarouselIndex===cards.length-1){
@@ -1690,7 +1680,7 @@ function renderAuctionCards(){
   const cards=cvReadCards();
   cards.forEach(c=>{
     const row=document.createElement('button'); row.className='auction-card-row';
-    row.innerHTML='<div class="auction-card-thumb" style="background-image:url(&quot;'+cvCardStyle(c)+'&quot;)"></div><div class="auction-card-meta"><strong>'+cvMasked(c.serial_code)+'</strong><span>'+(c.wallet?'Кошелёк привязан':'Нужен кошелёк для публикации')+'</span></div><i data-lucide="chevron-right" class="chev"></i>';
+    row.innerHTML='<div class="auction-card-thumb" style="background-image:url(&quot;'+cvCardStyle(c).url+'&quot;)"></div><div class="auction-card-meta"><strong>'+cvMasked(c.serial_code)+'</strong><span>'+(c.wallet?'Кошелёк привязан':'Нужен кошелёк для публикации')+'</span></div><i data-lucide="chevron-right" class="chev"></i>';
     row.onclick=()=>publishCvAuction(c.id);
     list.appendChild(row);
   });
@@ -1970,7 +1960,7 @@ async function initCvCards(){
 setTimeout(initCvCards,450);
 </script>
 
-<script src="/scripts/card-ui.js"></script>
+
 </body>
 </html>
 
@@ -2018,3 +2008,5 @@ body{background:#000!important;color:#f5f7fa}
 .card-3d.card-cuboid{animation:none!important;transition:transform .16s ease-out,filter .25s ease,box-shadow .25s ease!important;will-change:transform!important;}
 .card-3d.card-cuboid:hover{animation:none!important;scale:1!important;filter:drop-shadow(0 34px 52px rgba(0,0,0,.62))!important;}
 .card-carousel-shell,.card-swipe-next,.card-swipe-prev{animation:none!important;}
+
+<style>.card-carousel-shell.card-swipe-next,.card-carousel-shell.card-swipe-prev{animation:none!important}</style>
