@@ -1105,8 +1105,6 @@ CATEGORIES.forEach(cat=>{
     });
   }
 });
-setText('skinCount',typeof CV_SKINS!=='undefined'?CV_SKINS.length:SKINS.length);
-
 let skinSaveTimer=null;
 function queueSkinSave(card){
   clearTimeout(skinSaveTimer);
@@ -1748,8 +1746,7 @@ function applySkin(skin){
 function toggleSkinGallery(){ const wrap=document.getElementById('skinGalleryWrap'),btn=document.getElementById('skinToggle'); if(!wrap)return; const open=wrap.classList.toggle('open'); btn?.classList.toggle('open',open); if(btn)btn.querySelector('span').textContent=open?'Скрыть дизайны':'Дизайны'; haptic('light'); }
 function rebuildPhotoGallery(){
   const box=document.getElementById('skinScroller'); if(!box)return;
-  box.innerHTML=''; setText('skinCount',CV_SKINS.length);
-  CV_SKINS.forEach(skin=>{
+  box.innerHTML=''; CV_SKINS.forEach(skin=>{
     const b=document.createElement('button');
     b.className='skin-tile active:press';
     b.dataset.skinId=skin.id;
