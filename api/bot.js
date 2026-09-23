@@ -521,18 +521,18 @@ export default async function handler(req, res) {
       if (!user) return res.status(404).json({ ok: false, error: "user not found" });
 
       const createdCards = await sb(`collectibles?owner_id=eq.${user.id}&acquisition_type=eq.created&select=id&limit=3`);
-      if ((createdCards || []).length >= 2) {
+      if ((createdCards || []).length >= 3) {
         return res.status(409).json({ ok: false, error: "Можно создать максимум 3 карточки." });
       }
 
-      const requested = String(req.body?.serial_code || "").replace(/\D/g, "").slice(0, 4);
+      const requested = String(req.body?.serial_code || crypto.randomInt(0, 10000)).replace(/\D/g, "").padStart(4,"0").slice(0, 4);
       const skinId = String(req.body?.skin_id || "photo_1").slice(0, 80);
       const cardUsername = String(req.body?.card_username || "collector").trim().replace(/^@/,"").slice(0,8);
       if (!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)) return res.status(400).json({ok:false,error:"Юзернейм карточки: 1–8 символов"});
       const title = String(req.body?.title || "Без названия").trim().slice(0, 60) || "Без названия";
       const description = String(req.body?.description || "").trim().slice(0, 300) || null;
       const visibility = req.body?.visibility === "private" ? "private" : "public";
-      if (!/^\d{4}$/.test(requested)) return res.status(400).json({ ok: false, error: "Введите ровно 4 цифры" });
+      if (!/^\d{4}$/.test(requested)) return res.status(400).json({ ok: false, error: "Не удалось создать внутренний идентификатор" });
 
       const existing = await sb(`collectibles?serial_code=eq.${encodeURIComponent(requested)}&select=id&limit=1`);
       if (existing?.[0]) return res.status(409).json({ ok: false, error: "Этот номер уже используется" });
