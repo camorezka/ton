@@ -608,9 +608,10 @@ export default async function handler(req, res) {
     }
 
     // ---- PUBLIC CARD SEARCH ----------------------------------------
-    if (action === "search_card" && req.method === "POST") {
-      const username = String(req.body?.card_username || "").trim().replace(/^@/,"").slice(0,8).toLowerCase();
-      if (!/^[A-Za-z0-9_]{1,8}$/.test(username)) {
+    if (action === "search_card" && (req.method === "GET" || req.method === "POST")) {
+      const rawUsername = req.method === "GET" ? req.query?.username : req.body?.card_username;
+      const username = String(rawUsername || "").trim().replace(/^@/,"").slice(0,8).toLowerCase();
+      if (!/^[a-z0-9_]{1,8}$/.test(username)) {
         return res.status(400).json({ok:false,error:"Некорректный юзернейм"});
       }
       const rows = await sb(
