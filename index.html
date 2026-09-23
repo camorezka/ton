@@ -101,7 +101,7 @@ body{
 .chip::before, .chip::after{ content:''; position:absolute; background:rgba(0,0,0,.25); }
 .chip::before{ top:50%; left:0; right:0; height:1px; transform:translateY(-50%); }
 .chip::after{ left:50%; top:0; bottom:0; width:1px; transform:translateX(-50%); }
-.emboss{ font-family:'Courier New',monospace; letter-spacing:2px; text-shadow: 0 1px 0 rgba(255,255,255,.4), 0 -1px 1px rgba(0,0,0,.6); }
+.emboss{ font-family:inherit; letter-spacing:2px; text-shadow: 0 1px 0 rgba(255,255,255,.4), 0 -1px 1px rgba(0,0,0,.6); }
 .mag-stripe{ height:44px; background:repeating-linear-gradient(180deg,#111 0 2px,#000 2px 4px); margin-top:18px; }
 .hologram{ background: linear-gradient(115deg,#ff00e1,#00f2fe,#ffd700,#ff00e1); background-size:300% 300%; animation:holo 3s linear infinite; }
 @keyframes holo{ 0%{background-position:0% 50%} 100%{background-position:300% 50%} }
@@ -152,7 +152,7 @@ body{
   position:relative; z-index:2;
   border-radius:24px 24px 0 0; padding:16px; max-height:52vh; overflow-y:auto;
 }
-.pw-key{ font-family:'Courier New',monospace; letter-spacing:1px; }
+.pw-key{ font-family:inherit; letter-spacing:1px; }
 
 /* ---------- PIN SCREEN ---------- */
 .pin-screen{
@@ -209,6 +209,22 @@ body{background:var(--bg); background-image:none;}
 @keyframes burnPulse{from{filter:saturate(1)}to{filter:saturate(1.35) brightness(1.06)}}
 @media (max-width:380px){.nav-btn{font-size:8px}.nav-btn svg{width:17px;height:17px}.navbar{left:5px;right:5px;}}
 
+/* ===== Release polish ===== */
+.history-table-head,.history-table-row{display:grid;grid-template-columns:1.05fr .7fr .9fr .9fr 1fr;gap:10px;align-items:center}
+.history-table-head{padding:0 10px 7px;color:rgba(255,255,255,.32);font-size:9px;text-transform:uppercase;letter-spacing:.05em}
+.history-table-row{border:1px solid rgba(255,255,255,.07);background:#11151c;border-radius:12px;padding:11px 10px;font-size:11px;color:#dfe5ed}
+.history-table-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-table-row span:nth-child(3){font-variant-numeric:tabular-nums}
+@media(min-width:700px){
+  #appRoot{width:min(100vw,980px)!important;box-shadow:none}
+  .card-stage{max-width:620px}
+  .card-3d{width:460px!important;border-radius:24px;transition:transform .12s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease}
+  .card-3d:hover{box-shadow:0 38px 80px -24px rgba(0,0,0,.78)}
+  .card-carousel-shell{min-height:330px}
+  .focus-card-wrap .card-stage{max-width:520px}
+  .focus-card-wrap .card-3d{width:520px!important}
+}
+@media(max-width:600px){.history-table-head,.history-table-row{grid-template-columns:1fr .6fr .9fr .9fr 1.1fr;font-size:9px}.history-table-row{padding:10px 7px}}
 /* ===== Cards Auction multi-card UI ===== */
 .card-wallet-bar{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #252b35;background:#0f1319;border-radius:15px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease}
 .card-wallet-bar:active{transform:scale(.985);background:#141922}
@@ -231,7 +247,7 @@ body{background:var(--bg); background-image:none;}
 .sheet-close-icon svg{width:16px;height:16px}
 .manager-preview{display:flex;align-items:center;justify-content:center;padding:5px 0 15px}
 .manager-preview-card{width:170px;aspect-ratio:1.586/1;border-radius:14px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 35px rgba(0,0,0,.35);padding:12px;display:flex;flex-direction:column;justify-content:space-between}
-.manager-preview-number{font:600 12px 'Courier New',monospace;letter-spacing:1px}
+.manager-preview-number{font:600 12px inherit;letter-spacing:1px}
 .manager-wallet-row{display:flex;align-items:center;gap:10px;border:1px solid #252b35;background:#0f1319;border-radius:14px;padding:11px}
 .manager-wallet-icon{width:34px;height:34px;border-radius:10px;background:#181e27;display:flex;align-items:center;justify-content:center}
 .manager-wallet-icon svg{width:16px}
@@ -252,11 +268,11 @@ body{background:var(--bg); background-image:none;}
 .auction-card-row:active{transform:scale(.985);background:#161b23}
 .auction-card-thumb{width:72px;height:46px;border-radius:9px;background-size:cover;background-position:center;flex:0 0 auto;border:1px solid rgba(255,255,255,.12)}
 .auction-card-meta{min-width:0;flex:1}
-.auction-card-meta strong{display:block;font:600 12px 'Courier New',monospace;letter-spacing:1px}
+.auction-card-meta strong{display:block;font:600 12px inherit;letter-spacing:1px}
 .auction-card-meta span{display:block;font-size:10px;color:#707a89;margin-top:4px}
 .auction-card-row .chev{width:16px;color:#697382}
-.navbar{overflow:visible;position:fixed;bottom:3px !important;}
-.nav-indicator{position:absolute;bottom:5px;height:3px;width:38px;border-radius:99px;background:#e7ecf3;left:0;transform:translateX(0);transition:transform .32s cubic-bezier(.22,.8,.2,1);pointer-events:none}
+.navbar{overflow:visible;position:fixed;bottom:-4px !important;transition:transform .34s cubic-bezier(.22,.8,.2,1),opacity .2s ease;}
+.nav-indicator{position:absolute;bottom:5px;height:3px;width:38px;border-radius:99px;background:#e7ecf3;left:0;transform:translateX(0);transition:transform .42s cubic-bezier(.22,.8,.2,1);pointer-events:none}
 .pin-dot.filled{background:#fff;border-color:#fff;box-shadow:none}
 .pin-dot.err{background:#ff5b5b;border-color:#ff5b5b;box-shadow:none}
 .pin-header-icon{width:28px;height:28px;margin:0 auto 7px;color:#e9edf2}
@@ -530,7 +546,7 @@ body{display:flex;justify-content:center;align-items:stretch}
         </select>
       </label>
     </div>
-    <div class="history-head"><span>Название операции</span><span>Время</span></div>
+    <div class="history-head history-table-head"><span>Операция</span><span>Карточка</span><span>Сумма</span><span>Статус</span><span>Время</span></div>
     <div id="historyList" class="space-y-2"><div class="text-xs text-white/40 text-center py-4">Загрузка…</div></div>
   </section>
 
@@ -1064,10 +1080,16 @@ async function refreshCardsFromServer(){
   try{
     const d=await apiPost('get_my_cards');
     if(d.ok && Array.isArray(d.cards)){
-      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public'}));
-      cvWriteCards(cards);
+      const cards=d.cards.map(x=>({id:'db_'+x.id,backendId:x.id,serial_code:String(x.serial_code||cvGen4()),card_password:String(x.card_password||cvGen6()),skin_id:x.skin_id||'photo_1',wallet:x.wallet_address||null,title:x.title||'Без названия',description:x.description||'',visibility:x.visibility||'public',acquisition_type:x.acquisition_type||'created'}));
+      const previous=cvReadCards();
+      const activeId=state.activeCardId;
+      const merged=cards.map(serverCard=>{
+        const local=previous.find(x=>x.id===serverCard.id);
+        return local ? {...serverCard, ...local, backendId:serverCard.backendId, skin_id:serverCard.skin_id||local.skin_id||'photo_1'} : serverCard;
+      });
+      cvWriteCards(merged);
       state.cardsServerLoaded=true;
-      if(cards.length) cvSyncState(cards.find(x=>x.id===state.activeCardId)||cards[0]);
+      if(merged.length) cvSyncState(merged.find(x=>x.id===activeId)||merged[0]);
       ensureCardState(); renderManagerCards(); updateProfile(); renderCardCarousel();
     }
   }catch(e){ console.warn('refreshCardsFromServer failed',e); }
@@ -1149,7 +1171,7 @@ async function loadMyCard(){
     }
     const serial=cvGen4(), pass=cvGen6();
     const created=await apiPost('create_card',{serial_code:serial,card_password:pass,skin_id:(state.currentSkin||'photo_1'),title:'Моя первая карточка',description:'Первая коллекционная карточка Cards Auction',visibility:'public'});
-    if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password||pass,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public'};cvWriteCards([card]);cvSyncState(card);}
+    if(created.ok&&created.card){const b=created.card;const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password||pass,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||'Моя первая карточка',description:b.description||'',visibility:b.visibility||'public',acquisition_type:b.acquisition_type||'created'};cvWriteCards([card]);cvSyncState(card);}
   }catch(e){console.warn('loadMyCard failed',e)}
   ensureCardState();
 }
@@ -1502,7 +1524,11 @@ function makeSkinSvg(i){
   const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='800' height='760' viewBox='0 0 800 760'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='${a}'/><stop offset='.52' stop-color='${b}'/><stop offset='1' stop-color='${c}'/></linearGradient><filter id='n'><feTurbulence baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .045 0'/></filter></defs><rect width='800' height='760' fill='url(#g)'/>${shapes}<rect width='800' height='760' filter='url(#n)' opacity='.55'/><path d='M0 110 Q360 40 800 120' stroke='white' stroke-opacity='.08' stroke-width='2' fill='none'/></svg>`;
   return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
 }
-const CV_SKINS = Array.from({length:60},(_,i)=>({id:'photo_'+(i+1),name:'Design '+String(i+1).padStart(2,'0'),url:'https://picsum.photos/seed/cards-auction-'+(i+1)+'/640/404'}));
+const CV_SKINS = Array.from({length:80},(_,i)=>({
+  id:'photo_'+(i+1),
+  name:'Design '+String(i+1).padStart(2,'0'),
+  url:'https://picsum.photos/seed/cards-auction-'+(i+1)+'/640/404'
+}));
 
 function cvGen4(){
   const a=new Uint32Array(4); crypto.getRandomValues(a);
@@ -1707,9 +1733,9 @@ async function submitCreateCard(){
     const d=await apiPost('create_card',{serial_code:serial,card_password:cvGen6(),skin_id:'photo_'+(1+Math.floor(Math.random()*CV_SKINS.length)),title,description,visibility:state.createVisibility||'public'});
     if(!d.ok) throw new Error(d.error||'Не удалось создать карточку');
     const b=d.card;
-    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||title,description:b.description||description,visibility:b.visibility||state.createVisibility||'public'};
+    const card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,card_password:b.card_password,skin_id:b.skin_id||'photo_1',wallet:b.wallet_address||null,title:b.title||title,description:b.description||description,visibility:b.visibility||state.createVisibility||'public',acquisition_type:b.acquisition_type||'created'};
     cards.push(card);cvWriteCards(cards);cvSyncState(card);ensureCardState();renderManagerCards();
-    closeCreateCardModal();switchTab('bank');cvCarouselIndex=cards.length-1;cvSyncState(card);renderCardCarousel();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
+    closeCreateCardModal();switchTab('collection');cvCarouselIndex=cards.length-1;cvSyncState(card);renderCardCarousel();haptic('medium');try{confetti({particleCount:45,spread:65});}catch(e){}
   }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy');} finally { if(submitBtn){submitBtn.disabled=false;submitBtn.querySelector('span').textContent='Создать карточку';} }
 }
 function createNewCard(){openCreateCardModal();}
@@ -1857,9 +1883,15 @@ async function confirmCardId(){
 function applySkin(skin){
   const c=cvCurrent(); if(!c)return;
   c.skin_id=skin.id;
-  const cards=cvReadCards(), ix=cards.findIndex(x=>x.id===c.id);if(ix>=0)cards[ix]=c;cvWriteCards(cards);
-  cvSyncState(c);
+  const cards=cvReadCards(), ix=cards.findIndex(x=>x.id===c.id);
+  if(ix>=0) cards[ix]=c;
+  cvWriteCards(cards);
+  state.currentSkin=skin.id;
+  applyCvCardVisual(c);
   document.querySelectorAll('.skin-tile').forEach(t=>t.classList.toggle('selected',t.dataset.skinId===skin.id));
+  if(c.backendId){
+    apiPost('update_card_settings',{item_id:c.backendId,skin_id:c.skin_id}).catch(e=>console.warn('skin save failed',e));
+  }
   haptic('light');
 }
 function toggleSkinGallery(){ const wrap=document.getElementById('skinGalleryWrap'),btn=document.getElementById('skinToggle'); if(!wrap)return; const open=wrap.classList.toggle('open'); btn?.classList.toggle('open',open); if(btn)btn.querySelector('span').textContent=open?'Скрыть дизайны':'Показать дизайны'; haptic('light'); }
@@ -1906,10 +1938,13 @@ function renderHistory(){
     return new Date(b.created_at)-new Date(a.created_at);
   });
   if(!rows.length){box.innerHTML='<div class="text-xs text-white/40 text-center py-5">Операций пока нет</div>';return;}
-  box.innerHTML=rows.map((o,i)=>{
-    const title=escapeHtml(o.operationTitle||((o.role==='buyer'?'Покупка':'Продажа')+' коллекционной карточки'));
-    const time=new Date(o.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    return '<button class="history-row" onclick="openHistoryDetails(\''+String(o.id).replace(/'/g,'')+'\')" data-history-id="'+o.id+'"><span class="history-title">'+title+'</span><span class="history-time">'+time+'</span></button>';
+  box.innerHTML=rows.map(o=>{
+    const op=o.role==='buyer'?'Покупка':'Продажа';
+    const card=o.serial_code||'—';
+    const amount=Number(o.amount_ton||0).toFixed(2)+' TON';
+    const status=o.status==='confirmed'?'Завершено':o.status==='failed'?'Ошибка':o.status==='cancelled'?'Отменено':o.status==='expired'?'Истёк':'В ожидании';
+    const time=new Date(o.created_at).toLocaleDateString([], {day:'2-digit',month:'2-digit'})+' '+new Date(o.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    return '<div class="history-row history-table-row"><span>'+op+'</span><span>'+escapeHtml(card)+'</span><span>'+amount+'</span><span>'+status+'</span><span>'+time+'</span></div>';
   }).join('');
 }
 async function loadHistory(){
