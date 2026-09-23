@@ -555,7 +555,7 @@ body{display:flex;justify-content:center;align-items:stretch}
   <div class="card-create-sheet card-create-v2">
     <div class="create-sheet-title"><div><div class="text-base font-semibold">Создать карточку</div><div class="text-xs text-white/40 mt-1">До 3 карточек</div></div><button class="sheet-close-icon" onclick="closeCreateCardModal()" aria-label="Закрыть"><i data-lucide="x"></i></button></div>
     <div id="createCardPreview" class="create-card-preview-3d"></div>
-    <label class="create-username-label"><span>Ник карточки</span><input id="createCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" placeholder="collector"></label>
+    <label class="create-username-label"><span>Ник карточки</span><input id="createCardUsernameInput" class="card-field" maxlength="8" autocomplete="off" placeholder="collector"></label><label class="create-username-label"><span>Пароль карточки · 6 цифр</span><input id="createCardPasswordInput" class="card-field" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••"></label>
     <button id="createCardSubmitBtn" class="primary-btn" onclick="submitCreateCard()"><i data-lucide="check"></i><span>Создать</span></button>
   </div>
 </div>
@@ -1410,7 +1410,7 @@ function applyCvCardVisual(card){
     if(!el)return;
     el.querySelectorAll('.card-surface').forEach(x=>x.style.backgroundImage=bg);
     el.querySelectorAll('.card-edge').forEach(x=>{x.style.backgroundImage=bg;x.style.backgroundSize='cover';x.style.backgroundPosition='center';});
-    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<svg viewBox="0 0 32 32" width="18" height="18"><circle cx="16" cy="16" r="15" fill="#fff"/><path d="M22 9.5A9 9 0 1 0 22 22.5" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/><path d="M12 16h10" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg>');
+    el.querySelectorAll('.card-logo').forEach(x=>x.innerHTML='<img src="/assets/card-logo.jpg?v=20260923-1" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">');
   });
   setText('cardUsernameMain','@'+String(card.card_username||'collector').slice(0,8));
   setText('focusHolderName','@'+String(card.card_username||'collector').slice(0,8));
@@ -1534,14 +1534,16 @@ function openCreateCardModal(){
 function closeCreateCardModal(){document.getElementById('cardCreateModal')?.classList.add('hidden');}
 async function submitCreateCard(){
   const cardUsername=(document.getElementById('createCardUsernameInput')?.value||'').trim().replace(/^@/,'').slice(0,8);
+  const cardPassword=(document.getElementById('createCardPasswordInput')?.value||'').replace(/\D/g,'').slice(0,6);
   if(!/^[A-Za-z0-9_]{1,8}$/.test(cardUsername)){alert('Ник: 1–8 символов.');return;}
+  if(!/^\d{6}$/.test(cardPassword)){alert('Пароль: ровно 6 цифр.');return;}
   const cards=cvReadCards();if(cards.length>=3){alert('Можно создать максимум 3 карточки.');return;}
   const skinId=state.pendingCreateSkin||CV_SKINS[0].id,btn=document.getElementById('createCardSubmitBtn');
   if(btn){btn.disabled=true;btn.querySelector('span').textContent='Создание…';}
   try{
-    const d=await apiPost('create_card',{skin_id:skinId,card_username:cardUsername});
+    const d=await apiPost('create_card',{skin_id:skinId,card_username:cardUsername,card_password:cardPassword});
     if(!d.ok)throw new Error(d.error||'Не удалось создать карточку');
-    const b=d.card,card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||skinId,card_username:String(b.card_username||cardUsername).slice(0,8),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:'created'};
+    const b=d.card,card={id:'db_'+b.id,backendId:b.id,serial_code:b.serial_code,skin_id:b.skin_id||skinId,card_username:String(b.card_username||cardUsername).slice(0,8),card_password:String(b.card_password||cardPassword),wallet:null,title:'Коллекционная карточка',description:'',visibility:'public',acquisition_type:'created'};
     cards.push(card);cvWriteCards(cards);cvCarouselIndex=cards.length-1;cvSyncState(card);ensureCardState();renderCardCarousel();closeCreateCardModal();switchTab('collection');haptic('medium');
   }catch(e){alert(e?.message||'Не удалось создать карточку');haptic('heavy')}
   finally{if(btn){btn.disabled=false;btn.querySelector('span').textContent='Создать';}}
@@ -1606,6 +1608,8 @@ function confirmDeleteSelection(id){
   haptic('medium');
 }
 async function deleteCardAfterPin(id){
+  const target=cvReadCards().find(c=>c.id===id);
+  if(target?.backendId){try{const d=await apiPost('delete_card',{item_id:target.backendId});if(!d.ok)throw new Error(d.error||'Не удалось удалить карточку');}catch(e){alert(e.message||'Не удалось удалить карточку');return;}}
   const cards=cvReadCards().filter(c=>c.id!==id);
   cvWriteCards(cards);
   state.deleteTargetCardId=null;
@@ -1879,7 +1883,7 @@ setTimeout(initCvCards,450);
 
 <style>
 /* Legacy marketplace/wallet/history UI is intentionally disabled in card-only release. */
-#screen-market,#cardManagerSheet,#auctionPickerSheet,#auctionCreateModal,#sheet-buy,#sheet-settings,#historyDetailSheet,#historyBlock,.manager-wallet-row,.wallet-actions,#walletList{display:none!important}
+#screen-market,#auctionPickerSheet,#auctionCreateModal,#sheet-buy,#sheet-settings,#historyDetailSheet,#historyBlock,.manager-wallet-row,.wallet-actions,#walletList{display:none!important}
 
 /* ===== FINAL CARD-ONLY RELEASE ===== */
 body{background:#000!important;color:#f5f7fa}
@@ -1905,9 +1909,9 @@ body{background:#000!important;color:#f5f7fa}
 @media(max-width:700px){.card-carousel-shell{min-height:310px}.card-3d.card-cuboid{width:min(88vw,380px)}}
 
 /* Card-only release hard cleanup */
-#cardDataEditor,.focus-settings,.focus-password-label,.focus-password-value,.focus-edit-password{display:none!important}
+#cardDataEditor{display:none!important}
 .card-cuboid{animation-name:cardHorizontalSpin!important;animation-timing-function:linear!important;animation-iteration-count:infinite!important}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js"></script>
-<script src="/scripts/card-release.js?v=20260923-3"></script>
+
